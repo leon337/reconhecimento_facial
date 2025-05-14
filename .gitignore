@@ -1,0 +1,18 @@
+# Ambientes virtuais
+venv/
+.env
+
+# Arquivos temporários
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Arquivos de sistema
+.DS_Store
+*.swp
+
+# Imagens e saídas locais (ajuste se quiser manter)
+*.jpg
+*.png
+
