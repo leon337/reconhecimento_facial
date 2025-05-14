@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Upload de Imagem</title>
+</head>
+<body>
+  <h1>Enviar imagem para reconhecimento facial</h1>
+  <form method="POST" action="/upload" enctype="multipart/form-data">
+    <input type="file" name="file" accept="image/*" required>
+    <button type="submit">Enviar</button>
+  </form>
+</body>
+</html>

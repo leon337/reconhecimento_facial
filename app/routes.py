@@ -15,3 +15,11 @@ def upload():
     path = os.path.join(UPLOAD_FOLDER, file.filename)
     file.save(path)
     return 'File uploaded successfully', 200
+
+@app.route("/form")
+def form():
+    return render_template("form.html")
+
+@app.route("/form")
+def form():
+    return render_template("form.html")
