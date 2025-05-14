@@ -1,13 +1,55 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Upload de Imagem</title>
+    <title>Upload de Imagem</title>
+    <style>
+        .notification {
+            font-weight: bold;
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 5px;
+            border: 1px solid;
+            display: inline-block;
+            position: relative;
+            animation: fadeOut 1s ease-in-out 4s forwards;
+        }
+        .success {
+            color: #155724;
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+        .error {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        .close-btn {
+            position: absolute;
+            right: 10px;
+            top: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                visibility: hidden;
+            }
+        }
+    </style>
 </head>
 <body>
-  <h1>Enviar imagem para reconhecimento facial</h1>
-  <form method="POST" action="/upload" enctype="multipart/form-data">
-    <input type="file" name="file" accept="image/*" required>
-    <button type="submit">Enviar</button>
-  </form>
+    <h1>Enviar imagem para reconhecimento facial</h1>
+    <form method="POST" action="/upload" enctype="multipart/form-data">
+        <input type="file" name="file" accept="image/*" required>
+        <button type="submit">Enviar</button>
+    </form>
+
+    {% if message %}
+        <div class="notification {{ 'success' if success else 'error' }}">
+            <span class="close-btn" onclick="this.parentElement.style.display='none'">&times;</span>
+            {{ message }}
+        </div>
+    {% endif %}
 </body>
 </html>
