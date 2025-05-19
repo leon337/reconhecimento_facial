@@ -1,55 +1,22 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
 <head>
-    <title>Upload de Imagem</title>
-    <style>
-        .notification {
-            font-weight: bold;
-            padding: 10px;
-            margin-top: 20px;
-            border-radius: 5px;
-            border: 1px solid;
-            display: inline-block;
-            position: relative;
-            animation: fadeOut 1s ease-in-out 4s forwards;
-        }
-        .success {
-            color: #155724;
-            background-color: #d4edda;
-            border-color: #c3e6cb;
-        }
-        .error {
-            color: #721c24;
-            background-color: #f8d7da;
-            border-color: #f5c6cb;
-        }
-        .close-btn {
-            position: absolute;
-            right: 10px;
-            top: 5px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        @keyframes fadeOut {
-            to {
-                opacity: 0;
-                visibility: hidden;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Enviar imagem para reconhecimento facial</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+        rel="stylesheet">
 </head>
-<body>
-    <h1>Enviar imagem para reconhecimento facial</h1>
-    <form method="POST" action="/upload" enctype="multipart/form-data">
-        <input type="file" name="file" accept="image/*" required>
-        <button type="submit">Enviar</button>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+  <div class="bg-white p-8 rounded shadow w-full max-w-md">
+    <h1 class="text-2xl font-bold text-center mb-6">Enviar imagem para reconhecimento facial</h1>
+    <form action="/upload" method="post" enctype="multipart/form-data" class="flex flex-col gap-4">
+      <input type="file" name="file" accept="image/*" required
+             class="border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-600">
+      <button type="submit"
+              class="bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">
+        Enviar
+      </button>
     </form>
-
-    {% if message %}
-        <div class="notification {{ 'success' if success else 'error' }}">
-            <span class="close-btn" onclick="this.parentElement.style.display='none'">&times;</span>
-            {{ message }}
-        </div>
-    {% endif %}
+  </div>
 </body>
 </html>
