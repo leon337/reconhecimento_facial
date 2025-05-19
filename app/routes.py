@@ -38,25 +38,35 @@ def form():
 @app.route('/upload', methods=['POST'])
 def upload():
     """
-    Recebe o arquivo via POST multipart/form-data:
-    1. Valida se veio arquivo e se a extensão é permitida.
-    2. Gera nome seguro e salva em UPLOAD_FOLDER.
-    3. Usa face_recognition para detectar rostos.
-    4. Retorna renderização do template `result.html`,
-       passando `filename`, `success` e `message`.
+    Recebe o upload, executa reconhecimento facial
+    e renderiza o template `result.html` com feedback visual.
     """
     file = request.files.get('file')
-    # 1️⃣ Validação básica
+    # Validação básica
     if not file or file.filename == '' or not allowed_file(file.filename):
         return render_template('result.html',
                                filename=None,
                                success=False,
                                message="Arquivo inválido ou não enviado.")
-    # 2️⃣ Salva o upload
+
+    # Salva no diretório static/uploads para servir via url_for('static', ...)
     filename = secure_filename(file.filename)
-    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-    filepath = os.path.join(UPLOAD_FOLDER, filename)
+    save_folder = os.path.join(current_app.static_folder, 'uploads')
+    os.makedirs(save_folder, exist_ok=True)
+    filepath = os.path.join(save_folder, filename)
     file.save(filepath)
+
+    # Reconhecimento facial
+    image = face_recognition.load_image_file(filepath)
+    faces = face_recognition.face_locations(image)
+    success = len(faces) > 0
+    message = "Rosto reconhecido com sucesso!" if success else "Nenhum rosto detectado."
+
+    # Renderiza feedback visual
+    return render_template('result.html',
+                           filename=filename,
+                           success=success,
+                           message=message)
 
     # 3️⃣ Prepara o modelo do face_recognition
     model_path = Path(site.getsitepackages()[0]) / "face_recognition_models"
