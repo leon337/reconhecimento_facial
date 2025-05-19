@@ -11,6 +11,16 @@ from app.models import db               # importa a instância db
 def create_app():
     # 1) Inicializa o Flask e configura pasta de uploads dentro de static/
     app = Flask(__name__, static_folder='static')
+        # depois de criar app...
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ponto.db'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+    db.init_app(app)
+
+    # cria as tabelas no banco se ainda não existirem
+    with app.app_context():
+        db.create_all()
+        
     upload_folder = os.path.join(app.static_folder, 'uploads')
     app.config['UPLOAD_FOLDER'] = upload_folder
     os.makedirs(upload_folder, exist_ok=True)
