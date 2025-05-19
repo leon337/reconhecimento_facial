@@ -5,6 +5,8 @@ import os
 import site
 from pathlib import Path
 from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+from app.models import db               # importa a instância db
 
 def create_app():
     # 1) Inicializa o Flask e configura pasta de uploads dentro de static/
