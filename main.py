@@ -2,7 +2,7 @@
 import face_recognition
 from PIL import Image
 from pathlib import Path
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, jsonify
 import os
 import site
 
@@ -25,21 +25,41 @@ def upload():
     file = request.files['file']
     if file.filename == '':
         return 'Nenhum arquivo selecionado', 400
+# ─────────── ROTA REST DE RECONHECIMENTO FACIAL (JSON) ───────────
+@app.route('/api/face', methods=['POST'])
+def api_face():
+    # 1) Validar se veio arquivo
+    if 'file' not in request.files:
+        return jsonify(success=False, message="Arquivo não enviado."), 400
 
+    file = request.files['file']
+    # 2) Validar nome
+    if file.filename == '':
+        return jsonify(success=False, message="Nome do arquivo vazio."), 400
+
+    # 3) Salvar imagem no disco
     save_path = os.path.join(UPLOAD_FOLDER, file.filename)
     file.save(save_path)
 
-    # 📌 Alteração da Fase A3 começa aqui:
-    model_path = Path(site.getsitepackages()[0]) / "face_recognition_models"
-    os.environ["FACE_RECOGNITION_MODEL_LOCATION"] = str(model_path)
-    img = face_recognition.load_image_file(save_path)
-    encodings = face_recognition.face_encodings(img)
+    try:
+        # 4) Ajustar onde o face_recognition encontra seus modelos
+        model_path = Path(site.getsitepackages()[0]) / "face_recognition_models"
+        os.environ["FACE_RECOGNITION_MODEL_LOCATION"] = str(model_path)
 
-    if encodings:
-        return "<h2 style='color:green;'>✅ Rosto reconhecido com sucesso!</h2>"
-    else:
-        return "<h2 style='color:red;'>❌ Nenhum rosto detectado.</h2>"
-    # 📌 Alteração da Fase A3 termina aqui
+        # 5) Carregar e extrair encodings
+        image = face_recognition.load_image_file(save_path)
+        faces = face_recognition.face_encodings(image)
+
+        # 6) Se achou algum encoding, sucesso; se não, "nenhum rosto"
+        if faces:
+            return jsonify(success=True, message="Rosto reconhecido com sucesso!"), 200
+        else:
+            return jsonify(success=False, message="Nenhum rosto detectado."), 200
+
+    except Exception as e:
+        # 7) Erro genérico
+        return jsonify(success=False, message=f"Erro interno: {e}"), 500
+# ────────────────────────────────────────────────────────────────────
 
 # ▶️ Executa o app
 if __name__ == '__main__':
