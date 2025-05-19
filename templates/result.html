@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Resultado do Reconhecimento</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+  <div class="bg-white p-8 rounded shadow-md w-full max-w-md text-center">
+    <h1 class="text-2xl font-bold mb-4">{{ message }}</h1>
+    {% if filename %}
+      <img src="{{ url_for('static', filename='uploads/' ~ filename) }}"
+           alt="Imagem enviada"
+           class="mx-auto mb-4 rounded shadow-sm max-h-80">
+    {% endif %}
+    <a href="/form"
+       class="inline-block bg-gray-200 px-4 py-2 rounded hover:bg-gray-300 transition">
+      ← Enviar outra imagem
+    </a>
+  </div>
+</body>
+</html>
