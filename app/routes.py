@@ -1,109 +1,108 @@
 # reconhecimento_facial/app/routes.py
 
 """
-Este módulo define as rotas de:
- - /form    → exibe o formulário HTML
- - /upload  → recebe e salva arquivo (retorno de texto)
- - /api/face → reconhece rosto e retorna JSON
+Define as três principais rotas:
+1. GET  /form      → exibe o formulário de upload
+2. POST /upload    → recebe o arquivo, salva em disco e renderiza feedback visual
+3. POST /api/face  → recebe o arquivo, faz reconhecimento e retorna JSON
 """
 
-# Importa o app Flask e a constante UPLOAD_FOLDER (definida em main.py)
-from app import app, UPLOAD_FOLDER
-
-# Importa funções para lidar com requisições e respostas
-from flask import request, jsonify, render_template
-
-# Importa módulos do sistema de arquivos e localização de pacotes
+from flask import current_app, request, render_template, jsonify
+from werkzeug.utils import secure_filename
 import os
 import site
 from pathlib import Path
-
-# Biblioteca de reconhecimento facial
 import face_recognition
 
+# A pasta onde os uploads serão salvos
+UPLOAD_FOLDER = current_app.config.get('UPLOAD_FOLDER', 'uploads')
+# Extensões de imagem permitidas
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
-# ---------------------------------------
-# Rota GET /form
-# ---------------------------------------
-@app.route('/form')
+
+def allowed_file(filename):
+    """Retorna True se o arquivo tiver extensão permitida."""
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+@app.route('/form', methods=['GET'])
 def form():
     """
-    Exibe a página 'form.html' com o botão de upload.
+    Exibe o form para enviar imagem.
+    Apenas renderiza o template `form.html`.
     """
     return render_template('form.html')
 
 
-# ---------------------------------------
-# Rota POST /upload
-# ---------------------------------------
 @app.route('/upload', methods=['POST'])
 def upload():
     """
-    Recebe um arquivo via multipart/form-data e salva em disco:
-    1. Valida existência do campo 'file'
-    2. Garante nome de arquivo não vazio
-    3. Salva em UPLOAD_FOLDER
-    4. Retorna mensagem simples de texto
+    Recebe o arquivo via POST multipart/form-data:
+    1. Valida se veio arquivo e se a extensão é permitida.
+    2. Gera nome seguro e salva em UPLOAD_FOLDER.
+    3. Usa face_recognition para detectar rostos.
+    4. Retorna renderização do template `result.html`,
+       passando `filename`, `success` e `message`.
     """
-    # 1️⃣ Validação: existe o campo?
-    if 'file' not in request.files:
-        return 'No file part', 400
+    file = request.files.get('file')
+    # 1️⃣ Validação básica
+    if not file or file.filename == '' or not allowed_file(file.filename):
+        return render_template('result.html',
+                               filename=None,
+                               success=False,
+                               message="Arquivo inválido ou não enviado.")
+    # 2️⃣ Salva o upload
+    filename = secure_filename(file.filename)
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+    filepath = os.path.join(UPLOAD_FOLDER, filename)
+    file.save(filepath)
 
-    file = request.files['file']
+    # 3️⃣ Prepara o modelo do face_recognition
+    model_path = Path(site.getsitepackages()[0]) / "face_recognition_models"
+    os.environ["FACE_RECOGNITION_MODEL_LOCATION"] = str(model_path)
 
-    # 2️⃣ O nome do arquivo não pode estar vazio
-    if file.filename == '':
-        return 'No selected file', 400
+    # 4️⃣ Carrega a imagem e faz a detecção
+    image = face_recognition.load_image_file(filepath)
+    faces = face_recognition.face_locations(image)
 
-    # 3️⃣ Define o caminho e salva o arquivo
-    save_path = os.path.join(UPLOAD_FOLDER, file.filename)
-    file.save(save_path)
+    success = len(faces) > 0
+    message = "Rosto reconhecido com sucesso!" if success else "Nenhum rosto detectado."
 
-    # 4️⃣ Retorna confirmação
-    return 'File uploaded successfully', 200
+    # 5️⃣ Renderiza feedback visual
+    return render_template('result.html',
+                           filename=filename,
+                           success=success,
+                           message=message)
 
 
-# ---------------------------------------
-# Rota POST /api/face
-# ---------------------------------------
 @app.route('/api/face', methods=['POST'])
 def api_face():
     """
-    API REST para reconhecimento facial:
-    1. Validação básica do arquivo
-    2. Salvamento no disco
-    3. Configuração do modelo do face_recognition
-    4. Carregamento da imagem e extração de encodings
-    5. Retorno JSON com sucesso/falha
+    Expondo um endpoint JSON puro para reconhecimento:
+    - Mesmas validações de arquivo.
+    - Salva o arquivo igual ao upload.
+    - Retorna JSON { success: bool, message: str }.
     """
-    # 1️⃣ Checa se veio 'file'
-    if 'file' not in request.files:
-        return jsonify(success=False, message="Arquivo não enviado."), 400
+    file = request.files.get('file')
+    if not file or file.filename == '' or not allowed_file(file.filename):
+        return jsonify(success=False, message="Arquivo inválido ou não enviado."), 400
 
-    file = request.files['file']
-    # 2️⃣ Checa nome não vazio
-    if file.filename == '':
-        return jsonify(success=False, message="Nome do arquivo vazio."), 400
-
-    # 3️⃣ Salva o arquivo no disco
-    save_path = os.path.join(UPLOAD_FOLDER, file.filename)
-    file.save(save_path)
+    filename = secure_filename(file.filename)
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+    filepath = os.path.join(UPLOAD_FOLDER, filename)
+    file.save(filepath)
 
     try:
-        # 4️⃣ Indica onde estão os modelos pré-treinados
         model_path = Path(site.getsitepackages()[0]) / "face_recognition_models"
         os.environ["FACE_RECOGNITION_MODEL_LOCATION"] = str(model_path)
 
-        # 5️⃣ Processa a imagem e extrai encodings
-        image = face_recognition.load_image_file(save_path)
-        faces = face_recognition.face_encodings(image)
+        image = face_recognition.load_image_file(filepath)
+        encodings = face_recognition.face_encodings(image)
 
-        # 6️⃣ Se encontrou encodings, rosto reconhecido
-        if faces:
+        if encodings:
             return jsonify(success=True, message="Rosto reconhecido com sucesso!")
         else:
             return jsonify(success=False, message="Nenhum rosto detectado.")
-
     except Exception as e:
-        # Em caso de erro, devolve JSON com a mensagem de exceção
         return jsonify(success=False, message=f"Erro interno: {e}"), 500
