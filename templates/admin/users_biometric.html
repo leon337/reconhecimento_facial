@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Registrar Biometria</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="p-6 bg-gray-100 min-h-screen">
+  <div class="max-w-md mx-auto bg-white p-6 rounded shadow text-center">
+    <h1 class="text-2xl font-bold mb-4">Biometria – {{ user.name }} ({{ user.username }})</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="mb-4">
+          {% for category, msg in messages %}
+            <div class="p-2 rounded {{ 'bg-green-200 text-green-800' if category=='success' else 'bg-red-200 text-red-800' }}">
+              {{ msg }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    <form action="{{ url_for('admin.save_biometric', user_id=user.id) }}"
+          method="post"
+          enctype="multipart/form-data"
+          class="space-y-4">
+      <input type="file" name="file" accept="image/*" required
+             class="w-full border p-2 rounded">
+      <button type="submit"
+              class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
+        Enviar Biometria
+      </button>
+    </form>
+    <a href="{{ url_for('admin.list_users') }}"
+       class="inline-block mt-4 text-blue-600 hover:underline">
+      ← Voltar à Lista
+    </a>
+  </div>
+</body>
+</html>

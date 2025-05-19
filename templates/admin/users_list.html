@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Usuários Cadastrados</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="p-6 bg-gray-100 min-h-screen">
+  <div class="max-w-4xl mx-auto bg-white p-6 rounded shadow">
+    <h1 class="text-2xl font-bold mb-4">Usuários Cadastrados</h1>
+    <a href="{{ url_for('admin.new_user') }}"
+       class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 mb-4 inline-block">
+      + Novo Funcionário
+    </a>
+    <table class="w-full table-auto border-collapse">
+      <thead>
+        <tr class="bg-gray-200">
+          <th class="border px-2 py-1">ID</th>
+          <th class="border px-2 py-1">Username</th>
+          <th class="border px-2 py-1">Nome</th>
+          <th class="border px-2 py-1">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+        <tr class="hover:bg-gray-100">
+          <td class="border px-2 py-1">{{ u.id }}</td>
+          <td class="border px-2 py-1">{{ u.username }}</td>
+          <td class="border px-2 py-1">{{ u.name or '-' }}</td>
+          <td class="border px-2 py-1">
+            <a href="{{ url_for('admin.biometric_form', user_id=u.id) }}"
+               class="bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700">
+              Biometria
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

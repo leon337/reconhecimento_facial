@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Adicionar Funcionário</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="p-6 bg-gray-100 min-h-screen">
+  <div class="max-w-md mx-auto bg-white p-6 rounded shadow">
+    <h1 class="text-2xl font-bold mb-4">Cadastrar Novo Funcionário</h1>
+    <form action="{{ url_for('admin.create_user') }}" method="post" class="space-y-4">
+      <input name="username"     placeholder="Username"     required class="w-full border p-2 rounded">
+      <input name="password"     placeholder="Senha"         type="password" required class="w-full border p-2 rounded">
+      <input name="name"         placeholder="Nome completo"           class="w-full border p-2 rounded">
+      <input name="registration" placeholder="Matrícula"                class="w-full border p-2 rounded">
+      <input name="role"         placeholder="Função"                   class="w-full border p-2 rounded">
+      <input name="schedule"     placeholder="Horário (e.g. 08:00-17:00)" class="w-full border p-2 rounded">
+      <input name="address"      placeholder="Endereço de residência"    class="w-full border p-2 rounded">
+      <input name="pass_type"    placeholder="Tipo de passagem"          class="w-full border p-2 rounded">
+      <button type="submit"
+              class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">
+        Salvar
+      </button>
+    </form>
+    <a href="{{ url_for('admin.list_users') }}"
+       class="inline-block mt-4 text-blue-600 hover:underline">
+      ← Voltar à Lista
+    </a>
+  </div>
+</body>
+</html>
