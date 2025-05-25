@@ -42,7 +42,10 @@ def create_app():
 
     # 7) Registra o blueprint do admin em /admin
     app.register_blueprint(admin_bp, url_prefix='/admin')
-
+    
+    from app.punch import bp as punch_bp
+    app.register_blueprint(punch_bp)
+    
     return app
 
 if __name__ == '__main__':

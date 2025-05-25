@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bater Ponto</title>
+</head>
+<body>
+  <h1>Bater Ponto</h1>
+  <video id="video" autoplay></video>
+  <button id="capture">Bater Ponto</button>
+  <script>
+    const video = document.getElementById('video');
+    const captureButton = document.getElementById('capture');
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => { video.srcObject = stream });
+
+    captureButton.addEventListener('click', () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext('2d').drawImage(video, 0, 0);
+      canvas.toBlob(blob => {
+        fetch('/punch', {
+          method: 'POST',
+          body: blob,
+        }).then(res => res.json())
+          .then(data => alert(data.message));
+      }, 'image/jpeg');
+    });
+  </script>
+</body>
+</html>

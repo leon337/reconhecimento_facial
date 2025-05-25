@@ -22,17 +22,14 @@ def allowed_file(filename):
         filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
     )
 
-
 @bp.route('/users')
 def list_users():
     users = User.query.all()
     return render_template('admin/users_list.html', users=users)
 
-
 @bp.route('/users/new', methods=['GET'])
 def new_user():
     return render_template('admin/users_new.html')
-
 
 @bp.route('/users', methods=['POST'])
 def create_user():
@@ -52,12 +49,10 @@ def create_user():
     flash('Usuário cadastrado com sucesso.', 'success')
     return redirect(url_for('admin.list_users'))
 
-
 @bp.route('/users/<int:user_id>/biometric', methods=['GET'])
 def biometric_form(user_id):
     user = User.query.get_or_404(user_id)
     return render_template('admin/users_biometric.html', user=user)
-
 
 @bp.route('/users/<int:user_id>/biometric', methods=['POST'])
 def save_biometric(user_id):
@@ -67,25 +62,23 @@ def save_biometric(user_id):
         flash('Arquivo inválido.', 'error')
         return redirect(url_for('admin.biometric_form', user_id=user_id))
 
-    # Salva arquivo no disco
     filename = secure_filename(file.filename)
     upload_folder = current_app.config['UPLOAD_FOLDER']
-    os.makedirs(upload_folder, exist_ok=True)
     filepath = os.path.join(upload_folder, filename)
     file.save(filepath)
 
-    # Configura caminho do modelo do face_recognition
+    # configura caminho do modelo de face_recognition
     model_path = Path(site.getsitepackages()[0]) / 'face_recognition_models'
     os.environ['FACE_RECOGNITION_MODEL_LOCATION'] = str(model_path)
 
-    # Carrega imagem e extrai encoding
+    # carrega imagem e extrai encoding
     image = face_recognition.load_image_file(filepath)
     encs = face_recognition.face_encodings(image)
     if not encs:
         flash('Nenhum rosto detectado.', 'error')
         return redirect(url_for('admin.biometric_form', user_id=user_id))
 
-    # Grava encoding e URL da foto no usuário
+    # salva encoding e URL da foto no usuário
     user.face_encoding = json.dumps(encs[0].tolist())
     user.photo_url = url_for('static', filename='uploads/' + filename)
     db.session.commit()
