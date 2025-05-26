@@ -27,3 +27,7 @@ COPY . .
 
 # Comando para iniciar a aplicação
 CMD ["gunicorn", "main:app"]
+
+# Passo de debug: instalação com logs verbosos
+RUN pip install --upgrade pip && \
+    pip install -vvv -r requirements.txt
