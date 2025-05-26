@@ -5,7 +5,8 @@ FROM python:3.10-slim AS builder
 RUN apt-get update && \
     apt-get install -y build-essential cmake libopenblas-dev liblapack-dev git && \
     rm -rf /var/lib/apt/lists/*
-
+    RUN pip install --upgrade pip && \
+    pip install -vvv -r requirements.txt
 WORKDIR /app
 
 # Copiar arquivos de dependências e o pacote local
