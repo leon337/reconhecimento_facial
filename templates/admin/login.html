@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Login administrativo</title>
+</head>
+<body>
+    <main>
+        <h1>Área administrativa</h1>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <p role="alert" data-category="{{ category }}">{{ message }}</p>
+            {% endfor %}
+        {% endwith %}
+
+        <form method="post" action="{{ url_for('admin.login') }}">
+            <input type="hidden" name="next" value="{{ next_url }}">
+
+            <label for="username">Usuário</label>
+            <input id="username" name="username" type="text" autocomplete="username" required>
+
+            <label for="password">Senha</label>
+            <input id="password" name="password" type="password" autocomplete="current-password" required>
+
+            <button type="submit">Entrar</button>
+        </form>
+    </main>
+</body>
+</html>
