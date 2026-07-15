@@ -12,6 +12,7 @@ def app(tmp_path):
             "SECRET_KEY": "test-secret",
             "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
             "UPLOAD_FOLDER": str(upload_folder),
+            "WTF_CSRF_ENABLED": False,
         }
     )
     yield application
