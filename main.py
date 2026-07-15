@@ -4,9 +4,12 @@ from pathlib import Path
 from typing import Any
 
 from flask import Flask
+from flask_wtf.csrf import CSRFProtect
 
 from app.admin.routes import bp as admin_bp
 from app.models import db
+
+csrf = CSRFProtect()
 
 
 def create_app(test_config: dict[str, Any] | None = None) -> Flask:
@@ -42,6 +45,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
         SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SAMESITE="Lax",
         SESSION_COOKIE_SECURE=app_env == "production",
+        WTF_CSRF_TIME_LIMIT=3600,
     )
 
     if test_config:
@@ -53,6 +57,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     os.environ.setdefault("FACE_RECOGNITION_MODEL_LOCATION", str(model_path))
 
     db.init_app(app)
+    csrf.init_app(app)
     app.register_blueprint(admin_bp, url_prefix="/admin")
 
     from app.punch import bp as punch_bp
