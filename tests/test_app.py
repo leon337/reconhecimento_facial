@@ -25,6 +25,13 @@ def test_create_app_uses_testing_configuration(app, tmp_path):
     assert app.config["UPLOAD_FOLDER"].startswith(str(tmp_path))
 
 
+def test_security_defaults_are_configured(app):
+    assert app.config["MAX_CONTENT_LENGTH"] == 5 * 1024 * 1024
+    assert app.config["SESSION_COOKIE_HTTPONLY"] is True
+    assert app.config["SESSION_COOKIE_SAMESITE"] == "Lax"
+    assert app.config["SESSION_COOKIE_SECURE"] is False
+
+
 def test_database_tables_are_created(app):
     with app.app_context():
         table_names = set(inspect(db.engine).get_table_names())
