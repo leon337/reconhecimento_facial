@@ -1,12 +1,48 @@
-from sqlalchemy import inspect
+from io import BytesIO
 
-from app.models import db
+from PIL import Image
+from sqlalchemy import inspect
+from werkzeug.datastructures import FileStorage
+
+from app.admin.routes import unique_upload_name, validated_image_extension
+from app.models import User, db
+from main import create_app
+
+
+def create_admin(app, username="admin", password="senha-segura"):
+    with app.app_context():
+        user = User(username=username, role="admin")
+        user.set_password(password)
+        db.session.add(user)
+        db.session.commit()
+
+
+def login_admin(client, username="admin", password="senha-segura"):
+    return client.post(
+        "/admin/login",
+        data={"username": username, "password": password},
+        follow_redirects=False,
+    )
+
+
+def make_image_file(image_format="PNG"):
+    stream = BytesIO()
+    Image.new("RGB", (2, 2)).save(stream, format=image_format)
+    stream.seek(0)
+    return FileStorage(stream=stream, filename=f"teste.{image_format.lower()}")
 
 
 def test_create_app_uses_testing_configuration(app, tmp_path):
     assert app.config["TESTING"] is True
     assert app.config["SQLALCHEMY_DATABASE_URI"] == "sqlite:///:memory:"
     assert app.config["UPLOAD_FOLDER"].startswith(str(tmp_path))
+
+
+def test_security_defaults_are_configured(app):
+    assert app.config["MAX_CONTENT_LENGTH"] == 5 * 1024 * 1024
+    assert app.config["SESSION_COOKIE_HTTPONLY"] is True
+    assert app.config["SESSION_COOKIE_SAMESITE"] == "Lax"
+    assert app.config["SESSION_COOKIE_SECURE"] is False
 
 
 def test_database_tables_are_created(app):
@@ -16,11 +52,110 @@ def test_database_tables_are_created(app):
     assert {"users", "pontos"}.issubset(table_names)
 
 
-def test_admin_user_list_route_responds(client):
+def test_admin_user_list_requires_login(client):
     response = client.get("/admin/users")
+
+    assert response.status_code == 302
+    assert "/admin/login" in response.headers["Location"]
+
+
+def test_admin_login_rejects_invalid_credentials(client):
+    response = login_admin(client, password="incorreta")
+
+    assert response.status_code == 401
+    assert b"Credenciais administrativas inv" in response.data
+
+
+def test_admin_login_allows_admin_and_protected_route(app, client):
+    create_admin(app)
+
+    login_response = login_admin(client)
+    users_response = client.get("/admin/users")
+
+    assert login_response.status_code == 302
+    assert login_response.headers["Location"].endswith("/admin/users")
+    assert users_response.status_code == 200
+
+
+def test_non_admin_user_cannot_access_admin_routes(app, client):
+    with app.app_context():
+        user = User(username="funcionario", role="funcionario")
+        user.set_password("senha-segura")
+        db.session.add(user)
+        db.session.commit()
+
+    response = login_admin(client, username="funcionario")
+
+    assert response.status_code == 401
+
+
+def test_admin_logout_clears_session(app, client):
+    create_admin(app)
+    login_admin(client)
+
+    logout_response = client.post("/admin/logout")
+    protected_response = client.get("/admin/users")
+
+    assert logout_response.status_code == 302
+    assert logout_response.headers["Location"].endswith("/admin/login")
+    assert protected_response.status_code == 302
+
+
+def test_csrf_rejects_login_post_without_token(tmp_path):
+    application = create_app(
+        {
+            "TESTING": True,
+            "SECRET_KEY": "csrf-test-secret",
+            "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
+            "UPLOAD_FOLDER": str(tmp_path / "uploads-csrf"),
+            "WTF_CSRF_ENABLED": True,
+        }
+    )
+
+    response = application.test_client().post(
+        "/admin/login",
+        data={"username": "admin", "password": "senha"},
+    )
+
+    assert response.status_code == 400
+
+
+def test_login_form_contains_csrf_token(tmp_path):
+    application = create_app(
+        {
+            "TESTING": True,
+            "SECRET_KEY": "csrf-form-secret",
+            "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
+            "UPLOAD_FOLDER": str(tmp_path / "uploads-form"),
+            "WTF_CSRF_ENABLED": True,
+        }
+    )
+
+    response = application.test_client().get("/admin/login")
+
     assert response.status_code == 200
+    assert b'name="csrf_token"' in response.data
 
 
-def test_punch_page_responds(client):
+def test_validated_image_extension_accepts_real_png():
+    assert validated_image_extension(make_image_file("PNG")) == ".png"
+
+
+def test_validated_image_extension_rejects_fake_image():
+    fake = FileStorage(stream=BytesIO(b"nao-e-imagem"), filename="foto.jpg")
+
+    assert validated_image_extension(fake) is None
+
+
+def test_unique_upload_name_prevents_overwrite():
+    first = unique_upload_name(".jpg")
+    second = unique_upload_name(".jpg")
+
+    assert first != second
+    assert first.endswith(".jpg")
+    assert second.endswith(".jpg")
+
+
+def test_punch_page_remains_public(client):
     response = client.get("/punch")
     assert response.status_code == 200
