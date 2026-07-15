@@ -1,5 +1,10 @@
-from sqlalchemy import inspect
+from io import BytesIO
 
+from PIL import Image
+from sqlalchemy import inspect
+from werkzeug.datastructures import FileStorage
+
+from app.admin.routes import unique_upload_name, validated_image_extension
 from app.models import User, db
 from main import create_app
 
@@ -18,6 +23,13 @@ def login_admin(client, username="admin", password="senha-segura"):
         data={"username": username, "password": password},
         follow_redirects=False,
     )
+
+
+def make_image_file(image_format="PNG"):
+    stream = BytesIO()
+    Image.new("RGB", (2, 2)).save(stream, format=image_format)
+    stream.seek(0)
+    return FileStorage(stream=stream, filename=f"teste.{image_format.lower()}")
 
 
 def test_create_app_uses_testing_configuration(app, tmp_path):
@@ -123,6 +135,25 @@ def test_login_form_contains_csrf_token(tmp_path):
 
     assert response.status_code == 200
     assert b'name="csrf_token"' in response.data
+
+
+def test_validated_image_extension_accepts_real_png():
+    assert validated_image_extension(make_image_file("PNG")) == ".png"
+
+
+def test_validated_image_extension_rejects_fake_image():
+    fake = FileStorage(stream=BytesIO(b"nao-e-imagem"), filename="foto.jpg")
+
+    assert validated_image_extension(fake) is None
+
+
+def test_unique_upload_name_prevents_overwrite():
+    first = unique_upload_name(".jpg")
+    second = unique_upload_name(".jpg")
+
+    assert first != second
+    assert first.endswith(".jpg")
+    assert second.endswith(".jpg")
 
 
 def test_punch_page_remains_public(client):
