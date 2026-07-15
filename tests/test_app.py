@@ -1,6 +1,7 @@
 from sqlalchemy import inspect
 
 from app.models import User, db
+from main import create_app
 
 
 def create_admin(app, username="admin", password="senha-segura"):
@@ -86,6 +87,42 @@ def test_admin_logout_clears_session(app, client):
     assert logout_response.status_code == 302
     assert logout_response.headers["Location"].endswith("/admin/login")
     assert protected_response.status_code == 302
+
+
+def test_csrf_rejects_login_post_without_token(tmp_path):
+    application = create_app(
+        {
+            "TESTING": True,
+            "SECRET_KEY": "csrf-test-secret",
+            "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
+            "UPLOAD_FOLDER": str(tmp_path / "uploads-csrf"),
+            "WTF_CSRF_ENABLED": True,
+        }
+    )
+
+    response = application.test_client().post(
+        "/admin/login",
+        data={"username": "admin", "password": "senha"},
+    )
+
+    assert response.status_code == 400
+
+
+def test_login_form_contains_csrf_token(tmp_path):
+    application = create_app(
+        {
+            "TESTING": True,
+            "SECRET_KEY": "csrf-form-secret",
+            "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
+            "UPLOAD_FOLDER": str(tmp_path / "uploads-form"),
+            "WTF_CSRF_ENABLED": True,
+        }
+    )
+
+    response = application.test_client().get("/admin/login")
+
+    assert response.status_code == 200
+    assert b'name="csrf_token"' in response.data
 
 
 def test_punch_page_remains_public(client):
