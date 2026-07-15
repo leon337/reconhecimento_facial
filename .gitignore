@@ -1,21 +1,43 @@
-# Ambientes virtuais
+# Ambientes virtuais e variáveis locais
+.venv/
 venv/
+env/
 .env
+.env.*
+!.env.example
 
-# Arquivos temporários
+# Python
 __pycache__/
-*.pyc
-*.pyo
+*.py[cod]
 *.pyd
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+build/
+dist/
+*.egg-info/
 
-# Arquivos de sistema
+# Banco de dados e estado local
+instance/
+*.db
+*.sqlite
+*.sqlite3
+
+# Uploads e dados biométricos locais
+app/static/uploads/
+uploads/
+
+# Arquivos compactados e backups
+*.zip
+*.tar
+*.tar.gz
+*.bak
+
+# Ferramentas e sistema operacional
+.vscode/
+.idea/
 .DS_Store
 *.swp
-
-# Imagens e saídas locais (ajuste se quiser manter)
-*.jpg
-*.png
-
-uploads/
-uploads/
-uploads/
