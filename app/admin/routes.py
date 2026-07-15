@@ -4,6 +4,7 @@ import json
 import os
 import site
 from pathlib import Path
+from uuid import uuid4
 
 import face_recognition
 from flask import (
@@ -15,13 +16,14 @@ from flask import (
     session,
     url_for,
 )
-from werkzeug.utils import secure_filename
+from PIL import Image, UnidentifiedImageError
 
 from app.admin import bp
 from app.admin.auth import admin_login_required, is_safe_redirect_target
 from app.models import User, db
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
+ALLOWED_IMAGE_FORMATS = {"JPEG": ".jpg", "PNG": ".png"}
 
 
 def allowed_file(filename):
@@ -29,6 +31,24 @@ def allowed_file(filename):
         "." in filename
         and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
     )
+
+
+def validated_image_extension(file_storage):
+    """Confirma que o conteúdo enviado é uma imagem JPEG ou PNG válida."""
+    try:
+        image = Image.open(file_storage.stream)
+        image.verify()
+        extension = ALLOWED_IMAGE_FORMATS.get(image.format)
+    except (UnidentifiedImageError, OSError, ValueError):
+        extension = None
+    finally:
+        file_storage.stream.seek(0)
+
+    return extension
+
+
+def unique_upload_name(extension):
+    return f"{uuid4().hex}{extension}"
 
 
 @bp.route("/login", methods=["GET", "POST"])
@@ -107,21 +127,32 @@ def biometric_form(user_id):
 def save_biometric(user_id):
     user = User.query.get_or_404(user_id)
     file = request.files.get("file")
-    if not file or not allowed_file(file.filename):
+    if not file or not file.filename or not allowed_file(file.filename):
         flash("Arquivo inválido.", "error")
         return redirect(url_for("admin.biometric_form", user_id=user_id))
 
-    filename = secure_filename(file.filename)
-    upload_folder = current_app.config["UPLOAD_FOLDER"]
-    filepath = os.path.join(upload_folder, filename)
+    extension = validated_image_extension(file)
+    if extension is None:
+        flash("O conteúdo enviado não é uma imagem JPEG ou PNG válida.", "error")
+        return redirect(url_for("admin.biometric_form", user_id=user_id))
+
+    filename = unique_upload_name(extension)
+    filepath = Path(current_app.config["UPLOAD_FOLDER"]) / filename
     file.save(filepath)
 
     model_path = Path(site.getsitepackages()[0]) / "face_recognition_models"
     os.environ["FACE_RECOGNITION_MODEL_LOCATION"] = str(model_path)
 
-    image = face_recognition.load_image_file(filepath)
-    encs = face_recognition.face_encodings(image)
+    try:
+        image = face_recognition.load_image_file(filepath)
+        encs = face_recognition.face_encodings(image)
+    except (OSError, ValueError):
+        filepath.unlink(missing_ok=True)
+        flash("Não foi possível processar a imagem enviada.", "error")
+        return redirect(url_for("admin.biometric_form", user_id=user_id))
+
     if not encs:
+        filepath.unlink(missing_ok=True)
         flash("Nenhum rosto detectado.", "error")
         return redirect(url_for("admin.biometric_form", user_id=user_id))
 
