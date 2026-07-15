@@ -25,14 +25,23 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     instance_dir = basedir / "instance"
     instance_dir.mkdir(exist_ok=True)
 
+    app_env = os.environ.get("APP_ENV", "development").lower()
+    secret_key = os.environ.get("SECRET_KEY")
+    if app_env == "production" and not secret_key:
+        raise RuntimeError("SECRET_KEY é obrigatória em produção.")
+
     app.config.from_mapping(
-        SECRET_KEY=os.environ.get("SECRET_KEY", "development-only-change-me"),
+        SECRET_KEY=secret_key or "development-only-change-me",
         SQLALCHEMY_DATABASE_URI=os.environ.get(
             "DATABASE_URL",
             f"sqlite:///{instance_dir / 'ponto.db'}",
         ),
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
         UPLOAD_FOLDER=str(basedir / "static" / "uploads"),
+        MAX_CONTENT_LENGTH=5 * 1024 * 1024,
+        SESSION_COOKIE_HTTPONLY=True,
+        SESSION_COOKIE_SAMESITE="Lax",
+        SESSION_COOKIE_SECURE=app_env == "production",
     )
 
     if test_config:
