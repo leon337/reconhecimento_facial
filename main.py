@@ -1,6 +1,7 @@
 import os
 import site
 from pathlib import Path
+from typing import Any
 
 from flask import Flask
 
@@ -8,8 +9,12 @@ from app.admin.routes import bp as admin_bp
 from app.models import db
 
 
-def create_app() -> Flask:
-    """Cria e configura a aplicação Flask."""
+def create_app(test_config: dict[str, Any] | None = None) -> Flask:
+    """Cria e configura a aplicação Flask.
+
+    ``test_config`` permite substituir configurações sem acessar banco ou
+    diretórios reais durante testes automatizados.
+    """
     app = Flask(
         __name__,
         static_folder="static",
@@ -20,19 +25,20 @@ def create_app() -> Flask:
     instance_dir = basedir / "instance"
     instance_dir.mkdir(exist_ok=True)
 
-    app.config["SECRET_KEY"] = os.environ.get(
-        "SECRET_KEY",
-        "development-only-change-me",
+    app.config.from_mapping(
+        SECRET_KEY=os.environ.get("SECRET_KEY", "development-only-change-me"),
+        SQLALCHEMY_DATABASE_URI=os.environ.get(
+            "DATABASE_URL",
+            f"sqlite:///{instance_dir / 'ponto.db'}",
+        ),
+        SQLALCHEMY_TRACK_MODIFICATIONS=False,
+        UPLOAD_FOLDER=str(basedir / "static" / "uploads"),
     )
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
-        "DATABASE_URL",
-        f"sqlite:///{instance_dir / 'ponto.db'}",
-    )
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-    upload_folder = basedir / "static" / "uploads"
-    upload_folder.mkdir(parents=True, exist_ok=True)
-    app.config["UPLOAD_FOLDER"] = str(upload_folder)
+    if test_config:
+        app.config.update(test_config)
+
+    Path(app.config["UPLOAD_FOLDER"]).mkdir(parents=True, exist_ok=True)
 
     model_path = Path(site.getsitepackages()[0]) / "face_recognition_models"
     os.environ.setdefault("FACE_RECOGNITION_MODEL_LOCATION", str(model_path))
@@ -50,7 +56,6 @@ def create_app() -> Flask:
     return app
 
 
-# Objeto WSGI importável por Gunicorn: gunicorn main:app
 app = create_app()
 
 
