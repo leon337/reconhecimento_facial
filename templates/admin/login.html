@@ -16,6 +16,7 @@
         {% endwith %}
 
         <form method="post" action="{{ url_for('admin.login') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="next" value="{{ next_url }}">
 
             <label for="username">Usuário</label>
