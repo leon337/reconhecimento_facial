@@ -23,7 +23,8 @@
           method="post"
           enctype="multipart/form-data"
           class="space-y-4">
-      <input type="file" name="file" accept="image/*" required
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="file" name="file" accept="image/png,image/jpeg" required
              class="w-full border p-2 rounded">
       <button type="submit"
               class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
