@@ -1,34 +1,28 @@
-# Dockerfile completo com debug
-FROM python:3.10-slim AS builder
+FROM python:3.10-slim
 
-# Instalar dependências de sistema
-RUN apt-get update && \
-    apt-get install -y build-essential cmake libopenblas-dev liblapack-dev git && \
-    rm -rf /var/lib/apt/lists/*
-    RUN pip install --upgrade pip && \
-    pip install -vvv -r requirements.txt
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
+
 WORKDIR /app
 
-# Copiar arquivos de dependências e o pacote local
-COPY requirements.txt .
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        build-essential \
+        cmake \
+        git \
+        libopenblas-dev \
+        liblapack-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt ./
 COPY app/libs/face_recognition_models ./app/libs/face_recognition_models
 
-# Debug: listar estrutura de /app
-RUN echo "=== LIST /app ===" && ls -R /app
-# Debug: exibir conteúdo de requirements.txt
-RUN echo "=== CAT requirements.txt ===" && cat /app/requirements.txt
-# Debug: listar estrutura do pacote local
-RUN echo "=== LIST face_recognition_models ===" && ls -R /app/app/libs/face_recognition_models
+RUN python -m pip install --upgrade pip setuptools wheel && \
+    python -m pip install -r requirements.txt
 
-# Instalar dependências Python
-RUN pip install --upgrade pip && pip install -r requirements.txt
-
-# Copiar restante do código
 COPY . .
 
-# Comando para iniciar a aplicação
-CMD ["gunicorn", "main:app"]
+EXPOSE 8000
 
-# Passo de debug: instalação com logs verbosos
-RUN pip install --upgrade pip && \
-    pip install -vvv -r requirements.txt
+CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:${PORT:-8000} --workers ${WEB_CONCURRENCY:-1} --timeout 120 main:app"]
