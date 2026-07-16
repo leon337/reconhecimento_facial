@@ -46,6 +46,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
         SESSION_COOKIE_SAMESITE="Lax",
         SESSION_COOKIE_SECURE=app_env == "production",
         WTF_CSRF_TIME_LIMIT=3600,
+        PUNCH_DUPLICATE_WINDOW_SECONDS=60,
     )
 
     if test_config:
