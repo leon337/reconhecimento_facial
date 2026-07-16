@@ -1,7 +1,10 @@
+from datetime import datetime
+
 from flask import current_app, jsonify, render_template, request
 
 from app.models import Ponto, db
 from app.punch import bp
+from app.punch.rules import check_duplicate_punch
 from app.punch.service import recognize_registered_user
 
 ALLOWED_TYPES = {"ENTRADA", "SAIDA"}
@@ -40,7 +43,23 @@ def punch_submit():
             message=ERROR_MESSAGES[result.reason],
         ), 422
 
-    record = Ponto(user_id=result.user.id, tipo=punch_type)
+    now = datetime.utcnow()
+    duplicate = check_duplicate_punch(
+        user_id=result.user.id,
+        now=now,
+        window_seconds=int(
+            current_app.config.get("PUNCH_DUPLICATE_WINDOW_SECONDS", 60)
+        ),
+    )
+    if duplicate.blocked:
+        return jsonify(
+            status="error",
+            code="duplicate_punch",
+            message="Aguarde antes de registrar um novo ponto.",
+            retry_after_seconds=duplicate.retry_after_seconds,
+        ), 409
+
+    record = Ponto(user_id=result.user.id, tipo=punch_type, timestamp=now)
     db.session.add(record)
     db.session.commit()
 
