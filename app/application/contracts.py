@@ -92,3 +92,25 @@ class AuditSink(Protocol):
         metadata: dict[str, Any] | None = None,
     ) -> None:
         """Registra um evento sem expor dados biométricos em texto aberto."""
+
+
+@runtime_checkable
+class TenantContextProvider(Protocol):
+    """Fornece o escopo organizacional validado da operação atual."""
+
+    def current_tenant_id(self) -> str:
+        """Retorna a empresa ativa; nunca deve usar valor implícito global."""
+
+    def current_worksite_id(self) -> str | None:
+        """Retorna a obra/unidade ativa quando a operação exigir esse escopo."""
+
+
+@runtime_checkable
+class IdempotencyStore(Protocol):
+    """Reserva chaves de idempotência para impedir efeitos duplicados."""
+
+    def reserve(self, *, scope: str, key: str, expires_at: datetime) -> bool:
+        """Retorna True apenas para a primeira reserva válida da chave."""
+
+    def release(self, *, scope: str, key: str) -> None:
+        """Libera uma reserva quando a transação principal não for concluída."""
