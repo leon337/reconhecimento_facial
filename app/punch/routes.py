@@ -2,7 +2,7 @@ from datetime import datetime
 
 from flask import current_app, jsonify, render_template, request
 
-from app.models import Ponto, db
+from app.models import Company, Ponto, Worksite, db
 from app.punch import bp
 from app.punch.rules import check_duplicate_punch
 from app.punch.service import recognize_registered_user
@@ -15,6 +15,9 @@ ERROR_MESSAGES = {
     "no_registered_faces": "Nenhuma biometria está cadastrada.",
     "unknown_face": "Rosto não reconhecido.",
     "company_scope_required": "Informe a empresa antes de selecionar uma obra.",
+    "company_not_found": "Empresa não encontrada.",
+    "worksite_not_found": "Obra não encontrada.",
+    "worksite_company_mismatch": "A obra não pertence à empresa informada.",
 }
 
 
@@ -29,6 +32,27 @@ def _optional_positive_int(field_name):
         return None
 
     return value if value > 0 else None
+
+
+def _validate_organizational_scope(company_id, worksite_id):
+    """Valida IDs organizacionais informados sem afetar chamadas legadas sem escopo."""
+    if company_id is None:
+        return None
+
+    company = db.session.get(Company, company_id)
+    if company is None:
+        return "company_not_found"
+
+    if worksite_id is None:
+        return None
+
+    worksite = db.session.get(Worksite, worksite_id)
+    if worksite is None:
+        return "worksite_not_found"
+    if worksite.company_id != company_id:
+        return "worksite_company_mismatch"
+
+    return None
 
 
 @bp.route("/punch", methods=["GET"])
@@ -56,6 +80,14 @@ def punch_submit():
             status="error",
             code="company_scope_required",
             message=ERROR_MESSAGES["company_scope_required"],
+        ), 400
+
+    scope_error = _validate_organizational_scope(company_id, worksite_id)
+    if scope_error is not None:
+        return jsonify(
+            status="error",
+            code=scope_error,
+            message=ERROR_MESSAGES[scope_error],
         ), 400
 
     result = recognize_registered_user(
