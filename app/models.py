@@ -14,12 +14,38 @@ db = SQLAlchemy()
 
 
 def _resolved_id(entity, relationship_name: str, field_name: str):
-    """Resolve a FK mesmo antes de o SQLAlchemy preencher o campo durante o flush."""
+    """Resolve uma FK mesmo antes de o SQLAlchemy preencher o campo no flush."""
     value = getattr(entity, field_name)
     if value is not None:
         return value
     related = getattr(entity, relationship_name)
     return related.id if related is not None else None
+
+
+def _has_relation_or_id(entity, relationship_name: str, field_name: str) -> bool:
+    return (
+        getattr(entity, relationship_name) is not None
+        or getattr(entity, field_name) is not None
+    )
+
+
+def _same_relation(left, right, relationship_name: str, field_name: str) -> bool:
+    """Compara escopos persistidos ou objetos ainda sem chave primária."""
+    left_related = getattr(left, relationship_name)
+    right_related = getattr(right, relationship_name)
+
+    if left_related is not None and right_related is not None:
+        if left_related is right_related:
+            return True
+        left_id = getattr(left_related, "id", None)
+        right_id = getattr(right_related, "id", None)
+        if left_id is None or right_id is None:
+            return False
+        return left_id == right_id
+
+    return _resolved_id(left, relationship_name, field_name) == _resolved_id(
+        right, relationship_name, field_name
+    )
 
 
 class Company(db.Model):
@@ -86,17 +112,15 @@ class Employee(db.Model):
     user = db.relationship("User", back_populates="employee", uselist=False)
 
     def validate_organizational_scope(self):
-        company_id = _resolved_id(self, "company", "company_id")
-        worksite_id = _resolved_id(self, "worksite", "worksite_id")
+        has_worksite = _has_relation_or_id(self, "worksite", "worksite_id")
+        has_company = _has_relation_or_id(self, "company", "company_id")
 
-        if worksite_id is not None and company_id is None:
+        if has_worksite and not has_company:
             raise ValueError("worksite_requires_company")
-        if self.worksite is not None:
-            worksite_company_id = _resolved_id(
-                self.worksite, "company", "company_id"
-            )
-            if worksite_company_id != company_id:
-                raise ValueError("worksite_company_mismatch")
+        if self.worksite is not None and not _same_relation(
+            self, self.worksite, "company", "company_id"
+        ):
+            raise ValueError("worksite_company_mismatch")
 
 
 class User(db.Model):
@@ -139,27 +163,19 @@ class User(db.Model):
         return query
 
     def validate_organizational_scope(self):
-        company_id = _resolved_id(self, "company", "company_id")
-        worksite_id = _resolved_id(self, "worksite", "worksite_id")
+        has_worksite = _has_relation_or_id(self, "worksite", "worksite_id")
+        has_company = _has_relation_or_id(self, "company", "company_id")
 
-        if worksite_id is not None and company_id is None:
+        if has_worksite and not has_company:
             raise ValueError("worksite_requires_company")
-        if self.worksite is not None:
-            worksite_company_id = _resolved_id(
-                self.worksite, "company", "company_id"
-            )
-            if worksite_company_id != company_id:
-                raise ValueError("worksite_company_mismatch")
+        if self.worksite is not None and not _same_relation(
+            self, self.worksite, "company", "company_id"
+        ):
+            raise ValueError("worksite_company_mismatch")
         if self.employee is not None:
-            employee_company_id = _resolved_id(
-                self.employee, "company", "company_id"
-            )
-            employee_worksite_id = _resolved_id(
-                self.employee, "worksite", "worksite_id"
-            )
-            if company_id != employee_company_id:
+            if not _same_relation(self, self.employee, "company", "company_id"):
                 raise ValueError("user_employee_company_mismatch")
-            if worksite_id != employee_worksite_id:
+            if not _same_relation(self, self.employee, "worksite", "worksite_id"):
                 raise ValueError("user_employee_worksite_mismatch")
 
     def set_password(self, pw):
@@ -212,23 +228,19 @@ class Ponto(db.Model):
         )
 
     def validate_organizational_scope(self):
-        company_id = _resolved_id(self, "company", "company_id")
-        worksite_id = _resolved_id(self, "worksite", "worksite_id")
+        has_worksite = _has_relation_or_id(self, "worksite", "worksite_id")
+        has_company = _has_relation_or_id(self, "company", "company_id")
 
-        if worksite_id is not None and company_id is None:
+        if has_worksite and not has_company:
             raise ValueError("worksite_requires_company")
-        if self.worksite is not None:
-            worksite_company_id = _resolved_id(
-                self.worksite, "company", "company_id"
-            )
-            if worksite_company_id != company_id:
-                raise ValueError("worksite_company_mismatch")
+        if self.worksite is not None and not _same_relation(
+            self, self.worksite, "company", "company_id"
+        ):
+            raise ValueError("worksite_company_mismatch")
         if self.user is not None:
-            user_company_id = _resolved_id(self.user, "company", "company_id")
-            user_worksite_id = _resolved_id(self.user, "worksite", "worksite_id")
-            if company_id != user_company_id:
+            if not _same_relation(self, self.user, "company", "company_id"):
                 raise ValueError("ponto_user_company_mismatch")
-            if worksite_id != user_worksite_id:
+            if not _same_relation(self, self.user, "worksite", "worksite_id"):
                 raise ValueError("ponto_user_worksite_mismatch")
 
 
