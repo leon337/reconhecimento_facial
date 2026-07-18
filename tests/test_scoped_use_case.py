@@ -89,7 +89,7 @@ def test_executes_command_in_organizational_scope():
 
     result = use_case.execute(command, lambda context: context.scope_key)
 
-    assert result == "empresa-1:obra-7"
+    assert result == "tenant:empresa-1:worksite:obra-7"
     assert uow.committed is True
     assert audit.events[0]["tenant_id"] == "empresa-1"
     assert audit.events[0]["metadata"]["worksite_id"] == "obra-7"
@@ -115,7 +115,7 @@ def test_releases_idempotency_key_when_operation_fails():
     with pytest.raises(RuntimeError, match="falha sintética"):
         use_case.execute(command, fail)
 
-    assert ("empresa-1:obra-7", "req-3") not in idempotency.keys
+    assert ("tenant:empresa-1:worksite:obra-7", "req-3") not in idempotency.keys
     assert uow.rolled_back is True
 
 
