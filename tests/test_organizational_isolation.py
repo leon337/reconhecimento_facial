@@ -1,9 +1,11 @@
+import io
 import json
 
 import numpy as np
 
 from app.models import Company, Ponto, User, Worksite, db
-from app.punch import service
+from app.punch import routes, service
+from app.punch.service import RecognitionResult
 
 
 def _user(username, company, worksite):
@@ -53,6 +55,36 @@ def test_ponto_inherits_organizational_scope_from_user(app):
         assert ponto.company_id == company.id
         assert ponto.worksite_id == worksite.id
         assert ponto.user_id == user.id
+
+
+def test_punch_endpoint_persists_user_organizational_scope(app, client, monkeypatch):
+    with app.app_context():
+        company = Company(name="Potiguar", slug="potiguar")
+        worksite = Worksite(name="Barricadas", company=company)
+        user = _user("leo-punch", company, worksite)
+        db.session.commit()
+        user_id = user.id
+        company_id = company.id
+        worksite_id = worksite.id
+
+    def recognize(*args, **kwargs):
+        user = db.session.get(User, user_id)
+        return RecognitionResult(user, "matched")
+
+    monkeypatch.setattr(routes, "recognize_registered_user", recognize)
+
+    response = client.post(
+        "/punch",
+        data={"tipo": "ENTRADA", "image": (io.BytesIO(b"synthetic"), "test.jpg")},
+        content_type="multipart/form-data",
+    )
+
+    assert response.status_code == 201
+    with app.app_context():
+        ponto = Ponto.query.one()
+        assert ponto.user_id == user_id
+        assert ponto.company_id == company_id
+        assert ponto.worksite_id == worksite_id
 
 
 def test_recognition_rejects_worksite_without_company_scope(app, monkeypatch):
