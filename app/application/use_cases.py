@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 from datetime import timedelta
 from typing import Any, Callable, Generic, TypeVar
 
+from app.application.context import OrganizationalContext
 from app.application.contracts import (
     AuditSink,
     Clock,
@@ -17,7 +18,6 @@ from app.application.contracts import (
     TenantContextProvider,
     UnitOfWork,
 )
-from app.domain.organization import OrganizationalContext
 
 ResultT = TypeVar("ResultT")
 
