@@ -4,12 +4,24 @@ from pathlib import Path
 from typing import Any
 
 from flask import Flask
+from flask_migrate import Migrate
 from flask_wtf.csrf import CSRFProtect
 
 from app.admin.routes import bp as admin_bp
 from app.models import db
 
 csrf = CSRFProtect()
+migrate = Migrate()
+
+
+def _database_url(instance_dir: Path) -> str:
+    """Retorna uma URL SQLAlchemy compatível com SQLite e PostgreSQL."""
+    url = os.environ.get("DATABASE_URL")
+    if not url:
+        return f"sqlite:///{instance_dir / 'ponto.db'}"
+    if url.startswith("postgres://"):
+        return "postgresql://" + url.removeprefix("postgres://")
+    return url
 
 
 def create_app(test_config: dict[str, Any] | None = None) -> Flask:
@@ -35,11 +47,9 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
 
     app.config.from_mapping(
         SECRET_KEY=secret_key or "development-only-change-me",
-        SQLALCHEMY_DATABASE_URI=os.environ.get(
-            "DATABASE_URL",
-            f"sqlite:///{instance_dir / 'ponto.db'}",
-        ),
+        SQLALCHEMY_DATABASE_URI=_database_url(instance_dir),
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
+        AUTO_CREATE_SCHEMA=app_env != "production",
         UPLOAD_FOLDER=str(basedir / "static" / "uploads"),
         MAX_CONTENT_LENGTH=5 * 1024 * 1024,
         SESSION_COOKIE_HTTPONLY=True,
@@ -58,6 +68,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     os.environ.setdefault("FACE_RECOGNITION_MODEL_LOCATION", str(model_path))
 
     db.init_app(app)
+    migrate.init_app(app, db)
     csrf.init_app(app)
     app.register_blueprint(admin_bp, url_prefix="/admin")
 
@@ -65,8 +76,9 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
 
     app.register_blueprint(punch_bp)
 
-    with app.app_context():
-        db.create_all()
+    if app.config["AUTO_CREATE_SCHEMA"]:
+        with app.app_context():
+            db.create_all()
 
     return app
 
