@@ -2,17 +2,9 @@
 
 ## 1. Objetivo
 
-Introduzir limites arquiteturais e contratos testáveis antes da migração para PostgreSQL, multiempresa e biometria criptografada.
+Introduzir limites arquiteturais e contratos testáveis antes da migração para PostgreSQL, multiempresa e biometria criptografada, preservando o comportamento legado.
 
-## 2. Escopo deste primeiro bloco
-
-- criar as camadas `domain`, `application` e `infrastructure`;
-- declarar contratos para tempo, repositórios, transações, armazenamento privado, criptografia e auditoria;
-- adicionar testes unitários dos contratos;
-- preservar integralmente o comportamento legado;
-- não alterar modelos SQLAlchemy nem schema nesta etapa.
-
-## 3. Regra de dependências
+## 2. Camadas
 
 ```text
 web/API
@@ -25,84 +17,95 @@ infrastructure
   ↑ implementa contratos da application
 ```
 
-### Permitido
+### Regras
 
-- `application` importar `domain`;
-- `infrastructure` importar contratos de `application`;
-- web/API importar casos de uso de `application`.
+- `domain` não importa Flask, SQLAlchemy, filesystem ou camadas externas;
+- `application` depende de contratos e do domínio, não de infraestrutura;
+- `infrastructure` contém adaptadores concretos;
+- rotas e modelos legados permanecem operacionais durante a migração.
 
-### Proibido
+## 3. Contratos disponíveis
 
-- `domain` importar Flask, SQLAlchemy ou filesystem;
-- `application` importar implementações concretas de infraestrutura;
-- regras de negócio dependerem diretamente de `datetime.now()`;
-- casos de uso gravarem arquivos em `static/uploads`;
-- auditoria registrar encoding, imagem facial ou segredo em texto aberto.
+- `Clock`: tempo timezone-aware e injetável;
+- `Repository`: persistência abstrata;
+- `UnitOfWork`: transações com commit e rollback;
+- `ObjectStorage`: armazenamento privado por chave opaca;
+- `SecretBox`: criptografia contextual;
+- `AuditSink`: auditoria imutável sem biometria aberta;
+- `TenantContextProvider`: empresa e obra ativas;
+- `IdempotencyStore`: reserva de operações mutáveis.
 
-## 4. Contratos iniciais
+## 4. Contexto organizacional
 
-### Clock
-
-Fornece tempo timezone-aware e injetável, permitindo testes determinísticos.
-
-### Repository
-
-Abstrai acesso a entidades e exige filtros de escopo organizacional nas futuras implementações multiempresa.
-
-### UnitOfWork
-
-Delimita transações e padroniza `commit` e `rollback`.
-
-### ObjectStorage
-
-Define armazenamento privado por chave opaca, sem exposição pública direta.
-
-### SecretBox
-
-Define criptografia autenticada de dados sensíveis em repouso.
-
-### AuditSink
-
-Registra eventos imutáveis sem incluir payload biométrico.
-
-## 5. Estratégia de migração incremental
+`OrganizationalContext` exige empresa explícita e aceita obra opcional.
 
 ```text
-contratos
-→ adaptadores para o legado
-→ casos de uso
-→ PostgreSQL e Alembic
-→ multiempresa
-→ biometria segregada
+empresa
+empresa:obra
 ```
 
-As rotas existentes continuarão funcionando durante a transição. Cada nova implementação deverá entrar por contrato, com testes unitários e de integração.
+A aplicação não deverá depender de empresa global implícita.
 
-## 6. Testes
+## 5. Caso de uso mínimo
 
-O arquivo `tests/test_architecture_contracts.py` valida:
+`ExecuteScopedCommand` estabelece o pipeline para operações mutáveis:
 
-- relógio com timezone;
-- ciclo de vida de armazenamento privado;
-- round trip de criptografia sintética;
-- auditoria sem payload biométrico.
+```text
+comando
+→ contexto empresa/obra
+→ reserva de idempotência
+→ unidade de trabalho
+→ operação
+→ auditoria
+→ commit
+```
 
-As implementações de teste são intencionalmente simples e não representam algoritmos de produção.
+Em falha, ocorre rollback e a chave idempotente é liberada. Esse caso de uso ainda não substitui as rotas atuais.
 
-## 7. Gates
+## 6. Adaptadores do legado
+
+- `LegacyUserRepository` adapta o modelo `User` ao contrato `Repository`;
+- `LegacySqlAlchemyUnitOfWork` adapta a sessão atual ao contrato transacional;
+- filtros organizacionais inexistentes são rejeitados explicitamente;
+- os adaptadores serão substituídos após PostgreSQL e Alembic na FASE 9.1.
+
+## 7. Testes
+
+Foram adicionados:
+
+- testes unitários dos contratos;
+- testes do contexto organizacional;
+- testes de idempotência;
+- testes do caso de uso escopado;
+- testes de integração dos adaptadores legados;
+- testes AST das regras de dependência;
+- suíte legada e build Docker no CI.
+
+## 8. Limites desta fase
+
+Não fazem parte da FASE 9.0:
+
+- migrations;
+- PostgreSQL;
+- alteração de schema;
+- tabelas de empresa e obra;
+- criptografia real da biometria;
+- substituição imediata das rotas;
+- dados reais.
+
+## 9. Gates
 
 ```text
 LAYER_BOUNDARIES_DOCUMENTED=PASS
 APPLICATION_CONTRACTS_CREATED=PASS
-CONTRACT_UNIT_TESTS_CREATED=PASS
+ORGANIZATIONAL_CONTEXT_CREATED=PASS
+IDEMPOTENCY_CONTRACT_CREATED=PASS
+MINIMUM_USE_CASE_CREATED=PASS
+LEGACY_ADAPTERS_CREATED=PASS
+ARCHITECTURE_DEPENDENCY_TESTS_CREATED=PASS
 LEGACY_BEHAVIOR_CHANGED=NO
 DATABASE_SCHEMA_CHANGED=NO
 REAL_BIOMETRIC_DATA_USED=NO
 ```
 
-## 8. Próxima entrega da FASE 9.0
-
-- criar casos de uso mínimos para cadastro biométrico e registro de ponto;
-- criar adaptadores do legado sem substituir as rotas de uma vez;
-- adicionar teste arquitetural de dependências;
-- definir contratos de contexto organizacional e idempotência.
+O encerramento da fase depende do CI final, revisão integral e aprovação explícita para merge.
