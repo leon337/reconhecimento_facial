@@ -99,7 +99,9 @@ def test_ponto_rejects_scope_different_from_user(app):
             db.session.flush()
 
 
-def test_punch_endpoint_persists_user_organizational_scope(app, client, monkeypatch):
+def test_punch_endpoint_persists_user_organizational_scope(
+    app, client, monkeypatch
+):
     with app.app_context():
         company = Company(name="Potiguar", slug="potiguar")
         worksite = Worksite(name="Barricadas", company=company)
@@ -117,7 +119,10 @@ def test_punch_endpoint_persists_user_organizational_scope(app, client, monkeypa
 
     response = client.post(
         "/punch",
-        data={"tipo": "ENTRADA", "image": (io.BytesIO(b"synthetic"), "test.jpg")},
+        data={
+            "tipo": "ENTRADA",
+            "image": (io.BytesIO(b"synthetic"), "test.jpg"),
+        },
         content_type="multipart/form-data",
     )
 
