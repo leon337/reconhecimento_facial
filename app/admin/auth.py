@@ -13,6 +13,12 @@ def is_safe_redirect_target(target: str) -> bool:
     return redirect_url.scheme in {"http", "https"} and host_url.netloc == redirect_url.netloc
 
 
+def sync_admin_scope(user: User) -> None:
+    """Mantém o escopo organizacional da sessão alinhado ao administrador."""
+    session["admin_company_id"] = user.company_id
+    session["admin_worksite_id"] = user.worksite_id
+
+
 def admin_login_required(view):
     """Exige uma sessão válida vinculada a um usuário com papel de administrador."""
 
@@ -22,10 +28,11 @@ def admin_login_required(view):
         user = User.query.get(user_id) if user_id is not None else None
 
         if user is None or user.role != "admin":
-            session.pop("admin_user_id", None)
+            session.clear()
             flash("Faça login como administrador para continuar.", "warning")
             return redirect(url_for("admin.login", next=request.full_path.rstrip("?")))
 
+        sync_admin_scope(user)
         return view(*args, **kwargs)
 
     return wrapped_view
