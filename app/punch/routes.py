@@ -59,7 +59,7 @@ def punch_submit():
             retry_after_seconds=duplicate.retry_after_seconds,
         ), 409
 
-    record = Ponto(user_id=result.user.id, tipo=punch_type, timestamp=now)
+    record = Ponto.from_user(result.user, tipo=punch_type, timestamp=now)
     db.session.add(record)
     db.session.commit()
 
