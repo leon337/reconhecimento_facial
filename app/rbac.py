@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from enum import StrEnum
+from enum import Enum
 
 
-class AccessRole(StrEnum):
+class AccessRole(str, Enum):
     SUPER_ADMIN = "super_admin"
     ADMIN = "admin"
     MANAGER = "manager"
@@ -11,7 +11,7 @@ class AccessRole(StrEnum):
     AUDITOR = "auditor"
 
 
-class Permission(StrEnum):
+class Permission(str, Enum):
     USERS_VIEW = "users:view"
     USERS_CREATE = "users:create"
     BIOMETRICS_MANAGE = "biometrics:manage"
@@ -42,7 +42,11 @@ ROLE_PERMISSIONS: dict[AccessRole, frozenset[Permission]] = {
 }
 
 
-def normalize_access_role(value: str | None, *, legacy_role: str | None = None) -> AccessRole | None:
+def normalize_access_role(
+    value: str | None,
+    *,
+    legacy_role: str | None = None,
+) -> AccessRole | None:
     candidate = value or (AccessRole.ADMIN.value if legacy_role == "admin" else None)
     if candidate is None:
         return None
