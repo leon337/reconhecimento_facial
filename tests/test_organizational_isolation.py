@@ -134,8 +134,17 @@ def test_punch_endpoint_persists_user_organizational_scope(
         assert ponto.worksite_id == worksite_id
 
 
-def test_punch_endpoint_forwards_company_and_worksite_scope(client, monkeypatch):
+def test_punch_endpoint_forwards_company_and_worksite_scope(
+    app, client, monkeypatch
+):
     captured = {}
+    with app.app_context():
+        company = Company(name="Potiguar", slug="potiguar")
+        worksite = Worksite(name="Obra A", company=company)
+        db.session.add_all([company, worksite])
+        db.session.commit()
+        company_id = company.id
+        worksite_id = worksite.id
 
     def recognize(*args, **kwargs):
         captured.update(kwargs)
@@ -147,16 +156,16 @@ def test_punch_endpoint_forwards_company_and_worksite_scope(client, monkeypatch)
         "/punch",
         data={
             "tipo": "ENTRADA",
-            "company_id": "7",
-            "worksite_id": "11",
+            "company_id": str(company_id),
+            "worksite_id": str(worksite_id),
             "image": (io.BytesIO(b"synthetic"), "test.jpg"),
         },
         content_type="multipart/form-data",
     )
 
     assert response.status_code == 422
-    assert captured["company_id"] == 7
-    assert captured["worksite_id"] == 11
+    assert captured["company_id"] == company_id
+    assert captured["worksite_id"] == worksite_id
 
 
 def test_punch_endpoint_rejects_worksite_without_company(client, monkeypatch):
@@ -181,6 +190,98 @@ def test_punch_endpoint_rejects_worksite_without_company(client, monkeypatch):
 
     assert response.status_code == 400
     assert response.get_json()["code"] == "company_scope_required"
+    assert called is False
+
+
+def test_punch_endpoint_rejects_unknown_company(client, monkeypatch):
+    called = False
+
+    def recognize(*args, **kwargs):
+        nonlocal called
+        called = True
+        return RecognitionResult(None, "unknown_face")
+
+    monkeypatch.setattr(routes, "recognize_registered_user", recognize)
+
+    response = client.post(
+        "/punch",
+        data={
+            "tipo": "ENTRADA",
+            "company_id": "999999",
+            "image": (io.BytesIO(b"synthetic"), "test.jpg"),
+        },
+        content_type="multipart/form-data",
+    )
+
+    assert response.status_code == 400
+    assert response.get_json()["code"] == "company_not_found"
+    assert called is False
+
+
+def test_punch_endpoint_rejects_unknown_worksite(app, client, monkeypatch):
+    called = False
+    with app.app_context():
+        company = Company(name="Potiguar", slug="potiguar")
+        db.session.add(company)
+        db.session.commit()
+        company_id = company.id
+
+    def recognize(*args, **kwargs):
+        nonlocal called
+        called = True
+        return RecognitionResult(None, "unknown_face")
+
+    monkeypatch.setattr(routes, "recognize_registered_user", recognize)
+
+    response = client.post(
+        "/punch",
+        data={
+            "tipo": "ENTRADA",
+            "company_id": str(company_id),
+            "worksite_id": "999999",
+            "image": (io.BytesIO(b"synthetic"), "test.jpg"),
+        },
+        content_type="multipart/form-data",
+    )
+
+    assert response.status_code == 400
+    assert response.get_json()["code"] == "worksite_not_found"
+    assert called is False
+
+
+def test_punch_endpoint_rejects_worksite_from_other_company(
+    app, client, monkeypatch
+):
+    called = False
+    with app.app_context():
+        company_a = Company(name="Potiguar", slug="potiguar")
+        company_b = Company(name="Outra", slug="outra")
+        worksite_b = Worksite(name="Obra B", company=company_b)
+        db.session.add_all([company_a, company_b, worksite_b])
+        db.session.commit()
+        company_a_id = company_a.id
+        worksite_b_id = worksite_b.id
+
+    def recognize(*args, **kwargs):
+        nonlocal called
+        called = True
+        return RecognitionResult(None, "unknown_face")
+
+    monkeypatch.setattr(routes, "recognize_registered_user", recognize)
+
+    response = client.post(
+        "/punch",
+        data={
+            "tipo": "ENTRADA",
+            "company_id": str(company_a_id),
+            "worksite_id": str(worksite_b_id),
+            "image": (io.BytesIO(b"synthetic"), "test.jpg"),
+        },
+        content_type="multipart/form-data",
+    )
+
+    assert response.status_code == 400
+    assert response.get_json()["code"] == "worksite_company_mismatch"
     assert called is False
 
 
@@ -227,6 +328,6 @@ def test_recognition_only_compares_users_from_requested_company(app, monkeypatch
             object(), company_id=company_b.id, worksite_id=worksite_b.id
         )
 
-        assert result.user == user_b
-        assert result.user != user_a
-        assert result.reason == "matched"
+    assert result.user == user_b
+    assert result.user != user_a
+    assert result.reason == "matched"
