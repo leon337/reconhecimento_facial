@@ -3,6 +3,8 @@
 from datetime import datetime
 
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import event
+from sqlalchemy.orm import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 
 
@@ -73,6 +75,19 @@ class User(db.Model):
             query = query.filter_by(worksite_id=worksite_id)
         return query
 
+    def validate_organizational_scope(self):
+        if self.worksite is None and self.worksite_id is None:
+            return
+        if self.company is None and self.company_id is None:
+            raise ValueError("worksite_requires_company")
+
+        worksite_company_id = (
+            self.worksite.company_id if self.worksite is not None else None
+        )
+        company_id = self.company_id or (self.company.id if self.company is not None else None)
+        if worksite_company_id is not None and company_id != worksite_company_id:
+            raise ValueError("worksite_company_mismatch")
+
     def set_password(self, pw):
         self.password_hash = generate_password_hash(pw)
 
@@ -114,3 +129,25 @@ class Ponto(db.Model):
             tipo=tipo,
             timestamp=timestamp or datetime.utcnow(),
         )
+
+    def validate_organizational_scope(self):
+        if self.worksite_id is not None and self.company_id is None:
+            raise ValueError("worksite_requires_company")
+
+        if self.worksite is not None:
+            worksite_company_id = self.worksite.company_id
+            if worksite_company_id is not None and self.company_id != worksite_company_id:
+                raise ValueError("worksite_company_mismatch")
+
+        if self.user is not None:
+            if self.company_id != self.user.company_id:
+                raise ValueError("ponto_user_company_mismatch")
+            if self.worksite_id != self.user.worksite_id:
+                raise ValueError("ponto_user_worksite_mismatch")
+
+
+@event.listens_for(Session, "before_flush")
+def validate_organizational_scope_before_flush(session, flush_context, instances):
+    for entity in session.new.union(session.dirty):
+        if isinstance(entity, (User, Ponto)):
+            entity.validate_organizational_scope()
