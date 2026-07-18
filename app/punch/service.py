@@ -13,8 +13,19 @@ class RecognitionResult:
     reason: str
 
 
-def recognize_registered_user(image_file, tolerance: float = 0.6) -> RecognitionResult:
-    """Identifica exatamente um rosto entre usuários com biometria cadastrada."""
+def recognize_registered_user(
+    image_file,
+    tolerance: float = 0.6,
+    *,
+    company_id: int | None = None,
+    worksite_id: int | None = None,
+) -> RecognitionResult:
+    """Identifica um rosto, opcionalmente isolado por empresa e obra.
+
+    Sem company_id, mantém o comportamento legado durante a transição.
+    Quando company_id é informado, nenhum usuário de outra empresa participa
+    da comparação. worksite_id restringe adicionalmente a obra.
+    """
     try:
         image = face_recognition.load_image_file(image_file)
         encodings = face_recognition.face_encodings(image)
@@ -26,7 +37,15 @@ def recognize_registered_user(image_file, tolerance: float = 0.6) -> Recognition
     if len(encodings) != 1:
         return RecognitionResult(None, "multiple_faces")
 
-    users = User.query.filter(User.face_encoding.isnot(None)).all()
+    query = User.query.filter(User.face_encoding.isnot(None))
+    if company_id is not None:
+        query = query.filter(User.company_id == company_id)
+    if worksite_id is not None:
+        if company_id is None:
+            return RecognitionResult(None, "company_scope_required")
+        query = query.filter(User.worksite_id == worksite_id)
+    users = query.all()
+
     known_users = []
     known_encodings = []
 
@@ -47,7 +66,6 @@ def recognize_registered_user(image_file, tolerance: float = 0.6) -> Recognition
 
     distances = face_recognition.face_distance(known_encodings, encodings[0])
     best_index = int(np.argmin(distances))
-
     if float(distances[best_index]) > tolerance:
         return RecognitionResult(None, "unknown_face")
 

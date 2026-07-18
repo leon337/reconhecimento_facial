@@ -36,9 +36,10 @@ def test_punch_post_rejects_invalid_type(client):
 def test_punch_post_returns_recognition_error(client, monkeypatch):
     monkeypatch.setattr(
         "app.punch.routes.recognize_registered_user",
-        lambda image, tolerance: RecognitionResult(None, "unknown_face"),
+        lambda image, tolerance, company_id=None, worksite_id=None: RecognitionResult(
+            None, "unknown_face"
+        ),
     )
-
     response = client.post(
         "/punch",
         data={"tipo": "ENTRADA", "image": (BytesIO(b"imagem"), "captura.jpg")},
@@ -52,7 +53,7 @@ def test_punch_post_returns_recognition_error(client, monkeypatch):
 def test_punch_post_records_recognized_user(app, client, monkeypatch):
     user_id = create_employee(app)
 
-    def recognize(image, tolerance):
+    def recognize(image, tolerance, company_id=None, worksite_id=None):
         with app.app_context():
             return RecognitionResult(db.session.get(User, user_id), "matched")
 
@@ -126,7 +127,7 @@ def test_punch_post_rejects_duplicate_record(app, client, monkeypatch):
         )
         db.session.commit()
 
-    def recognize(image, tolerance):
+    def recognize(image, tolerance, company_id=None, worksite_id=None):
         with app.app_context():
             return RecognitionResult(db.session.get(User, user_id), "matched")
 

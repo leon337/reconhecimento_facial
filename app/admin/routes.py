@@ -19,7 +19,11 @@ from flask import (
 from PIL import Image, UnidentifiedImageError
 
 from app.admin import bp
-from app.admin.auth import admin_login_required, is_safe_redirect_target
+from app.admin.auth import (
+    admin_login_required,
+    is_safe_redirect_target,
+    sync_admin_scope,
+)
 from app.models import User, db
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
@@ -51,6 +55,24 @@ def unique_upload_name(extension):
     return f"{uuid4().hex}{extension}"
 
 
+def _scoped_user_query():
+    """Aplica o escopo do administrador sem quebrar sessões legadas."""
+    query = User.query
+    company_id = session.get("admin_company_id")
+    worksite_id = session.get("admin_worksite_id")
+
+    if company_id is not None:
+        query = query.filter_by(company_id=company_id)
+        if worksite_id is not None:
+            query = query.filter_by(worksite_id=worksite_id)
+
+    return query
+
+
+def _scoped_user_or_404(user_id):
+    return _scoped_user_query().filter_by(id=user_id).first_or_404()
+
+
 @bp.route("/login", methods=["GET", "POST"])
 def login():
     next_url = request.values.get("next", "")
@@ -66,6 +88,7 @@ def login():
 
         session.clear()
         session["admin_user_id"] = user.id
+        sync_admin_scope(user)
 
         if next_url and is_safe_redirect_target(next_url):
             return redirect(next_url)
@@ -85,7 +108,7 @@ def logout():
 @bp.route("/users")
 @admin_login_required
 def list_users():
-    users = User.query.all()
+    users = _scoped_user_query().all()
     return render_template("admin/users_list.html", users=users)
 
 
@@ -107,6 +130,8 @@ def create_user():
         schedule=form.get("schedule"),
         address=form.get("address"),
         pass_type=form.get("pass_type"),
+        company_id=session.get("admin_company_id"),
+        worksite_id=session.get("admin_worksite_id"),
     )
     user.set_password(form["password"])
     db.session.add(user)
@@ -118,14 +143,14 @@ def create_user():
 @bp.route("/users/<int:user_id>/biometric", methods=["GET"])
 @admin_login_required
 def biometric_form(user_id):
-    user = User.query.get_or_404(user_id)
+    user = _scoped_user_or_404(user_id)
     return render_template("admin/users_biometric.html", user=user)
 
 
 @bp.route("/users/<int:user_id>/biometric", methods=["POST"])
 @admin_login_required
 def save_biometric(user_id):
-    user = User.query.get_or_404(user_id)
+    user = _scoped_user_or_404(user_id)
     file = request.files.get("file")
     if not file or not file.filename or not allowed_file(file.filename):
         flash("Arquivo inválido.", "error")
