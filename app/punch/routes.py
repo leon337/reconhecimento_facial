@@ -14,7 +14,21 @@ ERROR_MESSAGES = {
     "multiple_faces": "Mantenha apenas uma pessoa diante da câmera.",
     "no_registered_faces": "Nenhuma biometria está cadastrada.",
     "unknown_face": "Rosto não reconhecido.",
+    "company_scope_required": "Informe a empresa antes de selecionar uma obra.",
 }
+
+
+def _optional_positive_int(field_name):
+    raw_value = request.form.get(field_name)
+    if raw_value in (None, ""):
+        return None
+
+    try:
+        value = int(raw_value)
+    except (TypeError, ValueError):
+        return None
+
+    return value if value > 0 else None
 
 
 @bp.route("/punch", methods=["GET"])
@@ -26,15 +40,29 @@ def punch():
 def punch_submit():
     image = request.files.get("image")
     punch_type = request.form.get("tipo", "").upper()
+    company_id = _optional_positive_int("company_id")
+    worksite_id = _optional_positive_int("worksite_id")
 
     if image is None or not image.filename:
         return jsonify(status="error", message="Envie uma imagem da câmera."), 400
     if punch_type not in ALLOWED_TYPES:
         return jsonify(status="error", message="Tipo de ponto inválido."), 400
+    if request.form.get("worksite_id") not in (None, "") and worksite_id is None:
+        return jsonify(status="error", message="Obra inválida."), 400
+    if request.form.get("company_id") not in (None, "") and company_id is None:
+        return jsonify(status="error", message="Empresa inválida."), 400
+    if worksite_id is not None and company_id is None:
+        return jsonify(
+            status="error",
+            code="company_scope_required",
+            message=ERROR_MESSAGES["company_scope_required"],
+        ), 400
 
     result = recognize_registered_user(
         image.stream,
         tolerance=float(current_app.config.get("FACE_MATCH_TOLERANCE", 0.6)),
+        company_id=company_id,
+        worksite_id=worksite_id,
     )
     if result.user is None:
         return jsonify(
