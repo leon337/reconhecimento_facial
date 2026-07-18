@@ -81,6 +81,8 @@ Foram adicionados:
 - testes AST das regras de dependência;
 - suíte legada e build Docker no CI.
 
+O CI `run 73` foi concluído com sucesso antes da implementação dos casos de uso e adaptadores finais deste bloco.
+
 ## 8. Limites desta fase
 
 Não fazem parte da FASE 9.0:
@@ -96,6 +98,7 @@ Não fazem parte da FASE 9.0:
 ## 9. Gates
 
 ```text
+RUN_73=SUCCESS
 LAYER_BOUNDARIES_DOCUMENTED=PASS
 APPLICATION_CONTRACTS_CREATED=PASS
 ORGANIZATIONAL_CONTEXT_CREATED=PASS
