@@ -2,6 +2,7 @@ import io
 import json
 
 import numpy as np
+import pytest
 
 from app.models import Company, Ponto, User, Worksite, db
 from app.punch import routes, service
@@ -55,6 +56,47 @@ def test_ponto_inherits_organizational_scope_from_user(app):
         assert ponto.company_id == company.id
         assert ponto.worksite_id == worksite.id
         assert ponto.user_id == user.id
+
+
+def test_user_rejects_worksite_from_another_company(app):
+    with app.app_context():
+        company_a = Company(name="Potiguar", slug="potiguar")
+        company_b = Company(name="Outra", slug="outra")
+        worksite_b = Worksite(name="Obra B", company=company_b)
+        db.session.add_all([company_a, company_b, worksite_b])
+        db.session.flush()
+
+        user = User(
+            username="scope-invalid",
+            password_hash="test-hash",
+            company=company_a,
+            worksite=worksite_b,
+        )
+        db.session.add(user)
+
+        with pytest.raises(ValueError, match="worksite_company_mismatch"):
+            db.session.flush()
+
+
+def test_ponto_rejects_scope_different_from_user(app):
+    with app.app_context():
+        company_a = Company(name="Potiguar", slug="potiguar")
+        company_b = Company(name="Outra", slug="outra")
+        worksite_a = Worksite(name="Obra A", company=company_a)
+        worksite_b = Worksite(name="Obra B", company=company_b)
+        user = _user("leo-scope", company_a, worksite_a)
+        db.session.flush()
+
+        ponto = Ponto(
+            user=user,
+            company=company_b,
+            worksite=worksite_b,
+            tipo="ENTRADA",
+        )
+        db.session.add(ponto)
+
+        with pytest.raises(ValueError, match="ponto_user_company_mismatch"):
+            db.session.flush()
 
 
 def test_punch_endpoint_persists_user_organizational_scope(app, client, monkeypatch):
