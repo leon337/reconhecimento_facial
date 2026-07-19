@@ -4,27 +4,15 @@ import json
 import os
 import site
 from pathlib import Path
-from uuid import uuid4
 
 import face_recognition
-from flask import (
-    current_app,
-    flash,
-    redirect,
-    render_template,
-    request,
-    session,
-    url_for,
-)
+from flask import current_app, flash, redirect, render_template, request, session, url_for
 from PIL import Image, UnidentifiedImageError
 
 from app.admin import bp
-from app.admin.auth import (
-    admin_login_required,
-    is_safe_redirect_target,
-    permission_required,
-    sync_admin_scope,
-)
+from app.admin.auth import admin_login_required, is_safe_redirect_target, permission_required, sync_admin_scope
+from app.biometric_models import BiometricProfile
+from app.biometrics import BiometricCryptoError, delete_private_image, encrypt_template, save_private_image
 from app.models import Employee, User, db
 from app.rbac import AccessRole, Permission
 
@@ -33,14 +21,10 @@ ALLOWED_IMAGE_FORMATS = {"JPEG": ".jpg", "PNG": ".png"}
 
 
 def allowed_file(filename):
-    return (
-        "." in filename
-        and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
-    )
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 def validated_image_extension(file_storage):
-    """Confirma que o conteúdo enviado é uma imagem JPEG ou PNG válida."""
     try:
         image = Image.open(file_storage.stream)
         image.verify()
@@ -49,25 +33,17 @@ def validated_image_extension(file_storage):
         extension = None
     finally:
         file_storage.stream.seek(0)
-
     return extension
 
 
-def unique_upload_name(extension):
-    return f"{uuid4().hex}{extension}"
-
-
 def _scoped_user_query():
-    """Aplica o escopo do administrador sem quebrar sessões legadas."""
     query = User.query
     company_id = session.get("admin_company_id")
     worksite_id = session.get("admin_worksite_id")
-
     if company_id is not None:
         query = query.filter_by(company_id=company_id)
         if worksite_id is not None:
             query = query.filter_by(worksite_id=worksite_id)
-
     return query
 
 
@@ -78,28 +54,19 @@ def _scoped_user_or_404(user_id):
 @bp.route("/login", methods=["GET", "POST"])
 def login():
     next_url = request.values.get("next", "")
-
     if request.method == "POST":
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "")
         user = User.query.filter_by(username=username).first()
-
-        if (
-            user is None
-            or not user.can(Permission.USERS_VIEW)
-            or not user.check_password(password)
-        ):
+        if user is None or not user.can(Permission.USERS_VIEW) or not user.check_password(password):
             flash("Credenciais administrativas inválidas.", "error")
             return render_template("admin/login.html", next_url=next_url), 401
-
         session.clear()
         session["admin_user_id"] = user.id
         sync_admin_scope(user)
-
         if next_url and is_safe_redirect_target(next_url):
             return redirect(next_url)
         return redirect(url_for("admin.list_users"))
-
     return render_template("admin/login.html", next_url=next_url)
 
 
@@ -114,8 +81,7 @@ def logout():
 @bp.route("/users")
 @permission_required(Permission.USERS_VIEW)
 def list_users():
-    users = _scoped_user_query().all()
-    return render_template("admin/users_list.html", users=users)
+    return render_template("admin/users_list.html", users=_scoped_user_query().all())
 
 
 @bp.route("/users/new", methods=["GET"])
@@ -131,7 +97,6 @@ def create_user():
     company_id = session.get("admin_company_id")
     worksite_id = session.get("admin_worksite_id")
     job_title = form.get("role")
-
     employee = Employee(
         name=form.get("name") or form["username"],
         registration=form.get("registration") or None,
@@ -146,7 +111,6 @@ def create_user():
         username=form["username"],
         access_role=form.get("access_role") or AccessRole.OPERATOR.value,
         employee=employee,
-        # Espelho legado temporário durante a migração.
         name=employee.name,
         registration=employee.registration,
         role=job_title,
@@ -166,8 +130,7 @@ def create_user():
 @bp.route("/users/<int:user_id>/biometric", methods=["GET"])
 @permission_required(Permission.BIOMETRICS_MANAGE)
 def biometric_form(user_id):
-    user = _scoped_user_or_404(user_id)
-    return render_template("admin/users_biometric.html", user=user)
+    return render_template("admin/users_biometric.html", user=_scoped_user_or_404(user_id))
 
 
 @bp.route("/users/<int:user_id>/biometric", methods=["POST"])
@@ -184,29 +147,42 @@ def save_biometric(user_id):
         flash("O conteúdo enviado não é uma imagem JPEG ou PNG válida.", "error")
         return redirect(url_for("admin.biometric_form", user_id=user_id))
 
-    filename = unique_upload_name(extension)
-    filepath = Path(current_app.config["UPLOAD_FOLDER"]) / filename
-    file.save(filepath)
-
+    object_key, filepath = save_private_image(file, extension)
     model_path = Path(site.getsitepackages()[0]) / "face_recognition_models"
     os.environ["FACE_RECOGNITION_MODEL_LOCATION"] = str(model_path)
 
     try:
         image = face_recognition.load_image_file(filepath)
-        encs = face_recognition.face_encodings(image)
+        encodings = face_recognition.face_encodings(image)
     except (OSError, ValueError):
-        filepath.unlink(missing_ok=True)
+        delete_private_image(object_key)
         flash("Não foi possível processar a imagem enviada.", "error")
         return redirect(url_for("admin.biometric_form", user_id=user_id))
 
-    if not encs:
-        filepath.unlink(missing_ok=True)
-        flash("Nenhum rosto detectado.", "error")
+    if len(encodings) != 1:
+        delete_private_image(object_key)
+        message = "Nenhum rosto detectado." if not encodings else "Envie uma imagem com apenas um rosto."
+        flash(message, "error")
         return redirect(url_for("admin.biometric_form", user_id=user_id))
 
-    user.face_encoding = json.dumps(encs[0].tolist())
-    user.photo_url = url_for("static", filename="uploads/" + filename)
-    db.session.commit()
+    try:
+        encrypted_template = encrypt_template(json.dumps(encodings[0].tolist()))
+    except BiometricCryptoError:
+        delete_private_image(object_key)
+        current_app.logger.exception("Falha na configuração criptográfica biométrica")
+        flash("A biometria não pôde ser protegida. Verifique a configuração segura.", "error")
+        return redirect(url_for("admin.biometric_form", user_id=user_id)), 503
 
-    flash("Biometria cadastrada com sucesso.", "success")
+    profile = user.biometric_profile or BiometricProfile(user=user)
+    previous_object_key = profile.image_object_key
+    profile.encrypted_template = encrypted_template
+    profile.image_object_key = object_key
+    profile.algorithm_version = "face_recognition-1"
+    profile.active = True
+    db.session.add(profile)
+    db.session.commit()
+    if previous_object_key and previous_object_key != object_key:
+        delete_private_image(previous_object_key)
+
+    flash("Biometria protegida e cadastrada com sucesso.", "success")
     return redirect(url_for("admin.list_users"))
