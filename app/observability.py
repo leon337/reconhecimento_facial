@@ -67,7 +67,7 @@ def audit(action: str, outcome: str, *, actor=None, target_type=None, target_id=
         worksite_id=session.get("admin_worksite_id"),
         target_type=target_type,
         target_id=str(target_id) if target_id is not None else None,
-        remote_addr=request.headers.get("X-Forwarded-For", request.remote_addr),
+        remote_addr=request.remote_addr,
         metadata_json=json.dumps(safe_metadata, sort_keys=True),
     )
     db.session.add(event)
@@ -94,7 +94,8 @@ def init_observability(app):
         response.headers["Referrer-Policy"] = "same-origin"
         response.headers["Permissions-Policy"] = "camera=(self), microphone=(), geolocation=()"
         response.headers["Content-Security-Policy"] = (
-            "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; "
+            "default-src 'self'; img-src 'self' data:; "
+            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
             "script-src 'self'; frame-ancestors 'none'"
         )
         if current_app.config.get("SESSION_COOKIE_SECURE"):
@@ -102,14 +103,17 @@ def init_observability(app):
         started_at = getattr(g, "request_started_at", time.monotonic())
         duration_ms = int((time.monotonic() - started_at) * 1000)
         current_app.logger.info(
-            json.dumps({
-                "event": "http_request",
-                "request_id": request_id,
-                "method": request.method,
-                "path": request.path,
-                "status": response.status_code,
-                "duration_ms": duration_ms,
-            }, sort_keys=True)
+            json.dumps(
+                {
+                    "event": "http_request",
+                    "request_id": request_id,
+                    "method": request.method,
+                    "path": request.path,
+                    "status": response.status_code,
+                    "duration_ms": duration_ms,
+                },
+                sort_keys=True,
+            )
         )
         return response
 
