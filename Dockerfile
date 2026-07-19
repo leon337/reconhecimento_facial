@@ -12,7 +12,8 @@ RUN apt-get update && \
         cmake \
         git \
         libopenblas-dev \
-        liblapack-dev && \
+        liblapack-dev \
+        postgresql-client && \
     rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt ./
