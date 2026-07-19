@@ -31,7 +31,7 @@ jobs:
       - name: Instalar dependências do sistema
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential cmake libopenblas-dev liblapack-dev
+          sudo apt-get install -y build-essential cmake libopenblas-dev liblapack-dev postgresql-client
 
       - name: Instalar dependências Python
         run: |
@@ -39,12 +39,21 @@ jobs:
           python -m pip install -r requirements-dev.txt
 
       - name: Verificar sintaxe
-        run: python -m compileall -q main.py app tests
+        run: python -m compileall -q main.py app tests scripts
 
       - name: Executar testes
         env:
           SECRET_KEY: ci-test-secret
         run: python -m pytest -q --junitxml=pytest-report.xml
+
+      - name: Validar Compose de produção
+        env:
+          SECRET_KEY: ci-secret
+          BIOMETRIC_ENCRYPTION_KEY: ci-biometric-key
+          POSTGRES_DB: controle_ponto
+          POSTGRES_USER: controle_ponto
+          POSTGRES_PASSWORD: ci-password
+        run: docker compose -f docker-compose.production.yml config --quiet
 
       - name: Publicar relatório de testes
         if: always()
