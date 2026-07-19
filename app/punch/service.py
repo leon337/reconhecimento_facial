@@ -4,6 +4,7 @@ from dataclasses import dataclass
 import face_recognition
 import numpy as np
 
+from app.biometrics import BiometricCryptoError, decrypt_template
 from app.models import User
 
 
@@ -13,6 +14,16 @@ class RecognitionResult:
     reason: str
 
 
+def _template_for_user(user: User) -> str | None:
+    profile = getattr(user, "biometric_profile", None)
+    if profile is not None and profile.active:
+        try:
+            return decrypt_template(profile.encrypted_template)
+        except BiometricCryptoError:
+            return None
+    return user.face_encoding
+
+
 def recognize_registered_user(
     image_file,
     tolerance: float = 0.6,
@@ -20,12 +31,7 @@ def recognize_registered_user(
     company_id: int | None = None,
     worksite_id: int | None = None,
 ) -> RecognitionResult:
-    """Identifica um rosto, opcionalmente isolado por empresa e obra.
-
-    Sem company_id, mantém o comportamento legado durante a transição.
-    Quando company_id é informado, nenhum usuário de outra empresa participa
-    da comparação. worksite_id restringe adicionalmente a obra.
-    """
+    """Identifica um rosto respeitando escopo e perfis biométricos protegidos."""
     try:
         image = face_recognition.load_image_file(image_file)
         encodings = face_recognition.face_encodings(image)
@@ -37,27 +43,27 @@ def recognize_registered_user(
     if len(encodings) != 1:
         return RecognitionResult(None, "multiple_faces")
 
-    query = User.query.filter(User.face_encoding.isnot(None))
+    if worksite_id is not None and company_id is None:
+        return RecognitionResult(None, "company_scope_required")
+
+    query = User.query
     if company_id is not None:
         query = query.filter(User.company_id == company_id)
     if worksite_id is not None:
-        if company_id is None:
-            return RecognitionResult(None, "company_scope_required")
         query = query.filter(User.worksite_id == worksite_id)
-    users = query.all()
 
     known_users = []
     known_encodings = []
-
-    for user in users:
+    for user in query.all():
+        template_json = _template_for_user(user)
+        if not template_json:
+            continue
         try:
-            encoding = np.asarray(json.loads(user.face_encoding), dtype=float)
+            encoding = np.asarray(json.loads(template_json), dtype=float)
         except (TypeError, ValueError, json.JSONDecodeError):
             continue
-
         if encoding.shape != (128,):
             continue
-
         known_users.append(user)
         known_encodings.append(encoding)
 
@@ -68,5 +74,4 @@ def recognize_registered_user(
     best_index = int(np.argmin(distances))
     if float(distances[best_index]) > tolerance:
         return RecognitionResult(None, "unknown_face")
-
     return RecognitionResult(known_users[best_index], "matched")
