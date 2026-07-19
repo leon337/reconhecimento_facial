@@ -4,6 +4,7 @@ import json
 import os
 import site
 from pathlib import Path
+from uuid import uuid4
 
 import face_recognition
 from flask import current_app, flash, redirect, render_template, request, session, url_for
@@ -34,6 +35,11 @@ def validated_image_extension(file_storage):
     finally:
         file_storage.stream.seek(0)
     return extension
+
+
+def unique_upload_name(extension):
+    """Compatibilidade: gera nomes não previsíveis sem expor o diretório privado."""
+    return f"{uuid4().hex}{extension}"
 
 
 def _scoped_user_query():
