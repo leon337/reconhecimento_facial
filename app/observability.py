@@ -48,10 +48,18 @@ def increment_metric(name: str) -> None:
         _metrics[name] += 1
 
 
+def _request_id() -> str:
+    request_id = getattr(g, "request_id", None)
+    if request_id is None:
+        request_id = request.headers.get("X-Request-ID") or uuid4().hex
+        g.request_id = request_id
+    return request_id
+
+
 def audit(action: str, outcome: str, *, actor=None, target_type=None, target_id=None, metadata=None):
     safe_metadata = metadata or {}
     event = AuditEvent(
-        request_id=getattr(g, "request_id", uuid4().hex),
+        request_id=_request_id(),
         action=action,
         outcome=outcome,
         actor_user_id=getattr(actor, "id", None),
@@ -79,7 +87,8 @@ def init_observability(app):
 
     @app.after_request
     def secure_response(response):
-        response.headers["X-Request-ID"] = g.request_id
+        request_id = _request_id()
+        response.headers["X-Request-ID"] = request_id
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["Referrer-Policy"] = "same-origin"
@@ -90,11 +99,12 @@ def init_observability(app):
         )
         if current_app.config.get("SESSION_COOKIE_SECURE"):
             response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
-        duration_ms = int((time.monotonic() - g.request_started_at) * 1000)
+        started_at = getattr(g, "request_started_at", time.monotonic())
+        duration_ms = int((time.monotonic() - started_at) * 1000)
         current_app.logger.info(
             json.dumps({
                 "event": "http_request",
-                "request_id": g.request_id,
+                "request_id": request_id,
                 "method": request.method,
                 "path": request.path,
                 "status": response.status_code,
@@ -106,14 +116,15 @@ def init_observability(app):
     @app.errorhandler(404)
     def not_found(error):
         increment_metric("http_errors_total")
-        return jsonify(error="not_found", request_id=g.request_id), 404
+        return jsonify(error="not_found", request_id=_request_id()), 404
 
     @app.errorhandler(500)
     def internal_error(error):
         increment_metric("http_errors_total")
-        current_app.logger.exception("internal_error request_id=%s", g.request_id)
+        request_id = _request_id()
+        current_app.logger.exception("internal_error request_id=%s", request_id)
         db.session.rollback()
-        return jsonify(error="internal_error", request_id=g.request_id), 500
+        return jsonify(error="internal_error", request_id=request_id), 500
 
     @app.get("/health")
     def health():
