@@ -25,11 +25,7 @@ def _database_url(instance_dir: Path) -> str:
 
 
 def create_app(test_config: dict[str, Any] | None = None) -> Flask:
-    """Cria e configura a aplicação Flask.
-
-    ``test_config`` permite substituir configurações sem acessar banco ou
-    diretórios reais durante testes automatizados.
-    """
+    """Cria e configura a aplicação Flask."""
     app = Flask(
         __name__,
         static_folder="static",
@@ -51,6 +47,8 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
         AUTO_CREATE_SCHEMA=app_env != "production",
         UPLOAD_FOLDER=str(basedir / "static" / "uploads"),
+        BIOMETRIC_STORAGE_FOLDER=str(instance_dir / "biometrics"),
+        BIOMETRIC_ENCRYPTION_KEY=os.environ.get("BIOMETRIC_ENCRYPTION_KEY"),
         MAX_CONTENT_LENGTH=5 * 1024 * 1024,
         SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SAMESITE="Lax",
@@ -63,11 +61,14 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
         app.config.update(test_config)
 
     Path(app.config["UPLOAD_FOLDER"]).mkdir(parents=True, exist_ok=True)
+    Path(app.config["BIOMETRIC_STORAGE_FOLDER"]).mkdir(parents=True, exist_ok=True)
 
     model_path = Path(site.getsitepackages()[0]) / "face_recognition_models"
     os.environ.setdefault("FACE_RECOGNITION_MODEL_LOCATION", str(model_path))
 
     db.init_app(app)
+    from app.biometric_models import BiometricProfile  # noqa: F401
+
     migrate.init_app(app, db)
     csrf.init_app(app)
     app.register_blueprint(admin_bp, url_prefix="/admin")
