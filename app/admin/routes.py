@@ -59,7 +59,12 @@ def _scoped_user_or_404(user_id):
 
 
 def _login_key(username: str) -> str:
-    address = request.headers.get("X-Forwarded-For", request.remote_addr) or "unknown"
+    """Usa apenas o endereço já normalizado pelo servidor WSGI.
+
+    Cabeçalhos de encaminhamento fornecidos pelo cliente não são confiáveis sem
+    uma configuração explícita de proxy confiável.
+    """
+    address = request.remote_addr or "unknown"
     return f"{address}:{username.lower()}"
 
 
