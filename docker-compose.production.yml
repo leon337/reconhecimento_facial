@@ -2,15 +2,19 @@ services:
   app:
     build: .
     restart: unless-stopped
-    env_file:
-      - .env.production
+    environment:
+      APP_ENV: production
+      SECRET_KEY: ${SECRET_KEY}
+      BIOMETRIC_ENCRYPTION_KEY: ${BIOMETRIC_ENCRYPTION_KEY}
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      BIOMETRIC_STORAGE_FOLDER: /app/instance/biometrics
     depends_on:
       postgres:
         condition: service_healthy
     volumes:
       - biometric_data:/app/instance/biometrics
     expose:
-      - "5000"
+      - "8000"
     networks:
       - internal
 
@@ -34,8 +38,10 @@ services:
   backup:
     build: .
     restart: "no"
-    env_file:
-      - .env.production
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      BACKUP_DIRECTORY: /var/backups/controle-ponto
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-30}
     depends_on:
       postgres:
         condition: service_healthy
