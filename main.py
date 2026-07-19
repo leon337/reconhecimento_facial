@@ -68,6 +68,12 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
 
     db.init_app(app)
     from app.biometric_models import BiometricProfile  # noqa: F401
+    from app.attendance_models import (  # noqa: F401
+        AttendanceAdjustment,
+        AttendanceClosure,
+        AttendanceEvent,
+        WorkSchedule,
+    )
 
     migrate.init_app(app, db)
     csrf.init_app(app)
