@@ -15,6 +15,7 @@ from app.admin.auth import admin_login_required, is_safe_redirect_target, permis
 from app.biometric_models import BiometricProfile
 from app.biometrics import BiometricCryptoError, delete_private_image, encrypt_template, save_private_image
 from app.models import Employee, User, db
+from app.observability import audit, increment_metric, login_rate_limiter
 from app.rbac import AccessRole, Permission
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
@@ -57,19 +58,50 @@ def _scoped_user_or_404(user_id):
     return _scoped_user_query().filter_by(id=user_id).first_or_404()
 
 
+def _login_key(username: str) -> str:
+    """Usa apenas o endereço já normalizado pelo servidor WSGI.
+
+    Cabeçalhos de encaminhamento fornecidos pelo cliente não são confiáveis sem
+    uma configuração explícita de proxy confiável.
+    """
+    address = request.remote_addr or "unknown"
+    return f"{address}:{username.lower()}"
+
+
 @bp.route("/login", methods=["GET", "POST"])
 def login():
     next_url = request.values.get("next", "")
     if request.method == "POST":
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "")
+        key = _login_key(username)
+        limit = current_app.config["LOGIN_RATE_LIMIT_ATTEMPTS"]
+        window = current_app.config["LOGIN_RATE_LIMIT_WINDOW_SECONDS"]
+
+        if login_rate_limiter.blocked(key, limit=limit, window_seconds=window):
+            increment_metric("admin_login_rate_limited_total")
+            audit("admin.login", "blocked", metadata={"username": username[:80]})
+            db.session.commit()
+            flash("Muitas tentativas. Aguarde antes de tentar novamente.", "error")
+            return render_template("admin/login.html", next_url=next_url), 429
+
         user = User.query.filter_by(username=username).first()
         if user is None or not user.can(Permission.USERS_VIEW) or not user.check_password(password):
+            login_rate_limiter.register_failure(key)
+            increment_metric("admin_login_failure_total")
+            audit("admin.login", "failure", actor=user, metadata={"username": username[:80]})
+            db.session.commit()
             flash("Credenciais administrativas inválidas.", "error")
             return render_template("admin/login.html", next_url=next_url), 401
+
+        login_rate_limiter.clear(key)
         session.clear()
+        session.permanent = True
         session["admin_user_id"] = user.id
         sync_admin_scope(user)
+        increment_metric("admin_login_success_total")
+        audit("admin.login", "success", actor=user)
+        db.session.commit()
         if next_url and is_safe_redirect_target(next_url):
             return redirect(next_url)
         return redirect(url_for("admin.list_users"))
@@ -79,6 +111,9 @@ def login():
 @bp.route("/logout", methods=["POST"])
 @admin_login_required
 def logout():
+    user = User.query.get(session.get("admin_user_id"))
+    audit("admin.logout", "success", actor=user)
+    db.session.commit()
     session.clear()
     flash("Sessão administrativa encerrada.", "success")
     return redirect(url_for("admin.login"))
@@ -128,6 +163,9 @@ def create_user():
     )
     user.set_password(form["password"])
     db.session.add_all([employee, user])
+    db.session.flush()
+    actor = User.query.get(session.get("admin_user_id"))
+    audit("admin.user.create", "success", actor=actor, target_type="user", target_id=user.id)
     db.session.commit()
     flash("Colaborador e conta de acesso cadastrados com sucesso.", "success")
     return redirect(url_for("admin.list_users"))
@@ -186,6 +224,8 @@ def save_biometric(user_id):
     profile.algorithm_version = "face_recognition-1"
     profile.active = True
     db.session.add(profile)
+    actor = User.query.get(session.get("admin_user_id"))
+    audit("admin.biometric.enroll", "success", actor=actor, target_type="user", target_id=user.id)
     db.session.commit()
     if previous_object_key and previous_object_key != object_key:
         delete_private_image(previous_object_key)

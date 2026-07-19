@@ -1,5 +1,6 @@
 import os
 import site
+from datetime import timedelta
 from pathlib import Path
 from typing import Any
 
@@ -9,6 +10,7 @@ from flask_wtf.csrf import CSRFProtect
 
 from app.admin.routes import bp as admin_bp
 from app.models import db
+from app.observability import init_observability
 
 csrf = CSRFProtect()
 migrate = Migrate()
@@ -26,11 +28,7 @@ def _database_url(instance_dir: Path) -> str:
 
 def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     """Cria e configura a aplicação Flask."""
-    app = Flask(
-        __name__,
-        static_folder="static",
-        template_folder="templates",
-    )
+    app = Flask(__name__, static_folder="static", template_folder="templates")
 
     basedir = Path(__file__).resolve().parent
     instance_dir = basedir / "instance"
@@ -53,8 +51,11 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
         SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SAMESITE="Lax",
         SESSION_COOKIE_SECURE=app_env == "production",
+        PERMANENT_SESSION_LIFETIME=timedelta(minutes=30),
         WTF_CSRF_TIME_LIMIT=3600,
         PUNCH_DUPLICATE_WINDOW_SECONDS=60,
+        LOGIN_RATE_LIMIT_ATTEMPTS=5,
+        LOGIN_RATE_LIMIT_WINDOW_SECONDS=300,
     )
 
     if test_config:
@@ -67,6 +68,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     os.environ.setdefault("FACE_RECOGNITION_MODEL_LOCATION", str(model_path))
 
     db.init_app(app)
+    from app.audit_models import AuditEvent  # noqa: F401
     from app.biometric_models import BiometricProfile  # noqa: F401
     from app.attendance_models import (  # noqa: F401
         AttendanceAdjustment,
@@ -77,6 +79,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
 
     migrate.init_app(app, db)
     csrf.init_app(app)
+    init_observability(app)
     app.register_blueprint(admin_bp, url_prefix="/admin")
 
     from app.punch import bp as punch_bp
