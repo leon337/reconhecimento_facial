@@ -44,7 +44,16 @@ jobs:
       - name: Executar testes
         env:
           SECRET_KEY: ci-test-secret
-        run: python -m pytest -q
+        run: python -m pytest -q --junitxml=pytest-report.xml
+
+      - name: Publicar relatório de testes
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-report
+          path: pytest-report.xml
+          if-no-files-found: error
+          retention-days: 7
 
   docker-build:
     runs-on: ubuntu-latest
