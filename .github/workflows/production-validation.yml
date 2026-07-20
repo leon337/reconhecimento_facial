@@ -98,6 +98,7 @@ jobs:
 
       - name: Validar backup e restauração reais
         run: |
+          set -o pipefail
           mkdir -p /tmp/controle-ponto-backups
           BACKUP_DIRECTORY=/tmp/controle-ponto-backups python scripts/backup_postgres.py
           test "$(find /tmp/controle-ponto-backups -name 'database-*.dump' | wc -l)" -eq 1
@@ -105,7 +106,8 @@ jobs:
           archive=$(find /tmp/controle-ponto-backups -name 'database-*.dump' | head -n 1)
           manifest="${archive%.dump}.manifest.json"
           DATABASE_URL=postgresql://controle_ponto:hml-password@127.0.0.1:5432/controle_ponto_restore \
-            python scripts/restore_postgres.py "$archive" --manifest "$manifest" --confirm RESTORE --fresh-database
+            python scripts/restore_postgres.py "$archive" --manifest "$manifest" --confirm RESTORE --fresh-database \
+            2>&1 | tee restore-diagnostic.txt
           psql -h 127.0.0.1 -U controle_ponto -d controle_ponto_restore -c 'SELECT 1;'
 
       - name: Validar Compose de produção
@@ -120,6 +122,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: production-validation-report
-          path: production-validation-report.xml
-          if-no-files-found: error
+          path: |
+            production-validation-report.xml
+            restore-diagnostic.txt
+          if-no-files-found: warn
           retention-days: 14
