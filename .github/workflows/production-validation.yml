@@ -105,7 +105,7 @@ jobs:
           archive=$(find /tmp/controle-ponto-backups -name 'database-*.dump' | head -n 1)
           manifest="${archive%.dump}.manifest.json"
           DATABASE_URL=postgresql://controle_ponto:hml-password@127.0.0.1:5432/controle_ponto_restore \
-            python scripts/restore_postgres.py "$archive" --manifest "$manifest" --confirm RESTORE
+            python scripts/restore_postgres.py "$archive" --manifest "$manifest" --confirm RESTORE --fresh-database
           psql -h 127.0.0.1 -U controle_ponto -d controle_ponto_restore -c 'SELECT 1;'
 
       - name: Validar Compose de produção
