@@ -39,13 +39,18 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     if app_env == "production" and not secret_key:
         raise RuntimeError("SECRET_KEY é obrigatória em produção.")
 
+    biometric_storage = os.environ.get(
+        "BIOMETRIC_STORAGE_FOLDER",
+        str(instance_dir / "biometrics"),
+    )
+
     app.config.from_mapping(
         SECRET_KEY=secret_key or "development-only-change-me",
         SQLALCHEMY_DATABASE_URI=_database_url(instance_dir),
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
-        AUTO_CREATE_SCHEMA=app_env != "production",
+        AUTO_CREATE_SCHEMA=app_env not in {"production", "pilot"},
         UPLOAD_FOLDER=str(basedir / "static" / "uploads"),
-        BIOMETRIC_STORAGE_FOLDER=str(instance_dir / "biometrics"),
+        BIOMETRIC_STORAGE_FOLDER=biometric_storage,
         BIOMETRIC_ENCRYPTION_KEY=os.environ.get("BIOMETRIC_ENCRYPTION_KEY"),
         MAX_CONTENT_LENGTH=5 * 1024 * 1024,
         SESSION_COOKIE_HTTPONLY=True,
