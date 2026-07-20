@@ -96,19 +96,42 @@ jobs:
           assert 'Content-Security-Policy' in security.headers
           PY
 
-      - name: Validar backup e restauração reais
+      - name: Criar backup PostgreSQL real
         run: |
-          set -o pipefail
           mkdir -p /tmp/controle-ponto-backups
           BACKUP_DIRECTORY=/tmp/controle-ponto-backups python scripts/backup_postgres.py
-          test "$(find /tmp/controle-ponto-backups -name 'database-*.dump' | wc -l)" -eq 1
-          createdb -h 127.0.0.1 -U controle_ponto controle_ponto_restore
           archive=$(find /tmp/controle-ponto-backups -name 'database-*.dump' | head -n 1)
+          test -n "$archive"
           manifest="${archive%.dump}.manifest.json"
+          test -f "$manifest"
+          echo "ARCHIVE_PATH=$archive" >> "$GITHUB_ENV"
+          echo "MANIFEST_PATH=$manifest" >> "$GITHUB_ENV"
+
+      - name: Validar integridade do arquivo de backup
+        run: |
+          pg_restore --list "$ARCHIVE_PATH" > restore-list.txt
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          from app.infrastructure.backup import verify_backup
+
+          verify_backup(Path(os.environ['ARCHIVE_PATH']), Path(os.environ['MANIFEST_PATH']))
+          PY
+
+      - name: Criar banco vazio para restauração
+        run: createdb -h 127.0.0.1 -U controle_ponto controle_ponto_restore
+
+      - name: Restaurar backup no banco vazio
+        run: |
+          set -o pipefail
           DATABASE_URL=postgresql://controle_ponto:hml-password@127.0.0.1:5432/controle_ponto_restore \
-            python scripts/restore_postgres.py "$archive" --manifest "$manifest" --confirm RESTORE --fresh-database \
+            python scripts/restore_postgres.py "$ARCHIVE_PATH" --manifest "$MANIFEST_PATH" --confirm RESTORE --fresh-database \
             2>&1 | tee restore-diagnostic.txt
-          psql -h 127.0.0.1 -U controle_ponto -d controle_ponto_restore -c 'SELECT 1;'
+
+      - name: Validar schema restaurado
+        run: |
+          psql -h 127.0.0.1 -U controle_ponto -d controle_ponto_restore -v ON_ERROR_STOP=1 -c 'SELECT 1;'
+          test "$(psql -h 127.0.0.1 -U controle_ponto -d controle_ponto_restore -tAc "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='public';")" -gt 0
 
       - name: Validar Compose de produção
         env:
@@ -125,5 +148,6 @@ jobs:
           path: |
             production-validation-report.xml
             restore-diagnostic.txt
+            restore-list.txt
           if-no-files-found: warn
           retention-days: 14
