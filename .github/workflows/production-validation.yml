@@ -63,14 +63,29 @@ jobs:
           flask --app main db downgrade base
           flask --app main db upgrade
 
-      - name: Executar suíte completa em PostgreSQL
+      - name: Executar suíte completa de regressão
+        env:
+          APP_ENV: testing
         run: python -m pytest -q --junitxml=production-validation-report.xml
 
-      - name: Smoke test de produção
+      - name: Validar domínio e saúde em PostgreSQL
         run: |
           python - <<'PY'
           from main import create_app
+          from app.models import Company, Worksite, db
+
           app = create_app({"TESTING": True, "AUTO_CREATE_SCHEMA": False})
+          with app.app_context():
+              company = Company(name="Empresa Sintética HML", slug="empresa-sintetica-hml")
+              worksite = Worksite(name="Obra Sintética HML", company=company)
+              db.session.add_all([company, worksite])
+              db.session.commit()
+              assert company.id is not None
+              assert worksite.company_id == company.id
+              db.session.delete(worksite)
+              db.session.delete(company)
+              db.session.commit()
+
           client = app.test_client()
           response = client.get('/health')
           assert response.status_code == 200, response.data
