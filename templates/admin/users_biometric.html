@@ -2,12 +2,17 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Registrar Biometria</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body class="p-6 bg-gray-100 min-h-screen">
-  <div class="max-w-md mx-auto bg-white p-6 rounded shadow text-center">
-    <h1 class="text-2xl font-bold mb-4">Biometria – {{ user.name }} ({{ user.username }})</h1>
+<body class="p-4 md:p-6 bg-gray-100 min-h-screen">
+  <div class="max-w-xl mx-auto bg-white p-6 rounded shadow">
+    <h1 class="text-2xl font-bold mb-2 text-center">Biometria – {{ user.name }} ({{ user.username }})</h1>
+    <p class="text-sm text-gray-600 mb-4 text-center">
+      Posicione apenas o rosto do funcionário, com boa iluminação e sem outras pessoas no enquadramento.
+    </p>
+
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         <div class="mb-4">
@@ -19,22 +24,82 @@
         </div>
       {% endif %}
     {% endwith %}
-    <form action="{{ url_for('admin.save_biometric', user_id=user.id) }}"
+
+    <form id="biometric-form"
+          action="{{ url_for('admin.save_biometric', user_id=user.id) }}"
           method="post"
           enctype="multipart/form-data"
           class="space-y-4">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <input type="file" name="file" accept="image/png,image/jpeg" required
-             class="w-full border p-2 rounded">
-      <button type="submit"
-              class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
-        Enviar Biometria
+
+      <div id="camera-panel" class="space-y-3">
+        <video id="camera-preview"
+               autoplay
+               playsinline
+               muted
+               class="hidden w-full rounded border bg-black"
+               aria-label="Pré-visualização da câmera"></video>
+
+        <canvas id="camera-canvas" class="hidden"></canvas>
+
+        <img id="captured-preview"
+             alt="Foto capturada para biometria"
+             class="hidden w-full rounded border">
+
+        <p id="camera-status" class="text-sm text-gray-600 text-center" role="status">
+          No notebook, use a câmera ao vivo. No celular, o botão de captura abrirá a câmera frontal.
+        </p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <button id="start-camera"
+                  type="button"
+                  class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">
+            Abrir câmera ao vivo
+          </button>
+
+          <button id="capture-photo"
+                  type="button"
+                  class="hidden w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
+            Capturar foto
+          </button>
+
+          <button id="retake-photo"
+                  type="button"
+                  class="hidden w-full bg-yellow-500 text-white py-2 rounded hover:bg-yellow-600">
+            Tirar outra foto
+          </button>
+        </div>
+      </div>
+
+      <div class="border-t pt-4">
+        <label for="biometric-file" class="block text-sm font-medium text-gray-700 mb-2">
+          Câmera do celular ou envio alternativo
+        </label>
+        <input id="biometric-file"
+               type="file"
+               name="file"
+               accept="image/png,image/jpeg"
+               capture="user"
+               required
+               class="w-full border p-2 rounded bg-white">
+        <p class="mt-1 text-xs text-gray-500">
+          Em celular conectado por HTTP local, este campo abre a câmera frontal. Em computador, também permite selecionar uma imagem como contingência.
+        </p>
+      </div>
+
+      <button id="submit-biometric"
+              type="submit"
+              class="w-full bg-blue-700 text-white py-2 rounded hover:bg-blue-800">
+        Confirmar e cadastrar biometria
       </button>
     </form>
+
     <a href="{{ url_for('admin.list_users') }}"
        class="inline-block mt-4 text-blue-600 hover:underline">
       ← Voltar à Lista
     </a>
   </div>
+
+  <script src="{{ url_for('static', filename='biometric_capture.js') }}" defer></script>
 </body>
 </html>
