@@ -74,12 +74,25 @@ def verify_backup(archive: Path, manifest_path: Path) -> None:
         raise RuntimeError("Checksum do backup inválido.")
 
 
-def restore_backup(*, database_url: str, archive: Path, manifest_path: Path, confirmation: str, runner=subprocess.run) -> None:
+def restore_backup(
+    *,
+    database_url: str,
+    archive: Path,
+    manifest_path: Path,
+    confirmation: str,
+    clean_existing: bool = True,
+    runner=subprocess.run,
+) -> None:
     normalized = require_postgres_url(database_url)
     if confirmation != "RESTORE":
         raise PermissionError("Restauração exige confirmação explícita RESTORE.")
     verify_backup(archive, manifest_path)
-    runner(["pg_restore", "--clean", "--if-exists", "--no-owner", "--no-privileges", "--dbname", normalized, str(archive)], check=True)
+
+    command = ["pg_restore"]
+    if clean_existing:
+        command.extend(["--clean", "--if-exists"])
+    command.extend(["--no-owner", "--no-privileges", "--dbname", normalized, str(archive)])
+    runner(command, check=True)
 
 
 def prune_backups(destination: Path, retention_days: int, *, now: datetime | None = None) -> list[Path]:
