@@ -1,0 +1,49 @@
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    env_file:
+      - .env.local
+    environment:
+      APP_ENV: pilot
+      PORT: 8000
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      BIOMETRIC_STORAGE_FOLDER: /app/instance/biometrics
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: >-
+      sh -c "flask --app main db upgrade &&
+             python scripts/bootstrap_local.py &&
+             gunicorn --bind 0.0.0.0:8000 --workers ${WEB_CONCURRENCY:-1} --timeout 120 main:app"
+    ports:
+      - "8000:8000"
+    volumes:
+      - biometric_local:/app/instance/biometrics
+    networks:
+      - local_internal
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - postgres_local:/var/lib/postgresql/data
+    networks:
+      - local_internal
+
+networks:
+  local_internal:
+    driver: bridge
+
+volumes:
+  postgres_local:
+  biometric_local:
