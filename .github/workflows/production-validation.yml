@@ -32,6 +32,7 @@ jobs:
       DATABASE_URL: postgresql://controle_ponto:hml-password@127.0.0.1:5432/controle_ponto_hml
       BIOMETRIC_ENCRYPTION_KEY: ${{ secrets.BIOMETRIC_ENCRYPTION_KEY_TEST }}
       PGPASSWORD: hml-password
+      PGCONNECT_TIMEOUT: 10
 
     steps:
       - name: Checkout
@@ -96,10 +97,21 @@ jobs:
           assert 'Content-Security-Policy' in security.headers
           PY
 
-      - name: Criar backup PostgreSQL real
+      - name: Validar cliente PostgreSQL e conexão
         run: |
+          pg_dump --version
+          pg_isready -h 127.0.0.1 -p 5432 -U controle_ponto -d controle_ponto_hml
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c 'SELECT 1;'
+
+      - name: Executar script de backup
+        run: |
+          set -o pipefail
           mkdir -p /tmp/controle-ponto-backups
-          BACKUP_DIRECTORY=/tmp/controle-ponto-backups python scripts/backup_postgres.py
+          BACKUP_DIRECTORY=/tmp/controle-ponto-backups \
+            python scripts/backup_postgres.py 2>&1 | tee backup-diagnostic.txt
+
+      - name: Localizar arquivos do backup
+        run: |
           archive=$(find /tmp/controle-ponto-backups -name 'database-*.dump' | head -n 1)
           test -n "$archive"
           manifest="${archive%.dump}.manifest.json"
@@ -147,6 +159,7 @@ jobs:
           name: production-validation-report
           path: |
             production-validation-report.xml
+            backup-diagnostic.txt
             restore-diagnostic.txt
             restore-list.txt
           if-no-files-found: warn
