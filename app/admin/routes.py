@@ -167,8 +167,8 @@ def create_user():
     actor = User.query.get(session.get("admin_user_id"))
     audit("admin.user.create", "success", actor=actor, target_type="user", target_id=user.id)
     db.session.commit()
-    flash("Colaborador e conta de acesso cadastrados com sucesso.", "success")
-    return redirect(url_for("admin.list_users"))
+    flash("Funcionário salvo. Capture a biometria para concluir o cadastro.", "success")
+    return redirect(url_for("admin.biometric_form", user_id=user.id))
 
 
 @bp.route("/users/<int:user_id>/biometric", methods=["GET"])
