@@ -1,0 +1,110 @@
+name: Production Validation
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  production-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: controle_ponto_hml
+          POSTGRES_USER: controle_ponto
+          POSTGRES_PASSWORD: hml-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U controle_ponto -d controle_ponto_hml"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      APP_ENV: production
+      SECRET_KEY: production-validation-secret
+      DATABASE_URL: postgresql://controle_ponto:hml-password@127.0.0.1:5432/controle_ponto_hml
+      BIOMETRIC_ENCRYPTION_KEY: ${{ secrets.BIOMETRIC_ENCRYPTION_KEY_TEST }}
+      PGPASSWORD: hml-password
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+
+      - name: Instalar dependências
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake libopenblas-dev liblapack-dev postgresql-client
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-dev.txt
+
+      - name: Definir chave biométrica sintética
+        if: env.BIOMETRIC_ENCRYPTION_KEY == ''
+        run: echo "BIOMETRIC_ENCRYPTION_KEY=$(python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())')" >> "$GITHUB_ENV"
+
+      - name: Validar migrations upgrade downgrade upgrade
+        run: |
+          flask --app main db upgrade
+          flask --app main db downgrade base
+          flask --app main db upgrade
+
+      - name: Executar suíte completa em PostgreSQL
+        run: python -m pytest -q --junitxml=production-validation-report.xml
+
+      - name: Smoke test de produção
+        run: |
+          python - <<'PY'
+          from main import create_app
+          app = create_app({"TESTING": True, "AUTO_CREATE_SCHEMA": False})
+          client = app.test_client()
+          response = client.get('/health')
+          assert response.status_code == 200, response.data
+          assert response.json['database'] == 'ok'
+          security = client.get('/punch')
+          assert security.headers['X-Content-Type-Options'] == 'nosniff'
+          assert security.headers['X-Frame-Options'] == 'DENY'
+          assert 'Content-Security-Policy' in security.headers
+          PY
+
+      - name: Validar backup e restauração reais
+        run: |
+          mkdir -p /tmp/controle-ponto-backups
+          BACKUP_DIRECTORY=/tmp/controle-ponto-backups python scripts/backup_postgres.py
+          test "$(find /tmp/controle-ponto-backups -name 'database-*.dump' | wc -l)" -eq 1
+          createdb -h 127.0.0.1 -U controle_ponto controle_ponto_restore
+          archive=$(find /tmp/controle-ponto-backups -name 'database-*.dump' | head -n 1)
+          manifest="${archive%.dump}.manifest.json"
+          DATABASE_URL=postgresql://controle_ponto:hml-password@127.0.0.1:5432/controle_ponto_restore \
+            python scripts/restore_postgres.py "$archive" "$manifest" RESTORE
+          psql -h 127.0.0.1 -U controle_ponto -d controle_ponto_restore -c 'SELECT 1;'
+
+      - name: Validar Compose de produção
+        env:
+          POSTGRES_DB: controle_ponto
+          POSTGRES_USER: controle_ponto
+          POSTGRES_PASSWORD: validation-password
+        run: docker compose -f docker-compose.production.yml config --quiet
+
+      - name: Publicar relatório de homologação
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-validation-report
+          path: production-validation-report.xml
+          if-no-files-found: error
+          retention-days: 14
