@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import hashlib
 import json
+import os
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -60,7 +62,6 @@ def test_detects_tampered_archive(tmp_path):
 def test_restore_requires_explicit_confirmation(tmp_path):
     archive = tmp_path / "database-test.dump"
     archive.write_bytes(b"synthetic")
-    import hashlib
     manifest = archive.with_suffix(".manifest.json")
     manifest.write_text(json.dumps({"archive_name": archive.name, "sha256": hashlib.sha256(b"synthetic").hexdigest()}))
 
@@ -74,13 +75,37 @@ def test_restore_requires_explicit_confirmation(tmp_path):
         )
 
 
+def test_restore_fresh_database_skips_clean_flags(tmp_path):
+    archive = tmp_path / "database-test.dump"
+    archive.write_bytes(b"synthetic")
+    manifest = archive.with_suffix(".manifest.json")
+    manifest.write_text(json.dumps({"archive_name": archive.name, "sha256": hashlib.sha256(b"synthetic").hexdigest()}))
+    calls = []
+
+    def runner(command, check):
+        calls.append(command)
+
+    restore_backup(
+        database_url="postgresql://user:pass@db:5432/app",
+        archive=archive,
+        manifest_path=manifest,
+        confirmation="RESTORE",
+        clean_existing=False,
+        runner=runner,
+    )
+
+    assert calls[0][0] == "pg_restore"
+    assert "--clean" not in calls[0]
+    assert "--if-exists" not in calls[0]
+    assert "--dbname" in calls[0]
+
+
 def test_prunes_expired_backup_and_manifest(tmp_path):
     archive = tmp_path / "database-old.dump"
     archive.write_bytes(b"old")
     manifest = archive.with_suffix(".manifest.json")
     manifest.write_text("{}")
     old = datetime.now(timezone.utc) - timedelta(days=31)
-    import os
     os.utime(archive, (old.timestamp(), old.timestamp()))
 
     removed = prune_backups(tmp_path, 30, now=datetime.now(timezone.utc))
