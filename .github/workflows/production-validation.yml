@@ -1,0 +1,166 @@
+name: Production Validation
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  production-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: controle_ponto_hml
+          POSTGRES_USER: controle_ponto
+          POSTGRES_PASSWORD: hml-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U controle_ponto -d controle_ponto_hml"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      APP_ENV: production
+      SECRET_KEY: production-validation-secret
+      DATABASE_URL: postgresql://controle_ponto:hml-password@127.0.0.1:5432/controle_ponto_hml
+      BIOMETRIC_ENCRYPTION_KEY: ${{ secrets.BIOMETRIC_ENCRYPTION_KEY_TEST }}
+      PGPASSWORD: hml-password
+      PGCONNECT_TIMEOUT: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+
+      - name: Instalar dependências
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake libopenblas-dev liblapack-dev postgresql-client
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-dev.txt
+
+      - name: Definir chave biométrica sintética
+        if: env.BIOMETRIC_ENCRYPTION_KEY == ''
+        run: echo "BIOMETRIC_ENCRYPTION_KEY=$(python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())')" >> "$GITHUB_ENV"
+
+      - name: Validar migrations upgrade downgrade upgrade
+        run: |
+          flask --app main db upgrade
+          flask --app main db downgrade base
+          flask --app main db upgrade
+
+      - name: Executar suíte completa de regressão
+        env:
+          APP_ENV: testing
+        run: python -m pytest -q --junitxml=production-validation-report.xml
+
+      - name: Validar domínio e saúde em PostgreSQL
+        run: |
+          python - <<'PY'
+          from main import create_app
+          from app.models import Company, Worksite, db
+
+          app = create_app({"TESTING": True, "AUTO_CREATE_SCHEMA": False})
+          with app.app_context():
+              company = Company(name="Empresa Sintética HML", slug="empresa-sintetica-hml")
+              worksite = Worksite(name="Obra Sintética HML", company=company)
+              db.session.add_all([company, worksite])
+              db.session.commit()
+              assert company.id is not None
+              assert worksite.company_id == company.id
+              db.session.delete(worksite)
+              db.session.delete(company)
+              db.session.commit()
+
+          client = app.test_client()
+          response = client.get('/health')
+          assert response.status_code == 200, response.data
+          assert response.json['database'] == 'ok'
+          security = client.get('/punch')
+          assert security.headers['X-Content-Type-Options'] == 'nosniff'
+          assert security.headers['X-Frame-Options'] == 'DENY'
+          assert 'Content-Security-Policy' in security.headers
+          PY
+
+      - name: Validar cliente PostgreSQL e conexão
+        run: |
+          pg_dump --version
+          pg_isready -h 127.0.0.1 -p 5432 -U controle_ponto -d controle_ponto_hml
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c 'SELECT 1;'
+
+      - name: Executar script de backup
+        run: |
+          set -o pipefail
+          mkdir -p /tmp/controle-ponto-backups
+          BACKUP_DIRECTORY=/tmp/controle-ponto-backups \
+            python scripts/backup_postgres.py 2>&1 | tee backup-diagnostic.txt
+
+      - name: Localizar arquivos do backup
+        run: |
+          archive=$(find /tmp/controle-ponto-backups -name 'database-*.dump' | head -n 1)
+          test -n "$archive"
+          manifest="${archive%.dump}.manifest.json"
+          test -f "$manifest"
+          echo "ARCHIVE_PATH=$archive" >> "$GITHUB_ENV"
+          echo "MANIFEST_PATH=$manifest" >> "$GITHUB_ENV"
+
+      - name: Validar integridade do arquivo de backup
+        run: |
+          pg_restore --list "$ARCHIVE_PATH" > restore-list.txt
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          from app.infrastructure.backup import verify_backup
+
+          verify_backup(Path(os.environ['ARCHIVE_PATH']), Path(os.environ['MANIFEST_PATH']))
+          PY
+
+      - name: Criar banco vazio para restauração
+        run: createdb -h 127.0.0.1 -U controle_ponto controle_ponto_restore
+
+      - name: Restaurar backup no banco vazio
+        run: |
+          set -o pipefail
+          DATABASE_URL=postgresql://controle_ponto:hml-password@127.0.0.1:5432/controle_ponto_restore \
+            python scripts/restore_postgres.py "$ARCHIVE_PATH" --manifest "$MANIFEST_PATH" --confirm RESTORE --fresh-database \
+            2>&1 | tee restore-diagnostic.txt
+
+      - name: Validar schema restaurado
+        run: |
+          psql -h 127.0.0.1 -U controle_ponto -d controle_ponto_restore -v ON_ERROR_STOP=1 -c 'SELECT 1;'
+          test "$(psql -h 127.0.0.1 -U controle_ponto -d controle_ponto_restore -tAc "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='public';")" -gt 0
+
+      - name: Validar Compose de produção
+        env:
+          POSTGRES_DB: controle_ponto
+          POSTGRES_USER: controle_ponto
+          POSTGRES_PASSWORD: validation-password
+        run: docker compose -f docker-compose.production.yml config --quiet
+
+      - name: Publicar relatório de homologação
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-validation-report
+          path: |
+            production-validation-report.xml
+            backup-diagnostic.txt
+            restore-diagnostic.txt
+            restore-list.txt
+          if-no-files-found: warn
+          retention-days: 14

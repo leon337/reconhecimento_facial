@@ -3,7 +3,12 @@ from __future__ import annotations
 
 import argparse
 import os
+import sys
 from pathlib import Path
+
+ROOT_DIR = Path(__file__).resolve().parents[1]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
 
 from app.infrastructure.backup import restore_backup
 
@@ -13,6 +18,11 @@ def main() -> int:
     parser.add_argument("archive", type=Path)
     parser.add_argument("--manifest", type=Path)
     parser.add_argument("--confirm", required=True, help="Informe RESTORE para autorizar a operação destrutiva.")
+    parser.add_argument(
+        "--fresh-database",
+        action="store_true",
+        help="Restaura em banco vazio sem executar comandos de limpeza prévios.",
+    )
     args = parser.parse_args()
 
     manifest = args.manifest or args.archive.with_suffix(".manifest.json")
@@ -21,6 +31,7 @@ def main() -> int:
         archive=args.archive,
         manifest_path=manifest,
         confirmation=args.confirm,
+        clean_existing=not args.fresh_database,
     )
     print("restore=completed")
     return 0
