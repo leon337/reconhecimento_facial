@@ -24,6 +24,7 @@ if [[ -z "$LAN_IP" ]]; then
   LAN_IP="127.0.0.1"
 fi
 export LAN_IP
+export WEB_CONCURRENCY="${WEB_CONCURRENCY:-2}"
 
 docker compose --env-file .env.local -f docker-compose.local.yml up --build -d
 
