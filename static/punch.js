@@ -3,32 +3,40 @@
 
   const app = document.getElementById("punch-app");
   const video = document.getElementById("video");
-  const startButton = document.getElementById("start-camera");
-  const captureButton = document.getElementById("capture");
-  const mobileInput = document.getElementById("mobile-image");
-  const mobileSubmitButton = document.getElementById("submit-mobile-image");
+  const startCameraButton = document.getElementById("start-camera");
+  const startVerificationButton = document.getElementById("start-verification");
+  const challengePanel = document.getElementById("challenge-panel");
+  const challengeText = document.getElementById("challenge-text");
+  const challengeCountdown = document.getElementById("challenge-countdown");
   const statusElement = document.getElementById("status");
+  const elapsedElement = document.getElementById("elapsed-time");
   const typeSelect = document.getElementById("tipo");
 
   if (
     !app ||
     !video ||
-    !startButton ||
-    !captureButton ||
-    !mobileInput ||
-    !mobileSubmitButton ||
+    !startCameraButton ||
+    !startVerificationButton ||
+    !challengePanel ||
+    !challengeText ||
+    !challengeCountdown ||
     !statusElement ||
+    !elapsedElement ||
     !typeSelect
   ) {
     return;
   }
 
   const submitUrl = app.dataset.submitUrl;
+  const challengeUrl = app.dataset.challengeUrl;
   const csrfToken = app.dataset.csrfToken;
   let stream = null;
   let busy = false;
-  let progressTimer = null;
-  let elapsedSeconds = 0;
+  let elapsedTimer = null;
+  let operationStarted = 0;
+
+  const sleep = (milliseconds) =>
+    new Promise((resolve) => window.setTimeout(resolve, milliseconds));
 
   const setStatus = (message, kind = "info") => {
     statusElement.textContent = message;
@@ -37,23 +45,27 @@
     statusElement.classList.toggle("text-gray-700", kind === "info");
   };
 
-  const stopProgress = () => {
-    if (progressTimer) {
-      window.clearInterval(progressTimer);
-      progressTimer = null;
+  const startTimer = () => {
+    operationStarted = performance.now();
+    window.clearInterval(elapsedTimer);
+    elapsedTimer = window.setInterval(() => {
+      elapsedElement.textContent = `${((performance.now() - operationStarted) / 1000).toFixed(1).replace(".", ",")}s`;
+    }, 100);
+  };
+
+  const stopTimer = () => {
+    window.clearInterval(elapsedTimer);
+    elapsedTimer = null;
+    if (operationStarted) {
+      elapsedElement.textContent = `${((performance.now() - operationStarted) / 1000).toFixed(1).replace(".", ",")}s`;
     }
   };
 
-  const startProgress = () => {
-    stopProgress();
-    elapsedSeconds = 0;
-    setStatus("Processando reconhecimento...");
-    progressTimer = window.setInterval(() => {
-      elapsedSeconds += 1;
-      if (elapsedSeconds >= 5) {
-        setStatus(`Reconhecimento em andamento (${elapsedSeconds}s). Aguarde...`);
-      }
-    }, 1000);
+  const setBusy = (value) => {
+    busy = value;
+    startCameraButton.disabled = value;
+    startVerificationButton.disabled = value || !stream;
+    typeSelect.disabled = value;
   };
 
   const stopCamera = () => {
@@ -64,30 +76,14 @@
     video.srcObject = null;
   };
 
-  const resetLiveCameraControls = () => {
-    stopCamera();
-    video.classList.add("hidden");
-    captureButton.classList.add("hidden");
-    captureButton.disabled = true;
-    if (window.isSecureContext && navigator.mediaDevices?.getUserMedia) {
-      startButton.classList.remove("hidden");
-      startButton.disabled = busy;
-    }
-  };
-
-  const setBusy = (value) => {
-    busy = value;
-    captureButton.disabled = value || !stream;
-    mobileInput.disabled = value;
-    mobileSubmitButton.disabled = value || !mobileInput.files.length;
-    startButton.disabled = value;
-  };
+  const secureCameraAvailable = () =>
+    window.isSecureContext && Boolean(navigator.mediaDevices?.getUserMedia);
 
   const startCamera = async () => {
-    if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
+    if (!secureCameraAvailable()) {
       setStatus(
-        "Neste endereço HTTP a câmera ao vivo é bloqueada. Use o campo de câmera do celular abaixo.",
-        "info",
+        "A câmera exige HTTPS no celular. Acesse o endereço https exibido pelo instalador e instale o certificado local.",
+        "error",
       );
       return;
     }
@@ -97,64 +93,47 @@
       stream = await navigator.mediaDevices.getUserMedia({
         video: {
           facingMode: "user",
-          width: { ideal: 640 },
-          height: { ideal: 480 },
+          width: { ideal: 640, max: 640 },
+          height: { ideal: 480, max: 480 },
+          frameRate: { ideal: 24, max: 30 },
         },
         audio: false,
       });
       video.srcObject = stream;
       await video.play();
       video.classList.remove("hidden");
-      captureButton.classList.remove("hidden");
-      captureButton.disabled = false;
-      startButton.classList.add("hidden");
-      setStatus("Câmera ativa. Centralize o rosto e pressione Capturar e registrar.");
+      startCameraButton.classList.add("hidden");
+      startVerificationButton.classList.remove("hidden");
+      startVerificationButton.disabled = false;
+      setStatus("Câmera pronta. Uma pessoa por vez diante do equipamento.");
     } catch (error) {
-      console.error("punch_camera_access_failed", error);
-      resetLiveCameraControls();
-      setStatus(
-        "Não foi possível acessar a câmera ao vivo. Verifique a permissão ou use a câmera do celular abaixo.",
-        "error",
-      );
+      console.error("secure_camera_failed", error);
+      stopCamera();
+      setStatus("Não foi possível abrir a câmera. Verifique a permissão do navegador.", "error");
     }
   };
 
-  const readAsDataUrl = (source) =>
+  const captureFrame = () =>
     new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = () => reject(new Error("image_read_failed"));
-      reader.readAsDataURL(source);
-    });
-
-  const loadImage = (dataUrl) =>
-    new Promise((resolve, reject) => {
-      const image = new Image();
-      image.onload = () => resolve(image);
-      image.onerror = () => reject(new Error("image_decode_failed"));
-      image.src = dataUrl;
-    });
-
-  const normalizeImage = async (source) => {
-    const dataUrl = await readAsDataUrl(source);
-    const image = await loadImage(dataUrl);
-    const maxDimension = 640;
-    const scale = Math.min(1, maxDimension / Math.max(image.naturalWidth, image.naturalHeight));
-    const width = Math.max(1, Math.round(image.naturalWidth * scale));
-    const height = Math.max(1, Math.round(image.naturalHeight * scale));
-    const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
-    canvas.getContext("2d").drawImage(image, 0, 0, width, height);
-
-    return new Promise((resolve, reject) => {
+      if (!stream || !video.videoWidth || !video.videoHeight) {
+        reject(new Error("camera_not_ready"));
+        return;
+      }
+      const maxDimension = 480;
+      const scale = Math.min(
+        1,
+        maxDimension / Math.max(video.videoWidth, video.videoHeight),
+      );
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.max(1, Math.round(video.videoWidth * scale));
+      canvas.height = Math.max(1, Math.round(video.videoHeight * scale));
+      canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
       canvas.toBlob(
-        (blob) => (blob ? resolve(blob) : reject(new Error("image_encode_failed"))),
+        (blob) => (blob ? resolve(blob) : reject(new Error("frame_encode_failed"))),
         "image/jpeg",
-        0.86,
+        0.82,
       );
     });
-  };
 
   const parseResponse = async (response) => {
     const contentType = response.headers.get("content-type") || "";
@@ -165,97 +144,117 @@
     return { message: text || "Resposta inválida do servidor." };
   };
 
-  const submitImage = async (source) => {
-    if (busy || !source) {
+  const requestChallenge = async () => {
+    const response = await fetch(challengeUrl, {
+      headers: { Accept: "application/json" },
+      credentials: "same-origin",
+    });
+    if (!response.ok) {
+      throw new Error("challenge_request_failed");
+    }
+    return response.json();
+  };
+
+  const captureBurst = async (frameCount, intervalMs) => {
+    const frames = [];
+    for (let index = 0; index < frameCount; index += 1) {
+      frames.push(await captureFrame());
+      challengeCountdown.textContent = `Capturando ${index + 1}/${frameCount}`;
+      if (index + 1 < frameCount) {
+        await sleep(intervalMs);
+      }
+    }
+    return frames;
+  };
+
+  const verifyAndPunch = async () => {
+    if (busy || !stream) {
       return;
     }
 
     setBusy(true);
-    startProgress();
+    startTimer();
+    challengePanel.classList.remove("hidden");
+    setStatus("Preparando prova de vida...");
 
     try {
-      const normalizedBlob = await normalizeImage(source);
+      const challenge = await requestChallenge();
+      challengeText.textContent = challenge.prompt;
+      challengeCountdown.textContent = "Prepare-se";
+      await sleep(650);
+
+      const frames = await captureBurst(
+        Number(challenge.frame_count || 6),
+        Number(challenge.capture_interval_ms || 240),
+      );
+      challengeCountdown.textContent = "Identificando funcionário...";
+      setStatus("Prova de vida capturada. Identificando funcionário...");
+
       const formData = new FormData();
-      formData.append("image", normalizedBlob, "captura.jpg");
+      frames.forEach((frame, index) => {
+        formData.append("frames", frame, `quadro-${index + 1}.jpg`);
+      });
+      formData.append("challenge_id", challenge.challenge_id);
       formData.append("tipo", typeSelect.value);
       formData.append("csrf_token", csrfToken);
 
-      const response = await fetch(submitUrl, {
-        method: "POST",
-        body: formData,
-        headers: { Accept: "application/json" },
-      });
-      const data = await parseResponse(response);
-      const message = data.message || "Resposta inválida do servidor.";
+      const controller = new AbortController();
+      const timeoutId = window.setTimeout(() => controller.abort(), 12000);
+      let response;
+      try {
+        response = await fetch(submitUrl, {
+          method: "POST",
+          body: formData,
+          headers: { Accept: "application/json" },
+          credentials: "same-origin",
+          signal: controller.signal,
+        });
+      } finally {
+        window.clearTimeout(timeoutId);
+      }
 
+      const data = await parseResponse(response);
       if (response.ok) {
-        setStatus(message, "success");
-        mobileInput.value = "";
+        const seconds = Number(data.processing_ms || 0) / 1000;
+        setStatus(`${data.message} Processamento: ${seconds.toFixed(1).replace(".", ",")}s.`, "success");
+        challengeCountdown.textContent = data.target_met
+          ? "Meta de desempenho atingida"
+          : "Registro concluído; desempenho acima da meta";
       } else if (data.code === "duplicate_punch" && data.retry_after_seconds) {
-        setStatus(`${message} Tente novamente em ${data.retry_after_seconds}s.`, "error");
+        setStatus(`${data.message} Aguarde ${data.retry_after_seconds}s.`, "error");
+        challengeCountdown.textContent = "Registro não duplicado";
       } else {
-        setStatus(message, "error");
+        setStatus(data.message || "Verificação não concluída.", "error");
+        challengeCountdown.textContent = "Tente novamente";
       }
     } catch (error) {
-      console.error("punch_submit_failed", error);
-      setStatus("Falha ao processar ou comunicar com o servidor.", "error");
+      console.error("live_punch_failed", error);
+      if (error.name === "AbortError") {
+        setStatus("O processamento excedeu 12 segundos. Tente novamente.", "error");
+      } else {
+        setStatus("Falha na prova de vida ou comunicação com o servidor.", "error");
+      }
+      challengeCountdown.textContent = "Verificação interrompida";
     } finally {
-      stopProgress();
+      stopTimer();
       setBusy(false);
-      resetLiveCameraControls();
+      window.setTimeout(() => challengePanel.classList.add("hidden"), 1800);
     }
   };
 
-  startButton.addEventListener("click", startCamera);
-
-  captureButton.addEventListener("click", () => {
-    if (!stream || !video.videoWidth || !video.videoHeight) {
-      setStatus("A câmera ainda não está pronta.", "error");
-      return;
-    }
-
-    const canvas = document.createElement("canvas");
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
-    canvas.toBlob(
-      (blob) => {
-        if (!blob) {
-          setStatus("Falha ao capturar a imagem.", "error");
-          return;
-        }
-        stopCamera();
-        submitImage(blob);
-      },
-      "image/jpeg",
-      0.9,
-    );
-  });
-
-  mobileInput.addEventListener("change", () => {
-    mobileSubmitButton.disabled = busy || !mobileInput.files.length;
-    if (mobileInput.files.length) {
-      setStatus("Foto pronta. Selecione Entrada ou Saída e confirme o registro.");
-    }
-  });
-
-  mobileSubmitButton.addEventListener("click", () => {
-    const [file] = mobileInput.files;
-    if (!file) {
-      setStatus("Capture uma foto antes de registrar.", "error");
-      return;
-    }
-    submitImage(file);
-  });
-
+  startCameraButton.addEventListener("click", startCamera);
+  startVerificationButton.addEventListener("click", verifyAndPunch);
   window.addEventListener("pagehide", () => {
     stopCamera();
-    stopProgress();
+    window.clearInterval(elapsedTimer);
   });
 
-  if (window.isSecureContext && navigator.mediaDevices?.getUserMedia) {
+  if (secureCameraAvailable()) {
     startCamera();
   } else {
-    setStatus("No celular, use o campo abaixo para abrir a câmera frontal.");
+    setStatus(
+      "Câmera bloqueada neste endereço. No celular, use o endereço HTTPS e confie no certificado local.",
+      "error",
+    );
   }
 })();
