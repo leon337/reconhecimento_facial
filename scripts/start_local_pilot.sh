@@ -25,6 +25,7 @@ if [[ -z "$LAN_IP" ]]; then
 fi
 export LAN_IP
 export WEB_CONCURRENCY="${WEB_CONCURRENCY:-2}"
+mkdir -p instance/certs
 
 docker compose --env-file .env.local -f docker-compose.local.yml up --build -d
 
@@ -41,7 +42,6 @@ if ! curl --fail --silent http://127.0.0.1:8000/health >/dev/null; then
   exit 1
 fi
 
-mkdir -p instance/certs
 for _ in $(seq 1 20); do
   if docker compose --env-file .env.local -f docker-compose.local.yml exec -T https-proxy \
     sh -c 'cat /data/caddy/pki/authorities/local/root.crt' \
@@ -58,10 +58,11 @@ if [[ ! -s instance/certs/potiguar-local-ca.crt ]]; then
   exit 1
 fi
 
-chmod 600 instance/certs/potiguar-local-ca.crt 2>/dev/null || true
+chmod 644 instance/certs/potiguar-local-ca.crt 2>/dev/null || true
 
 echo "status=online"
 echo "computer_url=http://localhost:8000"
 echo "phone_url=https://${LAN_IP}:8443"
+echo "certificate_url=http://${LAN_IP}:8000/local-ca.crt"
 echo "phone_certificate=$ROOT_DIR/instance/certs/potiguar-local-ca.crt"
-echo "phone_setup=Instale o certificado no Android como certificado CA e reabra o navegador."
+echo "phone_setup=Baixe e instale o certificado CA no Android; depois reabra o navegador no phone_url."
