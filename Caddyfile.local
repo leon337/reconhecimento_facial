@@ -1,0 +1,15 @@
+{
+  auto_https disable_redirects
+}
+
+https://{$LAN_IP}:8443 {
+  tls internal
+  encode gzip
+  reverse_proxy app:8000
+  header {
+    Strict-Transport-Security "max-age=31536000"
+    X-Content-Type-Options "nosniff"
+    X-Frame-Options "DENY"
+    Referrer-Policy "same-origin"
+  }
+}
