@@ -55,14 +55,14 @@ def test_live_punch_uses_server_station_scope_and_ignores_client_scope(
     app.config["PUNCH_WORKSITE_CODE"] = "A-01"
     monkeypatch.setattr(
         routes,
-        "analyze_blink_liveness",
+        "analyze_passive_face_liveness",
         lambda frames: LivenessResult(
             True,
             "passed",
             encoding=np.zeros(128),
             best_frame_jpeg=b"jpeg",
             duration_ms=400,
-            blink_count=1,
+            blink_count=0,
             quality_score=0.9,
         ),
     )
