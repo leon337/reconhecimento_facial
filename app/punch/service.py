@@ -15,6 +15,7 @@ MAX_RECOGNITION_IMAGE_DIMENSION = 640
 class RecognitionResult:
     user: User | None
     reason: str
+    distance: float | None = None
 
 
 def _template_for_user(user: User) -> str | None:
@@ -42,33 +43,19 @@ def _load_normalized_rgb_image(image_file):
     return np.asarray(image)
 
 
-def recognize_registered_user(
-    image_file,
-    tolerance: float = 0.6,
+def _known_templates(
     *,
     company_id: int | None = None,
     worksite_id: int | None = None,
-) -> RecognitionResult:
-    """Identifica um rosto respeitando escopo e perfis biométricos protegidos."""
-    try:
-        image = _load_normalized_rgb_image(image_file)
-        encodings = face_recognition.face_encodings(image)
-    except (OSError, ValueError, TypeError, AttributeError):
-        return RecognitionResult(None, "invalid_image")
-
-    if not encodings:
-        return RecognitionResult(None, "no_face")
-    if len(encodings) != 1:
-        return RecognitionResult(None, "multiple_faces")
-
-    if worksite_id is not None and company_id is None:
-        return RecognitionResult(None, "company_scope_required")
-
+    exclude_user_id: int | None = None,
+):
     query = User.query
     if company_id is not None:
         query = query.filter(User.company_id == company_id)
     if worksite_id is not None:
         query = query.filter(User.worksite_id == worksite_id)
+    if exclude_user_id is not None:
+        query = query.filter(User.id != exclude_user_id)
 
     known_users = []
     known_encodings = []
@@ -84,12 +71,88 @@ def recognize_registered_user(
             continue
         known_users.append(user)
         known_encodings.append(encoding)
+    return known_users, known_encodings
 
+
+def recognize_encoding(
+    encoding,
+    tolerance: float = 0.6,
+    *,
+    company_id: int | None = None,
+    worksite_id: int | None = None,
+) -> RecognitionResult:
+    """Compara um encoding já validado pela prova de vida."""
+    if worksite_id is not None and company_id is None:
+        return RecognitionResult(None, "company_scope_required")
+
+    candidate = np.asarray(encoding, dtype=float)
+    if candidate.shape != (128,):
+        return RecognitionResult(None, "invalid_encoding")
+
+    known_users, known_encodings = _known_templates(
+        company_id=company_id,
+        worksite_id=worksite_id,
+    )
     if not known_encodings:
         return RecognitionResult(None, "no_registered_faces")
 
-    distances = face_recognition.face_distance(known_encodings, encodings[0])
+    distances = face_recognition.face_distance(known_encodings, candidate)
     best_index = int(np.argmin(distances))
-    if float(distances[best_index]) > tolerance:
-        return RecognitionResult(None, "unknown_face")
-    return RecognitionResult(known_users[best_index], "matched")
+    best_distance = float(distances[best_index])
+    if best_distance > tolerance:
+        return RecognitionResult(None, "unknown_face", best_distance)
+    return RecognitionResult(known_users[best_index], "matched", best_distance)
+
+
+def find_duplicate_biometric(
+    encoding,
+    *,
+    company_id: int | None,
+    exclude_user_id: int,
+    tolerance: float = 0.45,
+) -> RecognitionResult:
+    """Impede que o mesmo rosto seja associado a dois funcionários da empresa."""
+    candidate = np.asarray(encoding, dtype=float)
+    if candidate.shape != (128,):
+        return RecognitionResult(None, "invalid_encoding")
+
+    users, encodings = _known_templates(
+        company_id=company_id,
+        exclude_user_id=exclude_user_id,
+    )
+    if not encodings:
+        return RecognitionResult(None, "not_duplicate")
+
+    distances = face_recognition.face_distance(encodings, candidate)
+    best_index = int(np.argmin(distances))
+    best_distance = float(distances[best_index])
+    if best_distance <= tolerance:
+        return RecognitionResult(users[best_index], "duplicate_face", best_distance)
+    return RecognitionResult(None, "not_duplicate", best_distance)
+
+
+def recognize_registered_user(
+    image_file,
+    tolerance: float = 0.6,
+    *,
+    company_id: int | None = None,
+    worksite_id: int | None = None,
+) -> RecognitionResult:
+    """Compatibilidade para integrações antigas sem prova de vida."""
+    try:
+        image = _load_normalized_rgb_image(image_file)
+        encodings = face_recognition.face_encodings(image)
+    except (OSError, ValueError, TypeError, AttributeError):
+        return RecognitionResult(None, "invalid_image")
+
+    if not encodings:
+        return RecognitionResult(None, "no_face")
+    if len(encodings) != 1:
+        return RecognitionResult(None, "multiple_faces")
+
+    return recognize_encoding(
+        encodings[0],
+        tolerance=tolerance,
+        company_id=company_id,
+        worksite_id=worksite_id,
+    )
