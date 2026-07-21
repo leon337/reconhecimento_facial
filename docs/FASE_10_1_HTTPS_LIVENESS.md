@@ -19,6 +19,8 @@ câmera HTTPS
 
 No cadastro, antes de gravar o perfil, o sistema compara o encoding com os demais funcionários da empresa e rejeita o mesmo rosto associado a outro usuário.
 
+Os desafios são armazenados como hashes no banco e consumidos atomicamente. Assim, uma segunda requisição concorrente não consegue reutilizar o mesmo desafio, mesmo com dois workers ativos.
+
 ## Orçamento de desempenho
 
 | Etapa | Meta |
@@ -47,30 +49,34 @@ o terminal exibirá:
 
 ```text
 phone_url=https://IP_LOCAL:8443
-certificate_url=http://IP_LOCAL:8000/local-ca.crt
+certificate_url=http://IP_LOCAL:8080/local-ca.crt
 ```
 
-No Android:
+No Android, antes do primeiro login:
 
 1. abra `certificate_url` e baixe `potiguar-local-ca.crt`;
 2. abra as configurações de segurança;
 3. instale o arquivo como certificado de autoridade certificadora para VPN e aplicativos;
 4. feche e reabra o navegador;
 5. acesse `phone_url`;
-6. autorize a câmera.
+6. autorize a câmera;
+7. depois da instalação, use somente o endereço HTTPS.
+
+A porta `8000` fica vinculada apenas a `127.0.0.1`, portanto o aplicativo HTTP não é exposto à rede. A porta `8080` responde somente ao caminho do certificado público. A aplicação completa no celular é disponibilizada exclusivamente pela porta HTTPS `8443`.
 
 A chave privada da autoridade certificadora permanece no volume interno do Caddy. O endpoint HTTP disponibiliza somente o certificado público necessário para estabelecer confiança no navegador.
 
 ## Limites de segurança
 
-A prova de vida por piscada reduz fraude com fotografia impressa ou imagem estática em outra tela. Ela não é equivalente a uma solução certificada de anti-spoofing com câmera de profundidade, infravermelho ou modelo especializado. O piloto deve registrar tentativas rejeitadas e evoluir para uma camada especializada antes de cenários com risco elevado de fraude.
+A prova de vida por piscada reduz fraude com fotografia impressa ou imagem estática em outra tela. Ela não é equivalente a uma solução certificada de anti-spoofing com câmera de profundidade, infravermelho ou modelo especializado. Um vídeo reproduzido diante da câmera ainda representa risco residual. O piloto deve registrar tentativas rejeitadas e evoluir para uma camada especializada antes de cenários com risco elevado de fraude.
 
 ## Testes obrigatórios
 
 - testes unitários da piscada e do desafio de uso único;
+- teste de consumo atômico do desafio;
 - testes de integração do cadastro e do ponto;
 - teste de rosto duplicado;
 - verificação de ausência de `input type=file` nas telas operacionais;
-- validação do Compose e build Docker;
+- validação do Compose local, Caddy e build Docker;
 - teste real no notebook e no celular;
 - medição de 20 marcações consecutivas para calcular média e P95.
