@@ -1,17 +1,22 @@
 from __future__ import annotations
 
-import math
+import hashlib
 import secrets
 import time
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 from io import BytesIO
 
 import face_recognition
 import numpy as np
 from flask import current_app, session
 from PIL import Image, ImageOps, UnidentifiedImageError
+from sqlalchemy import select, update
 
-_CHALLENGE_SESSION_KEY = "liveness_challenges"
+from app.liveness_models import LivenessChallenge
+from app.models import db
+
+_SESSION_NONCE_KEY = "liveness_session_nonce"
 
 
 @dataclass(frozen=True)
@@ -25,23 +30,33 @@ class LivenessResult:
     quality_score: float = 0.0
 
 
+def _sha256(value: str) -> str:
+    return hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+
+def _session_binding_hash() -> str:
+    nonce = session.get(_SESSION_NONCE_KEY)
+    if not nonce:
+        nonce = secrets.token_urlsafe(24)
+        session[_SESSION_NONCE_KEY] = nonce
+        session.modified = True
+    return _sha256(nonce)
+
+
 def issue_challenge(purpose: str, *, subject_id: int | None = None) -> dict:
-    """Cria um desafio curto, de uso único e vinculado à sessão atual."""
-    now = time.time()
+    """Cria um desafio curto, persistido e de uso único."""
+    now = datetime.utcnow()
     ttl = int(current_app.config.get("LIVENESS_CHALLENGE_TTL_SECONDS", 20))
-    challenge_id = secrets.token_urlsafe(18)
-    challenges = {
-        key: value
-        for key, value in session.get(_CHALLENGE_SESSION_KEY, {}).items()
-        if float(value.get("expires_at", 0)) > now
-    }
-    challenges[challenge_id] = {
-        "purpose": purpose,
-        "subject_id": subject_id,
-        "expires_at": now + ttl,
-    }
-    session[_CHALLENGE_SESSION_KEY] = challenges
-    session.modified = True
+    challenge_id = secrets.token_urlsafe(24)
+    record = LivenessChallenge(
+        token_hash=_sha256(challenge_id),
+        session_hash=_session_binding_hash(),
+        purpose=purpose,
+        subject_user_id=subject_id,
+        expires_at=now + timedelta(seconds=ttl),
+    )
+    db.session.add(record)
+    db.session.commit()
     return {
         "challenge_id": challenge_id,
         "action": "BLINK_ONCE",
@@ -58,20 +73,41 @@ def consume_challenge(
     *,
     subject_id: int | None = None,
 ) -> tuple[bool, str]:
-    """Consome o desafio antes do processamento para impedir reutilização."""
-    challenges = dict(session.get(_CHALLENGE_SESSION_KEY, {}))
-    payload = challenges.pop(challenge_id, None)
-    session[_CHALLENGE_SESSION_KEY] = challenges
-    session.modified = True
-
-    if payload is None:
+    """Consome o desafio de forma atômica, inclusive com múltiplos workers."""
+    if not challenge_id:
         return False, "challenge_invalid"
-    if float(payload.get("expires_at", 0)) <= time.time():
+
+    now = datetime.utcnow()
+    token_hash = _sha256(challenge_id)
+    session_hash = _session_binding_hash()
+    record = db.session.execute(
+        select(LivenessChallenge).where(LivenessChallenge.token_hash == token_hash)
+    ).scalar_one_or_none()
+
+    if record is None:
+        return False, "challenge_invalid"
+    if record.expires_at <= now:
         return False, "challenge_expired"
-    if payload.get("purpose") != purpose:
+    if record.purpose != purpose:
         return False, "challenge_purpose_mismatch"
-    if payload.get("subject_id") != subject_id:
+    if record.subject_user_id != subject_id:
         return False, "challenge_subject_mismatch"
+    if record.session_hash != session_hash or record.consumed_at is not None:
+        return False, "challenge_invalid"
+
+    result = db.session.execute(
+        update(LivenessChallenge)
+        .where(
+            LivenessChallenge.id == record.id,
+            LivenessChallenge.consumed_at.is_(None),
+            LivenessChallenge.expires_at > now,
+            LivenessChallenge.session_hash == session_hash,
+        )
+        .values(consumed_at=now)
+    )
+    db.session.commit()
+    if result.rowcount != 1:
+        return False, "challenge_invalid"
     return True, "ok"
 
 
