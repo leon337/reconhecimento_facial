@@ -1,5 +1,6 @@
 {
   auto_https disable_redirects
+  default_sni {$LAN_IP}
 }
 
 http://{$LAN_IP}:8080 {
