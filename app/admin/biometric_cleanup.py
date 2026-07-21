@@ -9,7 +9,7 @@ from app.observability import audit
 from app.rbac import Permission
 
 
-@bp.route("/users/<int:user_id>/biometric", methods=["DELETE", "POST"])
+@bp.route("/users/<int:user_id>/biometric/remove", methods=["POST"])
 @permission_required(Permission.BIOMETRICS_MANAGE)
 def remove_biometric(user_id):
     """Remove a biometria escolhida pelo administrador para resolver duplicidades."""
