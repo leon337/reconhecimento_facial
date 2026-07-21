@@ -42,7 +42,7 @@ def test_new_employee_redirects_directly_to_live_biometric_capture(app, client):
     )
 
     assert response.status_code == 200
-    assert b"Realize a prova de vida para concluir o cadastro" in response.data
+    assert b"Faça a leitura facial para concluir o cadastro" in response.data
     assert b'id="camera-preview"' in response.data
     assert b'id="start-enrollment"' in response.data
     assert b'type="file"' not in response.data
@@ -74,3 +74,4 @@ def test_biometric_page_offers_only_secure_live_camera(app, client):
     assert b"biometric_capture.js" in response.data
     assert b'type="file"' not in response.data
     assert b"Fotos salvas, galeria e arquivos n" in response.data
+    assert b"Capturar dados faciais e cadastrar" in response.data
