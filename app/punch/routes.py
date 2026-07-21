@@ -27,6 +27,7 @@ ERROR_MESSAGES = {
     "invalid_encoding": "Leitura biométrica inválida.",
     "no_registered_faces": "Nenhuma biometria está cadastrada nesta estação.",
     "unknown_face": "Rosto não reconhecido nesta empresa e obra.",
+    "ambiguous_face": "Este rosto corresponde a mais de um cadastro. Solicite ao administrador que remova a biometria duplicada.",
     "company_scope_required": "Informe a empresa antes de selecionar uma obra.",
     "station_scope_missing": "A estação de ponto não possui empresa configurada.",
     "station_company_not_found": "A empresa configurada para esta estação não foi encontrada.",
