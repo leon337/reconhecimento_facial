@@ -42,7 +42,7 @@ def test_new_employee_redirects_directly_to_live_biometric_capture(app, client):
     )
 
     assert response.status_code == 200
-    assert b"Faça a leitura facial para concluir o cadastro" in response.data
+    assert "Faça a leitura facial para concluir o cadastro".encode("utf-8") in response.data
     assert b'id="camera-preview"' in response.data
     assert b'id="start-enrollment"' in response.data
     assert b'type="file"' not in response.data
