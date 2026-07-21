@@ -39,6 +39,17 @@ def _frames(count=6):
     ]
 
 
+def _multipart_frames(challenge_id, punch_type="ENTRADA"):
+    return {
+        "challenge_id": challenge_id,
+        "tipo": punch_type,
+        "frames": [
+            (io.BytesIO(b"frame"), f"frame-{index}.jpg")
+            for index in range(6)
+        ],
+    }
+
+
 def test_liveness_challenge_is_short_lived_and_single_use(app):
     with app.test_request_context("/"):
         challenge = issue_challenge("punch")
@@ -136,12 +147,11 @@ def test_punch_uses_liveness_and_identifies_employee(app, client, monkeypatch):
     )
 
     challenge = client.get("/punch/challenge").get_json()
-    data = {
-        "challenge_id": challenge["challenge_id"],
-        "tipo": "ENTRADA",
-        "frames": [(io.BytesIO(b"frame"), f"frame-{index}.jpg") for index in range(6)],
-    }
-    response = client.post("/punch", data=data, content_type="multipart/form-data")
+    response = client.post(
+        "/punch",
+        data=_multipart_frames(challenge["challenge_id"]),
+        content_type="multipart/form-data",
+    )
 
     assert response.status_code == 201
     payload = response.get_json()
@@ -149,6 +159,10 @@ def test_punch_uses_liveness_and_identifies_employee(app, client, monkeypatch):
     assert payload["liveness"]["passed"] is True
     assert payload["target_met"] is True
 
-    replay = client.post("/punch", data=data, content_type="multipart/form-data")
+    replay = client.post(
+        "/punch",
+        data=_multipart_frames(challenge["challenge_id"]),
+        content_type="multipart/form-data",
+    )
     assert replay.status_code == 400
     assert replay.get_json()["code"] == "challenge_invalid"
