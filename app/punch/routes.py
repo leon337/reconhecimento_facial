@@ -1,3 +1,4 @@
+import os
 import time
 from datetime import datetime
 from pathlib import Path
@@ -5,7 +6,7 @@ from pathlib import Path
 from flask import current_app, jsonify, render_template, request, send_file
 
 from app.liveness import analyze_blink_liveness, consume_challenge, issue_challenge
-from app.models import Ponto, db
+from app.models import Company, Ponto, Worksite, db
 from app.observability import increment_metric
 from app.punch import bp
 from app.punch.rules import check_duplicate_punch
@@ -24,9 +25,12 @@ ERROR_MESSAGES = {
     "face_too_small": "Aproxime o rosto da câmera.",
     "encoding_failed": "Não foi possível gerar a leitura biométrica.",
     "invalid_encoding": "Leitura biométrica inválida.",
-    "no_registered_faces": "Nenhuma biometria está cadastrada.",
-    "unknown_face": "Rosto não reconhecido.",
+    "no_registered_faces": "Nenhuma biometria está cadastrada nesta estação.",
+    "unknown_face": "Rosto não reconhecido nesta empresa e obra.",
     "company_scope_required": "Informe a empresa antes de selecionar uma obra.",
+    "station_scope_missing": "A estação de ponto não possui empresa configurada.",
+    "station_company_not_found": "A empresa configurada para esta estação não foi encontrada.",
+    "station_worksite_not_found": "A obra configurada para esta estação não foi encontrada.",
     "challenge_invalid": "Desafio inválido. Reinicie a verificação.",
     "challenge_expired": "O desafio expirou. Reinicie a verificação.",
     "challenge_purpose_mismatch": "Desafio incompatível com esta operação.",
@@ -43,6 +47,40 @@ def _optional_positive_int(field_name):
     except (TypeError, ValueError):
         return None
     return value if value > 0 else None
+
+
+def _configured_station_scope():
+    company_slug = (
+        current_app.config.get("PUNCH_COMPANY_SLUG")
+        or os.environ.get("PUNCH_COMPANY_SLUG")
+        or os.environ.get("PILOT_COMPANY_SLUG")
+    )
+    worksite_code = (
+        current_app.config.get("PUNCH_WORKSITE_CODE")
+        or os.environ.get("PUNCH_WORKSITE_CODE")
+        or os.environ.get("PILOT_WORKSITE_CODE")
+    )
+
+    if not company_slug:
+        if os.environ.get("APP_ENV", "development").lower() in {"pilot", "production"}:
+            return None, None, "station_scope_missing"
+        return None, None, None
+
+    company = Company.query.filter_by(slug=company_slug, active=True).first()
+    if company is None:
+        return None, None, "station_company_not_found"
+
+    if not worksite_code:
+        return company.id, None, None
+
+    worksite = Worksite.query.filter_by(
+        company_id=company.id,
+        code=worksite_code,
+        active=True,
+    ).first()
+    if worksite is None:
+        return None, None, "station_worksite_not_found"
+    return company.id, worksite.id, None
 
 
 def _finish_punch(result, punch_type, started, liveness_payload=None):
@@ -117,20 +155,20 @@ def punch_challenge():
 def punch_submit():
     started = time.monotonic()
     punch_type = request.form.get("tipo", "").upper()
-    company_id = _optional_positive_int("company_id")
-    worksite_id = _optional_positive_int("worksite_id")
 
     if punch_type not in ALLOWED_TYPES:
         return jsonify(status="error", message="Tipo de ponto inválido."), 400
-    if request.form.get("worksite_id") not in (None, "") and worksite_id is None:
-        return jsonify(status="error", message="Obra inválida."), 400
-    if request.form.get("company_id") not in (None, "") and company_id is None:
-        return jsonify(status="error", message="Empresa inválida."), 400
-    if worksite_id is not None and company_id is None:
-        return jsonify(status="error", code="company_scope_required", message=ERROR_MESSAGES["company_scope_required"]), 400
 
     legacy_image = request.files.get("image")
     if current_app.config.get("TESTING") and legacy_image is not None and legacy_image.filename:
+        company_id = _optional_positive_int("company_id")
+        worksite_id = _optional_positive_int("worksite_id")
+        if request.form.get("worksite_id") not in (None, "") and worksite_id is None:
+            return jsonify(status="error", message="Obra inválida."), 400
+        if request.form.get("company_id") not in (None, "") and company_id is None:
+            return jsonify(status="error", message="Empresa inválida."), 400
+        if worksite_id is not None and company_id is None:
+            return jsonify(status="error", code="company_scope_required", message=ERROR_MESSAGES["company_scope_required"]), 400
         result = recognize_registered_user(
             legacy_image.stream,
             tolerance=float(current_app.config.get("FACE_MATCH_TOLERANCE", 0.6)),
@@ -138,6 +176,15 @@ def punch_submit():
             worksite_id=worksite_id,
         )
         return _finish_punch(result, punch_type, started, liveness_payload=None)
+
+    company_id, worksite_id, scope_error = _configured_station_scope()
+    if scope_error:
+        current_app.logger.error("punch_station_scope_error code=%s", scope_error)
+        return jsonify(
+            status="error",
+            code=scope_error,
+            message=ERROR_MESSAGES[scope_error],
+        ), 503
 
     challenge_id = request.form.get("challenge_id", "")
     if not challenge_id:
