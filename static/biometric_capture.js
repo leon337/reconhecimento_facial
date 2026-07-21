@@ -81,7 +81,7 @@
       startCameraButton.classList.add("hidden");
       startEnrollmentButton.classList.remove("hidden");
       startEnrollmentButton.disabled = false;
-      setStatus("Câmera pronta. Mantenha apenas o funcionário no enquadramento.");
+      setStatus("Câmera pronta. Centralize o rosto e mantenha apenas o funcionário no enquadramento.");
     } catch (error) {
       console.error("biometric_secure_camera_failed", error);
       stopCamera();
@@ -111,13 +111,13 @@
       );
     });
 
-  const requestChallenge = async () => {
+  const requestCaptureSession = async () => {
     const response = await fetch(challengeUrl, {
       headers: { Accept: "application/json" },
       credentials: "same-origin",
     });
     if (!response.ok) {
-      throw new Error("challenge_request_failed");
+      throw new Error("capture_session_request_failed");
     }
     return response.json();
   };
@@ -126,7 +126,7 @@
     const frames = [];
     for (let index = 0; index < count; index += 1) {
       frames.push(await captureFrame());
-      challengeProgress.textContent = `Capturando ${index + 1}/${count}`;
+      challengeProgress.textContent = `Leitura facial ${index + 1}/${count}`;
       if (index + 1 < count) {
         await sleep(intervalMs);
       }
@@ -141,25 +141,25 @@
 
     setBusy(true);
     challengePanel.classList.remove("hidden");
-    setStatus("Preparando prova de vida...");
+    setStatus("Preparando leitura biométrica facial...");
 
     try {
-      const challenge = await requestChallenge();
-      challengeText.textContent = challenge.prompt;
+      const captureSession = await requestCaptureSession();
+      challengeText.textContent = captureSession.prompt;
       challengeProgress.textContent = "Prepare-se";
-      await sleep(650);
+      await sleep(500);
       const frames = await captureBurst(
-        Number(challenge.frame_count || 6),
-        Number(challenge.capture_interval_ms || 240),
+        Number(captureSession.frame_count || 8),
+        Number(captureSession.capture_interval_ms || 160),
       );
-      challengeProgress.textContent = "Validando biometria...";
-      setStatus("Verificando prova de vida e duplicidade facial...");
+      challengeProgress.textContent = "Gerando perfil biométrico...";
+      setStatus("Comparando as leituras faciais e verificando duplicidade...");
 
       const formData = new FormData();
       frames.forEach((frame, index) => {
-        formData.append("frames", frame, `cadastro-${index + 1}.jpg`);
+        formData.append("frames", frame, `leitura-facial-${index + 1}.jpg`);
       });
-      formData.append("challenge_id", challenge.challenge_id);
+      formData.append("challenge_id", captureSession.challenge_id);
       formData.append("csrf_token", csrfToken);
 
       const controller = new AbortController();
@@ -185,13 +185,13 @@
       }
       window.location.assign(submitUrl.replace(/\/biometric$/, ""));
     } catch (error) {
-      console.error("live_biometric_enrollment_failed", error);
+      console.error("live_face_enrollment_failed", error);
       if (error.name === "AbortError") {
-        setStatus("A validação excedeu 15 segundos. Tente novamente.", true);
+        setStatus("O cadastro excedeu 15 segundos. Tente novamente com melhor iluminação.", true);
       } else {
-        setStatus("Não foi possível concluir o cadastro ao vivo. Tente novamente.", true);
+        setStatus("Não foi possível concluir a leitura facial. Tente novamente.", true);
       }
-      challengeProgress.textContent = "Verificação interrompida";
+      challengeProgress.textContent = "Leitura interrompida";
       setBusy(false);
       window.setTimeout(() => challengePanel.classList.add("hidden"), 1800);
     }

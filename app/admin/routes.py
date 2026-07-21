@@ -10,7 +10,8 @@ from app.admin import bp
 from app.admin.auth import admin_login_required, is_safe_redirect_target, permission_required, sync_admin_scope
 from app.biometric_models import BiometricProfile
 from app.biometrics import BiometricCryptoError, delete_private_image, encrypt_template, save_private_image_bytes
-from app.liveness import analyze_blink_liveness, consume_challenge, issue_challenge
+from app.face_enrollment import analyze_face_enrollment
+from app.liveness import consume_challenge, issue_challenge
 from app.models import Employee, User, db
 from app.observability import audit, increment_metric, login_rate_limiter
 from app.punch.service import find_duplicate_biometric
@@ -161,7 +162,7 @@ def create_user():
     actor = User.query.get(session.get("admin_user_id"))
     audit("admin.user.create", "success", actor=actor, target_type="user", target_id=user.id)
     db.session.commit()
-    flash("Funcionário salvo. Realize a prova de vida para concluir o cadastro.", "success")
+    flash("Funcionário salvo. Faça a leitura facial para concluir o cadastro.", "success")
     return redirect(url_for("admin.biometric_form", user_id=user.id))
 
 
@@ -175,7 +176,16 @@ def biometric_form(user_id):
 @permission_required(Permission.BIOMETRICS_MANAGE)
 def biometric_challenge(user_id):
     user = _scoped_user_or_404(user_id)
-    return jsonify(issue_challenge("enrollment", subject_id=user.id))
+    challenge = issue_challenge("enrollment", subject_id=user.id)
+    challenge.update(
+        {
+            "action": "FACE_SCAN",
+            "prompt": "Olhe para a câmera e mantenha o rosto firme por alguns segundos.",
+            "frame_count": int(current_app.config.get("ENROLLMENT_FRAME_COUNT", 8)),
+            "capture_interval_ms": int(current_app.config.get("ENROLLMENT_CAPTURE_INTERVAL_MS", 160)),
+        }
+    )
+    return jsonify(challenge)
 
 
 @bp.route("/users/<int:user_id>/biometric", methods=["POST"])
@@ -183,31 +193,30 @@ def biometric_challenge(user_id):
 def save_biometric(user_id):
     user = _scoped_user_or_404(user_id)
     challenge_id = request.form.get("challenge_id", "")
-    challenge_ok, challenge_reason = consume_challenge(
+    challenge_ok, _challenge_reason = consume_challenge(
         challenge_id,
         "enrollment",
         subject_id=user.id,
     )
     if not challenge_ok:
-        flash("Desafio inválido ou expirado. Reinicie a captura.", "error")
+        flash("Captura inválida ou expirada. Reinicie a leitura facial.", "error")
         return redirect(url_for("admin.biometric_form", user_id=user_id))
 
-    liveness = analyze_blink_liveness(request.files.getlist("frames"))
-    if not liveness.passed:
-        increment_metric("biometric_enrollment_liveness_failure_total")
+    enrollment = analyze_face_enrollment(request.files.getlist("frames"))
+    if not enrollment.passed:
+        increment_metric("biometric_enrollment_face_failure_total")
         messages = {
             "no_face": "Nenhum rosto detectado.",
             "multiple_faces": "Mantenha apenas uma pessoa diante da câmera.",
-            "liveness_failed": "Prova de vida não confirmada. Olhe para a câmera e pisque uma vez.",
-            "poor_lighting": "Iluminação inadequada.",
-            "blurry_frame": "Imagem desfocada. Mantenha o rosto parado.",
-            "face_too_small": "Aproxime o rosto da câmera.",
+            "insufficient_quality_frames": "Não houve leituras faciais nítidas suficientes. Melhore a iluminação e mantenha o rosto parado.",
+            "inconsistent_face": "As leituras não representam um único rosto consistente. Reinicie o cadastro.",
+            "invalid_frame_count": "A sequência da câmera ficou incompleta. Reinicie o cadastro.",
         }
-        flash(messages.get(liveness.reason, "Não foi possível validar a captura ao vivo."), "error")
+        flash(messages.get(enrollment.reason, "Não foi possível gerar o perfil biométrico facial."), "error")
         return redirect(url_for("admin.biometric_form", user_id=user_id))
 
     duplicate = find_duplicate_biometric(
-        liveness.encoding,
+        enrollment.encoding,
         company_id=user.company_id,
         exclude_user_id=user.id,
         tolerance=float(current_app.config.get("FACE_DUPLICATE_TOLERANCE", 0.45)),
@@ -226,9 +235,9 @@ def save_biometric(user_id):
         flash("Este rosto já está associado a outro funcionário.", "error")
         return redirect(url_for("admin.biometric_form", user_id=user_id))
 
-    object_key, _ = save_private_image_bytes(liveness.best_frame_jpeg, ".jpg")
+    object_key, _ = save_private_image_bytes(enrollment.best_frame_jpeg, ".jpg")
     try:
-        encrypted_template = encrypt_template(json.dumps(liveness.encoding.tolist()))
+        encrypted_template = encrypt_template(json.dumps(enrollment.encoding.tolist()))
     except BiometricCryptoError:
         delete_private_image(object_key)
         current_app.logger.exception("Falha na configuração criptográfica biométrica")
@@ -239,7 +248,7 @@ def save_biometric(user_id):
     previous_object_key = profile.image_object_key
     profile.encrypted_template = encrypted_template
     profile.image_object_key = object_key
-    profile.algorithm_version = "face_recognition-liveness-2"
+    profile.algorithm_version = "face_recognition-multiframe-3"
     profile.active = True
     db.session.add(profile)
     actor = User.query.get(session.get("admin_user_id"))
@@ -250,15 +259,17 @@ def save_biometric(user_id):
         target_type="user",
         target_id=user.id,
         metadata={
-            "liveness": True,
-            "quality_score": liveness.quality_score,
-            "processing_ms": liveness.duration_ms,
+            "capture_method": "live_multiframe",
+            "valid_frames": enrollment.valid_frames,
+            "quality_score": enrollment.quality_score,
+            "max_intra_distance": enrollment.max_intra_distance,
+            "processing_ms": enrollment.duration_ms,
         },
     )
     db.session.commit()
     if previous_object_key and previous_object_key != object_key:
         delete_private_image(previous_object_key)
 
-    increment_metric("biometric_enrollment_liveness_success_total")
-    flash("Biometria ao vivo protegida e cadastrada com sucesso.", "success")
+    increment_metric("biometric_enrollment_face_success_total")
+    flash("Perfil biométrico facial protegido e cadastrado com sucesso.", "success")
     return redirect(url_for("admin.list_users"))

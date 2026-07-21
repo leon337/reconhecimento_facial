@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Registrar Biometria</title>
+  <title>Registrar Biometria Facial</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body class="min-h-screen bg-gray-100 p-4 md:p-6">
@@ -14,9 +14,9 @@
     data-csrf-token="{{ csrf_token() }}"
     class="mx-auto max-w-xl rounded bg-white p-6 shadow"
   >
-    <h1 class="mb-2 text-center text-2xl font-bold">Biometria – {{ user.name }} ({{ user.username }})</h1>
+    <h1 class="mb-2 text-center text-2xl font-bold">Biometria facial – {{ user.name }} ({{ user.username }})</h1>
     <p class="mb-4 text-center text-sm text-gray-600">
-      Cadastro exclusivamente por câmera ao vivo. Fotos salvas, galeria e arquivos não são aceitos.
+      Cadastro exclusivamente por câmera ao vivo. O sistema fará várias leituras automáticas da face. Fotos salvas, galeria e arquivos não são aceitos.
     </p>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -60,14 +60,15 @@
         disabled
         class="hidden w-full rounded bg-blue-700 py-3 font-semibold text-white hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        Iniciar prova de vida e cadastrar
+        Capturar dados faciais e cadastrar
       </button>
 
       <p id="camera-status" class="min-h-6 text-center text-sm text-gray-600" role="status" aria-live="polite"></p>
     </section>
 
     <div class="mt-4 rounded bg-gray-50 p-3 text-sm text-gray-700">
-      <p><strong>Processo:</strong> olhar para a câmera, piscar uma vez e aguardar a confirmação.</p>
+      <p><strong>Processo:</strong> centralize o rosto, mantenha a cabeça firme por alguns segundos e aguarde as leituras automáticas.</p>
+      <p class="mt-1"><strong>Biometria:</strong> o sistema consolida várias codificações faciais para formar o perfil do funcionário.</p>
       <p class="mt-1"><strong>Segurança:</strong> o mesmo rosto não poderá ser cadastrado para dois funcionários.</p>
     </div>
 
