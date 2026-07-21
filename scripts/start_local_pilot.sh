@@ -63,6 +63,6 @@ chmod 644 instance/certs/potiguar-local-ca.crt 2>/dev/null || true
 echo "status=online"
 echo "computer_url=http://localhost:8000"
 echo "phone_url=https://${LAN_IP}:8443"
-echo "certificate_url=http://${LAN_IP}:8000/local-ca.crt"
+echo "certificate_url=http://${LAN_IP}:8080/local-ca.crt"
 echo "phone_certificate=$ROOT_DIR/instance/certs/potiguar-local-ca.crt"
-echo "phone_setup=Baixe e instale o certificado CA no Android; depois reabra o navegador no phone_url."
+echo "phone_setup=Antes do primeiro login, baixe e instale o certificado CA; depois use somente o phone_url HTTPS."
