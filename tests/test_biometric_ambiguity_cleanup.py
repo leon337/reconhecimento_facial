@@ -84,7 +84,7 @@ def test_admin_can_remove_incorrect_biometric(app, client, tmp_path):
     assert login.status_code == 302
 
     response = client.post(
-        f"/admin/users/{target_id}/biometric",
+        f"/admin/users/{target_id}/biometric/remove",
         follow_redirects=True,
     )
     assert response.status_code == 200
