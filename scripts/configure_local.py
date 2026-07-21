@@ -31,7 +31,7 @@ def render_env(admin_username: str, company_name: str, worksite_name: str) -> tu
         "PILOT_ADMIN_USERNAME": admin_username,
         "PILOT_ADMIN_PASSWORD": admin_password,
         "PILOT_ADMIN_NAME": "Administrador do Piloto",
-        "WEB_CONCURRENCY": "1",
+        "WEB_CONCURRENCY": "2",
     }
     content = "\n".join(f"{key}={value}" for key, value in values.items()) + "\n"
     return content, admin_password

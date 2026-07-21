@@ -1,27 +1,27 @@
 # app/admin/routes.py
 
 import json
-import os
-import site
-from pathlib import Path
 from uuid import uuid4
 
-import face_recognition
-from flask import current_app, flash, redirect, render_template, request, session, url_for
+from flask import current_app, flash, jsonify, redirect, render_template, request, session, url_for
 from PIL import Image, UnidentifiedImageError
 
 from app.admin import bp
 from app.admin.auth import admin_login_required, is_safe_redirect_target, permission_required, sync_admin_scope
 from app.biometric_models import BiometricProfile
-from app.biometrics import BiometricCryptoError, delete_private_image, encrypt_template, save_private_image
+from app.biometrics import BiometricCryptoError, delete_private_image, encrypt_template, save_private_image_bytes
+from app.liveness import analyze_blink_liveness, consume_challenge, issue_challenge
 from app.models import Employee, User, db
 from app.observability import audit, increment_metric, login_rate_limiter
+from app.punch.service import find_duplicate_biometric
 from app.rbac import AccessRole, Permission
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
 ALLOWED_IMAGE_FORMATS = {"JPEG": ".jpg", "PNG": ".png"}
 
 
+# Mantidos para compatibilidade de integrações administrativas antigas. O fluxo
+# operacional da FASE 10.1 não expõe seleção de arquivos ao usuário.
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -39,7 +39,6 @@ def validated_image_extension(file_storage):
 
 
 def unique_upload_name(extension):
-    """Compatibilidade: gera nomes não previsíveis sem expor o diretório privado."""
     return f"{uuid4().hex}{extension}"
 
 
@@ -59,11 +58,6 @@ def _scoped_user_or_404(user_id):
 
 
 def _login_key(username: str) -> str:
-    """Usa apenas o endereço já normalizado pelo servidor WSGI.
-
-    Cabeçalhos de encaminhamento fornecidos pelo cliente não são confiáveis sem
-    uma configuração explícita de proxy confiável.
-    """
     address = request.remote_addr or "unknown"
     return f"{address}:{username.lower()}"
 
@@ -167,7 +161,7 @@ def create_user():
     actor = User.query.get(session.get("admin_user_id"))
     audit("admin.user.create", "success", actor=actor, target_type="user", target_id=user.id)
     db.session.commit()
-    flash("Funcionário salvo. Capture a biometria para concluir o cadastro.", "success")
+    flash("Funcionário salvo. Realize a prova de vida para concluir o cadastro.", "success")
     return redirect(url_for("admin.biometric_form", user_id=user.id))
 
 
@@ -177,40 +171,64 @@ def biometric_form(user_id):
     return render_template("admin/users_biometric.html", user=_scoped_user_or_404(user_id))
 
 
+@bp.route("/users/<int:user_id>/biometric/challenge", methods=["GET"])
+@permission_required(Permission.BIOMETRICS_MANAGE)
+def biometric_challenge(user_id):
+    user = _scoped_user_or_404(user_id)
+    return jsonify(issue_challenge("enrollment", subject_id=user.id))
+
+
 @bp.route("/users/<int:user_id>/biometric", methods=["POST"])
 @permission_required(Permission.BIOMETRICS_MANAGE)
 def save_biometric(user_id):
     user = _scoped_user_or_404(user_id)
-    file = request.files.get("file")
-    if not file or not file.filename or not allowed_file(file.filename):
-        flash("Arquivo inválido.", "error")
+    challenge_id = request.form.get("challenge_id", "")
+    challenge_ok, challenge_reason = consume_challenge(
+        challenge_id,
+        "enrollment",
+        subject_id=user.id,
+    )
+    if not challenge_ok:
+        flash("Desafio inválido ou expirado. Reinicie a captura.", "error")
         return redirect(url_for("admin.biometric_form", user_id=user_id))
 
-    extension = validated_image_extension(file)
-    if extension is None:
-        flash("O conteúdo enviado não é uma imagem JPEG ou PNG válida.", "error")
+    liveness = analyze_blink_liveness(request.files.getlist("frames"))
+    if not liveness.passed:
+        increment_metric("biometric_enrollment_liveness_failure_total")
+        messages = {
+            "no_face": "Nenhum rosto detectado.",
+            "multiple_faces": "Mantenha apenas uma pessoa diante da câmera.",
+            "liveness_failed": "Prova de vida não confirmada. Olhe para a câmera e pisque uma vez.",
+            "poor_lighting": "Iluminação inadequada.",
+            "blurry_frame": "Imagem desfocada. Mantenha o rosto parado.",
+            "face_too_small": "Aproxime o rosto da câmera.",
+        }
+        flash(messages.get(liveness.reason, "Não foi possível validar a captura ao vivo."), "error")
         return redirect(url_for("admin.biometric_form", user_id=user_id))
 
-    object_key, filepath = save_private_image(file, extension)
-    model_path = Path(site.getsitepackages()[0]) / "face_recognition_models"
-    os.environ["FACE_RECOGNITION_MODEL_LOCATION"] = str(model_path)
+    duplicate = find_duplicate_biometric(
+        liveness.encoding,
+        company_id=user.company_id,
+        exclude_user_id=user.id,
+        tolerance=float(current_app.config.get("FACE_DUPLICATE_TOLERANCE", 0.45)),
+    )
+    if duplicate.user is not None:
+        actor = User.query.get(session.get("admin_user_id"))
+        audit(
+            "admin.biometric.enroll",
+            "duplicate_rejected",
+            actor=actor,
+            target_type="user",
+            target_id=user.id,
+            metadata={"duplicate_user_id": duplicate.user.id, "distance": duplicate.distance},
+        )
+        db.session.commit()
+        flash("Este rosto já está associado a outro funcionário.", "error")
+        return redirect(url_for("admin.biometric_form", user_id=user_id))
 
+    object_key, _ = save_private_image_bytes(liveness.best_frame_jpeg, ".jpg")
     try:
-        image = face_recognition.load_image_file(filepath)
-        encodings = face_recognition.face_encodings(image)
-    except (OSError, ValueError):
-        delete_private_image(object_key)
-        flash("Não foi possível processar a imagem enviada.", "error")
-        return redirect(url_for("admin.biometric_form", user_id=user_id))
-
-    if len(encodings) != 1:
-        delete_private_image(object_key)
-        message = "Nenhum rosto detectado." if not encodings else "Envie uma imagem com apenas um rosto."
-        flash(message, "error")
-        return redirect(url_for("admin.biometric_form", user_id=user_id))
-
-    try:
-        encrypted_template = encrypt_template(json.dumps(encodings[0].tolist()))
+        encrypted_template = encrypt_template(json.dumps(liveness.encoding.tolist()))
     except BiometricCryptoError:
         delete_private_image(object_key)
         current_app.logger.exception("Falha na configuração criptográfica biométrica")
@@ -221,14 +239,26 @@ def save_biometric(user_id):
     previous_object_key = profile.image_object_key
     profile.encrypted_template = encrypted_template
     profile.image_object_key = object_key
-    profile.algorithm_version = "face_recognition-1"
+    profile.algorithm_version = "face_recognition-liveness-2"
     profile.active = True
     db.session.add(profile)
     actor = User.query.get(session.get("admin_user_id"))
-    audit("admin.biometric.enroll", "success", actor=actor, target_type="user", target_id=user.id)
+    audit(
+        "admin.biometric.enroll",
+        "success",
+        actor=actor,
+        target_type="user",
+        target_id=user.id,
+        metadata={
+            "liveness": True,
+            "quality_score": liveness.quality_score,
+            "processing_ms": liveness.duration_ms,
+        },
+    )
     db.session.commit()
     if previous_object_key and previous_object_key != object_key:
         delete_private_image(previous_object_key)
 
-    flash("Biometria protegida e cadastrada com sucesso.", "success")
+    increment_metric("biometric_enrollment_liveness_success_total")
+    flash("Biometria ao vivo protegida e cadastrada com sucesso.", "success")
     return redirect(url_for("admin.list_users"))

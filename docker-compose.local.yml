@@ -15,11 +15,29 @@ services:
     command: >-
       sh -c "flask --app main db upgrade &&
              python scripts/bootstrap_local.py &&
-             gunicorn --bind 0.0.0.0:8000 --workers ${WEB_CONCURRENCY:-1} --timeout 120 main:app"
+             gunicorn --bind 0.0.0.0:8000 --workers ${WEB_CONCURRENCY:-2} --timeout 30 main:app"
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     volumes:
       - biometric_local:/app/instance/biometrics
+      - ./instance/certs:/app/instance/certs:ro
+    networks:
+      - local_internal
+
+  https-proxy:
+    image: caddy:2.8-alpine
+    restart: unless-stopped
+    depends_on:
+      - app
+    environment:
+      LAN_IP: ${LAN_IP:-127.0.0.1}
+    ports:
+      - "8080:8080"
+      - "8443:8443"
+    volumes:
+      - ./Caddyfile.local:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
     networks:
       - local_internal
 
@@ -47,3 +65,5 @@ networks:
 volumes:
   postgres_local:
   biometric_local:
+  caddy_data:
+  caddy_config:

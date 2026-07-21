@@ -1,22 +1,36 @@
 (() => {
   "use strict";
 
-  const form = document.getElementById("biometric-form");
+  const app = document.getElementById("biometric-app");
   const video = document.getElementById("camera-preview");
-  const canvas = document.getElementById("camera-canvas");
-  const preview = document.getElementById("captured-preview");
-  const fileInput = document.getElementById("biometric-file");
-  const startButton = document.getElementById("start-camera");
-  const captureButton = document.getElementById("capture-photo");
-  const retakeButton = document.getElementById("retake-photo");
+  const startCameraButton = document.getElementById("start-camera");
+  const startEnrollmentButton = document.getElementById("start-enrollment");
+  const challengePanel = document.getElementById("challenge-panel");
+  const challengeText = document.getElementById("challenge-text");
+  const challengeProgress = document.getElementById("challenge-progress");
   const status = document.getElementById("camera-status");
 
-  if (!form || !video || !canvas || !preview || !fileInput) {
+  if (
+    !app ||
+    !video ||
+    !startCameraButton ||
+    !startEnrollmentButton ||
+    !challengePanel ||
+    !challengeText ||
+    !challengeProgress ||
+    !status
+  ) {
     return;
   }
 
+  const submitUrl = app.dataset.submitUrl;
+  const challengeUrl = app.dataset.challengeUrl;
+  const csrfToken = app.dataset.csrfToken;
   let stream = null;
-  let previewUrl = null;
+  let busy = false;
+
+  const sleep = (milliseconds) =>
+    new Promise((resolve) => window.setTimeout(resolve, milliseconds));
 
   const setStatus = (message, isError = false) => {
     status.textContent = message;
@@ -24,12 +38,8 @@
     status.classList.toggle("text-gray-600", !isError);
   };
 
-  const revokePreviewUrl = () => {
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
-      previewUrl = null;
-    }
-  };
+  const secureCameraAvailable = () =>
+    window.isSecureContext && Boolean(navigator.mediaDevices?.getUserMedia);
 
   const stopCamera = () => {
     if (stream) {
@@ -39,36 +49,18 @@
     video.srcObject = null;
   };
 
-  const showCapturedFile = (file) => {
-    revokePreviewUrl();
-    previewUrl = URL.createObjectURL(file);
-    preview.src = previewUrl;
-    preview.classList.remove("hidden");
-    video.classList.add("hidden");
-    captureButton.classList.add("hidden");
-    retakeButton.classList.remove("hidden");
-    startButton.classList.add("hidden");
-    setStatus("Foto pronta. Confirme o cadastro ou tire outra foto.");
+  const setBusy = (value) => {
+    busy = value;
+    startCameraButton.disabled = value;
+    startEnrollmentButton.disabled = value || !stream;
   };
 
-  const assignCapturedBlob = (blob) => {
-    const capturedFile = new File([blob], "biometria-camera.jpg", {
-      type: "image/jpeg",
-      lastModified: Date.now(),
-    });
-    const transfer = new DataTransfer();
-    transfer.items.add(capturedFile);
-    fileInput.files = transfer.files;
-    showCapturedFile(capturedFile);
-  };
-
-  startButton.addEventListener("click", async () => {
-    if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
+  const startCamera = async () => {
+    if (!secureCameraAvailable()) {
       setStatus(
-        "A câmera ao vivo exige localhost ou HTTPS. No celular, use o campo abaixo para abrir a câmera frontal.",
+        "A câmera ao vivo exige HTTPS no celular. Use o endereço seguro exibido pelo instalador.",
         true,
       );
-      fileInput.focus();
       return;
     }
 
@@ -78,77 +70,143 @@
         audio: false,
         video: {
           facingMode: "user",
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
+          width: { ideal: 640, max: 640 },
+          height: { ideal: 480, max: 480 },
+          frameRate: { ideal: 24, max: 30 },
         },
       });
       video.srcObject = stream;
       await video.play();
-      preview.classList.add("hidden");
       video.classList.remove("hidden");
-      captureButton.classList.remove("hidden");
-      retakeButton.classList.add("hidden");
-      startButton.classList.add("hidden");
-      setStatus("Câmera ativa. Centralize o rosto e pressione Capturar foto.");
+      startCameraButton.classList.add("hidden");
+      startEnrollmentButton.classList.remove("hidden");
+      startEnrollmentButton.disabled = false;
+      setStatus("Câmera pronta. Mantenha apenas o funcionário no enquadramento.");
     } catch (error) {
-      console.error("camera_access_failed", error);
-      setStatus(
-        "Não foi possível acessar a câmera. Verifique a permissão do navegador ou use a câmera do celular abaixo.",
-        true,
+      console.error("biometric_secure_camera_failed", error);
+      stopCamera();
+      setStatus("Não foi possível abrir a câmera. Verifique a permissão do navegador.", true);
+    }
+  };
+
+  const captureFrame = () =>
+    new Promise((resolve, reject) => {
+      if (!stream || !video.videoWidth || !video.videoHeight) {
+        reject(new Error("camera_not_ready"));
+        return;
+      }
+      const maxDimension = 480;
+      const scale = Math.min(
+        1,
+        maxDimension / Math.max(video.videoWidth, video.videoHeight),
       );
-    }
-  });
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.max(1, Math.round(video.videoWidth * scale));
+      canvas.height = Math.max(1, Math.round(video.videoHeight * scale));
+      canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob(
+        (blob) => (blob ? resolve(blob) : reject(new Error("frame_encode_failed"))),
+        "image/jpeg",
+        0.84,
+      );
+    });
 
-  captureButton.addEventListener("click", () => {
-    if (!stream || video.videoWidth === 0 || video.videoHeight === 0) {
-      setStatus("A câmera ainda não está pronta. Aguarde e tente novamente.", true);
+  const requestChallenge = async () => {
+    const response = await fetch(challengeUrl, {
+      headers: { Accept: "application/json" },
+      credentials: "same-origin",
+    });
+    if (!response.ok) {
+      throw new Error("challenge_request_failed");
+    }
+    return response.json();
+  };
+
+  const captureBurst = async (count, intervalMs) => {
+    const frames = [];
+    for (let index = 0; index < count; index += 1) {
+      frames.push(await captureFrame());
+      challengeProgress.textContent = `Capturando ${index + 1}/${count}`;
+      if (index + 1 < count) {
+        await sleep(intervalMs);
+      }
+    }
+    return frames;
+  };
+
+  const enroll = async () => {
+    if (busy || !stream) {
       return;
     }
 
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const context = canvas.getContext("2d");
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-    canvas.toBlob(
-      (blob) => {
-        if (!blob) {
-          setStatus("Não foi possível gerar a foto. Tente novamente.", true);
-          return;
-        }
-        stopCamera();
-        assignCapturedBlob(blob);
-      },
-      "image/jpeg",
-      0.92,
+    setBusy(true);
+    challengePanel.classList.remove("hidden");
+    setStatus("Preparando prova de vida...");
+
+    try {
+      const challenge = await requestChallenge();
+      challengeText.textContent = challenge.prompt;
+      challengeProgress.textContent = "Prepare-se";
+      await sleep(650);
+      const frames = await captureBurst(
+        Number(challenge.frame_count || 6),
+        Number(challenge.capture_interval_ms || 240),
+      );
+      challengeProgress.textContent = "Validando biometria...";
+      setStatus("Verificando prova de vida e duplicidade facial...");
+
+      const formData = new FormData();
+      frames.forEach((frame, index) => {
+        formData.append("frames", frame, `cadastro-${index + 1}.jpg`);
+      });
+      formData.append("challenge_id", challenge.challenge_id);
+      formData.append("csrf_token", csrfToken);
+
+      const controller = new AbortController();
+      const timeoutId = window.setTimeout(() => controller.abort(), 15000);
+      let response;
+      try {
+        response = await fetch(submitUrl, {
+          method: "POST",
+          body: formData,
+          credentials: "same-origin",
+          signal: controller.signal,
+        });
+      } finally {
+        window.clearTimeout(timeoutId);
+      }
+
+      if (response.redirected) {
+        window.location.assign(response.url);
+        return;
+      }
+      if (!response.ok) {
+        throw new Error("enrollment_rejected");
+      }
+      window.location.assign(submitUrl.replace(/\/biometric$/, ""));
+    } catch (error) {
+      console.error("live_biometric_enrollment_failed", error);
+      if (error.name === "AbortError") {
+        setStatus("A validação excedeu 15 segundos. Tente novamente.", true);
+      } else {
+        setStatus("Não foi possível concluir o cadastro ao vivo. Tente novamente.", true);
+      }
+      challengeProgress.textContent = "Verificação interrompida";
+      setBusy(false);
+      window.setTimeout(() => challengePanel.classList.add("hidden"), 1800);
+    }
+  };
+
+  startCameraButton.addEventListener("click", startCamera);
+  startEnrollmentButton.addEventListener("click", enroll);
+  window.addEventListener("pagehide", stopCamera);
+
+  if (secureCameraAvailable()) {
+    startCamera();
+  } else {
+    setStatus(
+      "Câmera bloqueada neste endereço. No celular, abra o endereço HTTPS e confie no certificado local.",
+      true,
     );
-  });
-
-  retakeButton.addEventListener("click", async () => {
-    fileInput.value = "";
-    preview.classList.add("hidden");
-    retakeButton.classList.add("hidden");
-    startButton.classList.remove("hidden");
-    setStatus("Foto descartada. Abra a câmera para realizar uma nova captura.");
-  });
-
-  fileInput.addEventListener("change", () => {
-    const [file] = fileInput.files;
-    if (!file) {
-      return;
-    }
-    stopCamera();
-    showCapturedFile(file);
-  });
-
-  form.addEventListener("submit", (event) => {
-    if (!fileInput.files.length) {
-      event.preventDefault();
-      setStatus("Capture ou selecione uma foto antes de confirmar.", true);
-    }
-  });
-
-  window.addEventListener("beforeunload", () => {
-    stopCamera();
-    revokePreviewUrl();
-  });
+  }
 })();

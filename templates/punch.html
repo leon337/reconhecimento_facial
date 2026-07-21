@@ -10,47 +10,45 @@
   <main
     id="punch-app"
     data-submit-url="{{ url_for('punch.punch_submit') }}"
+    data-challenge-url="{{ url_for('punch.punch_challenge') }}"
     data-csrf-token="{{ csrf_token() }}"
     class="mx-auto max-w-xl rounded bg-white p-5 shadow"
   >
-    <h1 class="mb-4 text-2xl font-bold">Bater Ponto</h1>
+    <h1 class="mb-2 text-2xl font-bold">Bater Ponto</h1>
+    <p class="mb-4 text-sm text-gray-600">
+      O sistema identifica automaticamente o funcionário. Nenhuma foto da galeria é aceita.
+    </p>
 
-    <section id="live-camera-section" class="space-y-3">
+    <section class="space-y-3">
       <video
         id="video"
         autoplay
         playsinline
         muted
         class="hidden w-full rounded bg-black"
+        aria-label="Câmera para reconhecimento facial"
       ></video>
+
+      <div id="challenge-panel" class="hidden rounded border border-blue-200 bg-blue-50 p-3 text-center">
+        <p id="challenge-text" class="font-semibold text-blue-900"></p>
+        <p id="challenge-countdown" class="mt-1 text-sm text-blue-700"></p>
+      </div>
+
       <button
         id="start-camera"
         type="button"
-        class="w-full rounded bg-green-600 px-4 py-3 text-white hover:bg-green-700"
+        class="w-full rounded bg-green-600 px-4 py-3 font-semibold text-white hover:bg-green-700"
       >
-        Abrir câmera ao vivo
+        Abrir câmera segura
       </button>
-    </section>
 
-    <section id="mobile-camera-section" class="mt-5 border-t pt-4">
-      <h2 class="font-semibold">Câmera do celular ou alternativa</h2>
-      <p class="mb-3 text-sm text-gray-600">
-        No celular conectado por HTTP local, este campo abre a câmera frontal.
-      </p>
-      <input
-        id="mobile-image"
-        type="file"
-        accept="image/*"
-        capture="user"
-        class="w-full rounded border p-2"
-      >
       <button
-        id="submit-mobile-image"
+        id="start-verification"
         type="button"
         disabled
-        class="mt-3 w-full rounded bg-blue-600 px-4 py-3 text-white disabled:cursor-not-allowed disabled:opacity-50"
+        class="hidden w-full rounded bg-indigo-600 px-4 py-3 font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        Registrar foto selecionada
+        Iniciar prova de vida e registrar
       </button>
     </section>
 
@@ -62,14 +60,16 @@
       </select>
     </div>
 
-    <button
-      id="capture"
-      type="button"
-      disabled
-      class="mt-4 hidden w-full rounded bg-indigo-600 px-4 py-3 text-white disabled:cursor-not-allowed disabled:opacity-50"
-    >
-      Capturar e registrar
-    </button>
+    <div class="mt-4 rounded bg-gray-50 p-3 text-sm">
+      <div class="flex justify-between">
+        <span>Meta operacional</span>
+        <strong>&lt; 10 segundos</strong>
+      </div>
+      <div class="mt-1 flex justify-between">
+        <span>Tempo atual</span>
+        <strong id="elapsed-time">0,0s</strong>
+      </div>
+    </div>
 
     <p id="status" role="status" aria-live="polite" class="mt-4 min-h-6 text-sm text-gray-700"></p>
   </main>

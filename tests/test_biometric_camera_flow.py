@@ -24,7 +24,7 @@ def _login(client):
     )
 
 
-def test_new_employee_redirects_directly_to_biometric_capture(app, client):
+def test_new_employee_redirects_directly_to_live_biometric_capture(app, client):
     _create_admin(app)
     assert _login(client).status_code == 302
 
@@ -42,12 +42,13 @@ def test_new_employee_redirects_directly_to_biometric_capture(app, client):
     )
 
     assert response.status_code == 200
-    assert b"Capture a biometria para concluir o cadastro" in response.data
+    assert b"Realize a prova de vida para concluir o cadastro" in response.data
     assert b'id="camera-preview"' in response.data
-    assert b'id="capture-photo"' in response.data
+    assert b'id="start-enrollment"' in response.data
+    assert b'type="file"' not in response.data
 
 
-def test_biometric_page_offers_live_camera_and_mobile_capture(app, client):
+def test_biometric_page_offers_only_secure_live_camera(app, client):
     _create_admin(app)
     with app.app_context():
         admin = User.query.filter_by(username="admin-camera").one()
@@ -69,5 +70,7 @@ def test_biometric_page_offers_live_camera_and_mobile_capture(app, client):
     assert response.status_code == 200
     assert b'id="start-camera"' in response.data
     assert b'id="camera-preview"' in response.data
-    assert b'capture="user"' in response.data
+    assert b'id="start-enrollment"' in response.data
     assert b"biometric_capture.js" in response.data
+    assert b'type="file"' not in response.data
+    assert b"Fotos salvas, galeria e arquivos n" in response.data

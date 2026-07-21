@@ -19,6 +19,14 @@ if [[ ! -f .env.local ]]; then
   echo "A senha administrativa foi exibida acima. Guarde-a antes de continuar."
 fi
 
+LAN_IP="$(hostname -I 2>/dev/null | awk '{print $1}')"
+if [[ -z "$LAN_IP" ]]; then
+  LAN_IP="127.0.0.1"
+fi
+export LAN_IP
+export WEB_CONCURRENCY="${WEB_CONCURRENCY:-2}"
+mkdir -p instance/certs
+
 docker compose --env-file .env.local -f docker-compose.local.yml up --build -d
 
 echo "Aguardando a aplicação responder..."
@@ -34,9 +42,27 @@ if ! curl --fail --silent http://127.0.0.1:8000/health >/dev/null; then
   exit 1
 fi
 
-LAN_IP="$(hostname -I 2>/dev/null | awk '{print $1}')"
+for _ in $(seq 1 20); do
+  if docker compose --env-file .env.local -f docker-compose.local.yml exec -T https-proxy \
+    sh -c 'cat /data/caddy/pki/authorities/local/root.crt' \
+    > instance/certs/potiguar-local-ca.crt 2>/dev/null; then
+    if [[ -s instance/certs/potiguar-local-ca.crt ]]; then
+      break
+    fi
+  fi
+  sleep 1
+done
+
+if [[ ! -s instance/certs/potiguar-local-ca.crt ]]; then
+  echo "erro=Não foi possível exportar o certificado HTTPS local. Consulte os logs do serviço https-proxy."
+  exit 1
+fi
+
+chmod 644 instance/certs/potiguar-local-ca.crt 2>/dev/null || true
+
 echo "status=online"
 echo "computer_url=http://localhost:8000"
-if [[ -n "$LAN_IP" ]]; then
-  echo "phone_url=http://${LAN_IP}:8000"
-fi
+echo "phone_url=https://${LAN_IP}:8443"
+echo "certificate_url=http://${LAN_IP}:8080/local-ca.crt"
+echo "phone_certificate=$ROOT_DIR/instance/certs/potiguar-local-ca.crt"
+echo "phone_setup=Antes do primeiro login, baixe e instale o certificado CA; depois use somente o phone_url HTTPS."

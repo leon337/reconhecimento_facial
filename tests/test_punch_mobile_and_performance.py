@@ -9,23 +9,26 @@ from app.punch.service import (
 )
 
 
-def test_punch_page_offers_front_camera_fallback(client):
+def test_punch_page_requires_secure_live_camera(client):
     response = client.get("/punch")
 
     assert response.status_code == 200
-    assert b'id="mobile-image"' in response.data
-    assert b'capture="user"' in response.data
-    assert b'id="submit-mobile-image"' in response.data
     assert b'id="start-camera"' in response.data
+    assert b'id="start-verification"' in response.data
+    assert b'id="challenge-panel"' in response.data
+    assert b'type="file"' not in response.data
+    assert b"Nenhuma foto da galeria" in response.data
 
 
-def test_punch_javascript_checks_secure_context_and_mobile_fallback():
+def test_punch_javascript_checks_secure_context_and_captures_burst():
     source = Path("static/punch.js").read_text(encoding="utf-8")
 
     assert "window.isSecureContext" in source
     assert "navigator.mediaDevices?.getUserMedia" in source
-    assert "mobile-image" in source
-    assert "Reconhecimento em andamento" in source
+    assert "captureBurst" in source
+    assert "challenge_id" in source
+    assert "12000" in source
+    assert "FileReader" not in source
 
 
 def test_recognition_normalizes_large_image_before_face_encoding(monkeypatch):

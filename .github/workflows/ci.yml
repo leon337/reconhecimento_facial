@@ -55,6 +55,17 @@ jobs:
           POSTGRES_PASSWORD: ci-password
         run: docker compose -f docker-compose.production.yml config --quiet
 
+      - name: Validar Compose e Caddy do piloto local
+        run: |
+          cp .env.local.example .env.local
+          LAN_IP=127.0.0.1 WEB_CONCURRENCY=2 \
+            docker compose --env-file .env.local -f docker-compose.local.yml config --quiet
+          docker run --rm \
+            -e LAN_IP=127.0.0.1 \
+            -v "$PWD/Caddyfile.local:/etc/caddy/Caddyfile:ro" \
+            caddy:2.8-alpine \
+            caddy validate --config /etc/caddy/Caddyfile
+
       - name: Publicar relatório de testes
         if: always()
         uses: actions/upload-artifact@v4

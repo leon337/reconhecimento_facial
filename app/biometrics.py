@@ -45,6 +45,16 @@ def save_private_image(file_storage, extension: str) -> tuple[str, Path]:
     return object_key, path
 
 
+def save_private_image_bytes(data: bytes, extension: str = ".jpg") -> tuple[str, Path]:
+    """Persiste apenas quadros produzidos pela câmera e aprovados pela prova de vida."""
+    if not data:
+        raise ValueError("empty_private_image")
+    object_key = f"{uuid4().hex}{extension}"
+    path = private_storage_root() / object_key
+    path.write_bytes(data)
+    return object_key, path
+
+
 def delete_private_image(object_key: str | None) -> None:
     if not object_key:
         return
