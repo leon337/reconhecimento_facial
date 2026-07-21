@@ -2,6 +2,16 @@
   auto_https disable_redirects
 }
 
+http://{$LAN_IP}:8080 {
+  @certificate path /local-ca.crt
+  handle @certificate {
+    reverse_proxy app:8000
+  }
+  handle {
+    respond "Not found" 404
+  }
+}
+
 https://{$LAN_IP}:8443 {
   tls internal
   encode gzip
