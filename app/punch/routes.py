@@ -1,7 +1,8 @@
 import time
 from datetime import datetime
+from pathlib import Path
 
-from flask import current_app, jsonify, render_template, request
+from flask import current_app, jsonify, render_template, request, send_file
 
 from app.liveness import analyze_blink_liveness, consume_challenge, issue_challenge
 from app.models import Ponto, db
@@ -93,6 +94,20 @@ def punch():
     return render_template("punch.html")
 
 
+@bp.route("/local-ca.crt", methods=["GET"])
+def local_ca_certificate():
+    certificate = Path(current_app.root_path) / "instance" / "certs" / "potiguar-local-ca.crt"
+    if not certificate.is_file():
+        return jsonify(error="certificate_not_ready"), 404
+    return send_file(
+        certificate,
+        mimetype="application/x-x509-ca-cert",
+        as_attachment=True,
+        download_name="potiguar-local-ca.crt",
+        max_age=0,
+    )
+
+
 @bp.route("/punch/challenge", methods=["GET"])
 def punch_challenge():
     return jsonify(issue_challenge("punch"))
@@ -114,8 +129,6 @@ def punch_submit():
     if worksite_id is not None and company_id is None:
         return jsonify(status="error", code="company_scope_required", message=ERROR_MESSAGES["company_scope_required"]), 400
 
-    # Compatibilidade exclusiva da suíte automatizada antiga. Não existe campo
-    # de upload no HTML operacional e este caminho fica desativado fora de TESTING.
     legacy_image = request.files.get("image")
     if current_app.config.get("TESTING") and legacy_image is not None and legacy_image.filename:
         result = recognize_registered_user(
