@@ -80,8 +80,9 @@ def recognize_encoding(
     *,
     company_id: int | None = None,
     worksite_id: int | None = None,
+    ambiguity_margin: float = 0.05,
 ) -> RecognitionResult:
-    """Compara um encoding já validado pela prova de vida."""
+    """Compara um encoding validado e recusa cadastros indistinguíveis."""
     if worksite_id is not None and company_id is None:
         return RecognitionResult(None, "company_scope_required")
 
@@ -97,10 +98,17 @@ def recognize_encoding(
         return RecognitionResult(None, "no_registered_faces")
 
     distances = face_recognition.face_distance(known_encodings, candidate)
-    best_index = int(np.argmin(distances))
+    order = np.argsort(distances)
+    best_index = int(order[0])
     best_distance = float(distances[best_index])
     if best_distance > tolerance:
         return RecognitionResult(None, "unknown_face", best_distance)
+
+    if len(order) > 1:
+        second_distance = float(distances[int(order[1])])
+        if second_distance <= tolerance and second_distance - best_distance <= ambiguity_margin:
+            return RecognitionResult(None, "ambiguous_face", best_distance)
+
     return RecognitionResult(known_users[best_index], "matched", best_distance)
 
 
