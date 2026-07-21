@@ -5,9 +5,10 @@ from pathlib import Path
 
 from flask import current_app, jsonify, render_template, request, send_file
 
-from app.liveness import analyze_blink_liveness, consume_challenge, issue_challenge
+from app.liveness import consume_challenge, issue_challenge
 from app.models import Company, Ponto, Worksite, db
 from app.observability import increment_metric
+from app.passive_liveness import analyze_passive_face_liveness
 from app.punch import bp
 from app.punch.rules import check_duplicate_punch
 from app.punch.service import recognize_encoding, recognize_registered_user
@@ -19,7 +20,9 @@ ERROR_MESSAGES = {
     "no_face": "Nenhum rosto foi detectado.",
     "multiple_faces": "Mantenha apenas uma pessoa diante da câmera.",
     "landmarks_unavailable": "Não foi possível validar os movimentos do rosto.",
-    "liveness_failed": "Prova de vida não confirmada. Olhe para a câmera e pisque uma vez.",
+    "liveness_failed": "Não foi possível confirmar uma captura ao vivo. Mantenha o rosto centralizado por alguns segundos.",
+    "insufficient_quality_frames": "Não houve leituras faciais nítidas suficientes. Melhore a iluminação e mantenha o rosto estável.",
+    "inconsistent_face": "As leituras não representam um único rosto consistente. Reinicie a captura.",
     "poor_lighting": "Iluminação inadequada. Posicione-se em um local mais claro.",
     "blurry_frame": "Imagem desfocada. Mantenha o rosto parado e tente novamente.",
     "face_too_small": "Aproxime o rosto da câmera.",
@@ -149,7 +152,16 @@ def local_ca_certificate():
 
 @bp.route("/punch/challenge", methods=["GET"])
 def punch_challenge():
-    return jsonify(issue_challenge("punch"))
+    payload = issue_challenge("punch")
+    payload.update(
+        {
+            "action": "PASSIVE_FACE_SEQUENCE",
+            "prompt": "Mantenha o rosto centralizado e olhe para a câmera.",
+            "frame_count": int(current_app.config.get("PUNCH_LIVE_FRAME_COUNT", 6)),
+            "capture_interval_ms": int(current_app.config.get("PUNCH_LIVE_CAPTURE_INTERVAL_MS", 180)),
+        }
+    )
+    return jsonify(payload)
 
 
 @bp.route("/punch", methods=["POST"])
@@ -194,13 +206,13 @@ def punch_submit():
     if not challenge_ok:
         return jsonify(status="error", code=challenge_reason, message=ERROR_MESSAGES[challenge_reason]), 400
 
-    liveness = analyze_blink_liveness(request.files.getlist("frames"))
+    liveness = analyze_passive_face_liveness(request.files.getlist("frames"))
     if not liveness.passed:
         increment_metric("punch_liveness_failure_total")
         return jsonify(
             status="error",
             code=liveness.reason,
-            message=ERROR_MESSAGES.get(liveness.reason, "Prova de vida não confirmada."),
+            message=ERROR_MESSAGES.get(liveness.reason, "Captura facial não confirmada."),
             processing_ms=int((time.monotonic() - started) * 1000),
         ), 422
 
@@ -217,7 +229,7 @@ def punch_submit():
         started,
         liveness_payload={
             "passed": True,
-            "blink_count": liveness.blink_count,
+            "method": "passive_multiframe",
             "quality_score": liveness.quality_score,
         },
     )

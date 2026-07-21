@@ -120,7 +120,7 @@ def test_operational_pages_do_not_offer_file_upload(client):
     assert "challenge" in punch_html
 
 
-def test_punch_uses_liveness_and_identifies_employee(app, client, monkeypatch):
+def test_punch_uses_passive_multiframe_and_identifies_employee(app, client, monkeypatch):
     with app.app_context():
         user = User(
             username="live-worker",
@@ -134,19 +134,22 @@ def test_punch_uses_liveness_and_identifies_employee(app, client, monkeypatch):
 
     monkeypatch.setattr(
         routes,
-        "analyze_blink_liveness",
+        "analyze_passive_face_liveness",
         lambda frames: LivenessResult(
             True,
             "passed",
             encoding=np.zeros(128),
             best_frame_jpeg=b"jpeg",
             duration_ms=500,
-            blink_count=1,
+            blink_count=0,
             quality_score=0.9,
         ),
     )
 
     challenge = client.get("/punch/challenge").get_json()
+    assert challenge["action"] == "PASSIVE_FACE_SEQUENCE"
+    assert "pisque" not in challenge["prompt"].lower()
+
     response = client.post(
         "/punch",
         data=_multipart_frames(challenge["challenge_id"]),
@@ -157,6 +160,7 @@ def test_punch_uses_liveness_and_identifies_employee(app, client, monkeypatch):
     payload = response.get_json()
     assert payload["user"]["id"] == user_id
     assert payload["liveness"]["passed"] is True
+    assert payload["liveness"]["method"] == "passive_multiframe"
     assert payload["target_met"] is True
 
     replay = client.post(
