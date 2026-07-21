@@ -20,6 +20,7 @@ services:
       - "8000:8000"
     volumes:
       - biometric_local:/app/instance/biometrics
+      - ./instance/certs:/app/instance/certs:ro
     networks:
       - local_internal
 
