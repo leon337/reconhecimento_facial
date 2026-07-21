@@ -61,6 +61,16 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
         PUNCH_DUPLICATE_WINDOW_SECONDS=60,
         LOGIN_RATE_LIMIT_ATTEMPTS=5,
         LOGIN_RATE_LIMIT_WINDOW_SECONDS=300,
+        LIVENESS_FRAME_COUNT=int(os.environ.get("LIVENESS_FRAME_COUNT", "10")),
+        LIVENESS_CAPTURE_INTERVAL_MS=int(
+            os.environ.get("LIVENESS_CAPTURE_INTERVAL_MS", "200")
+        ),
+        LIVENESS_MIN_EAR_DELTA=float(
+            os.environ.get("LIVENESS_MIN_EAR_DELTA", "0.030")
+        ),
+        LIVENESS_MAX_CLOSED_EYE_RATIO=float(
+            os.environ.get("LIVENESS_MAX_CLOSED_EYE_RATIO", "0.85")
+        ),
     )
 
     if test_config:
