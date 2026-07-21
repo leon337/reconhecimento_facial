@@ -4,24 +4,74 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bater Ponto</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body>
+<body class="min-h-screen bg-gray-100 p-4">
   <main
     id="punch-app"
     data-submit-url="{{ url_for('punch.punch_submit') }}"
     data-csrf-token="{{ csrf_token() }}"
+    class="mx-auto max-w-xl rounded bg-white p-5 shadow"
   >
-    <h1>Bater Ponto</h1>
-    <video id="video" autoplay playsinline></video>
+    <h1 class="mb-4 text-2xl font-bold">Bater Ponto</h1>
 
-    <label for="tipo">Tipo</label>
-    <select id="tipo">
-      <option value="ENTRADA">Entrada</option>
-      <option value="SAIDA">Saída</option>
-    </select>
+    <section id="live-camera-section" class="space-y-3">
+      <video
+        id="video"
+        autoplay
+        playsinline
+        muted
+        class="hidden w-full rounded bg-black"
+      ></video>
+      <button
+        id="start-camera"
+        type="button"
+        class="w-full rounded bg-green-600 px-4 py-3 text-white hover:bg-green-700"
+      >
+        Abrir câmera ao vivo
+      </button>
+    </section>
 
-    <button id="capture" type="button">Capturar e registrar</button>
-    <p id="status" role="status"></p>
+    <section id="mobile-camera-section" class="mt-5 border-t pt-4">
+      <h2 class="font-semibold">Câmera do celular ou alternativa</h2>
+      <p class="mb-3 text-sm text-gray-600">
+        No celular conectado por HTTP local, este campo abre a câmera frontal.
+      </p>
+      <input
+        id="mobile-image"
+        type="file"
+        accept="image/*"
+        capture="user"
+        class="w-full rounded border p-2"
+      >
+      <button
+        id="submit-mobile-image"
+        type="button"
+        disabled
+        class="mt-3 w-full rounded bg-blue-600 px-4 py-3 text-white disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        Registrar foto selecionada
+      </button>
+    </section>
+
+    <div class="mt-5 flex items-center gap-2">
+      <label for="tipo" class="font-semibold">Tipo</label>
+      <select id="tipo" class="rounded border p-2">
+        <option value="ENTRADA">Entrada</option>
+        <option value="SAIDA">Saída</option>
+      </select>
+    </div>
+
+    <button
+      id="capture"
+      type="button"
+      disabled
+      class="mt-4 hidden w-full rounded bg-indigo-600 px-4 py-3 text-white disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      Capturar e registrar
+    </button>
+
+    <p id="status" role="status" aria-live="polite" class="mt-4 min-h-6 text-sm text-gray-700"></p>
   </main>
 
   <script src="{{ url_for('static', filename='punch.js') }}" defer></script>
