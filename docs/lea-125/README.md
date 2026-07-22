@@ -4,11 +4,14 @@ Este diretório preserva os entregáveis da LEA-125 em formato versionável no G
 
 ## Governança
 
-- análise somente leitura;
+- análise crítica e documentação;
 - nenhuma funcionalidade implementada;
+- nenhum código da aplicação alterado;
+- documentação publicada na branch do PR #29;
 - roadmap apenas proposto;
 - nenhuma declaração de conformidade jurídica;
-- itens legais marcados para validação especializada.
+- itens legais marcados para validação especializada;
+- execução de migração não autorizada na FASE 12.
 
 ## Arquivos
 
@@ -25,6 +28,7 @@ Este diretório preserva os entregáveis da LEA-125 em formato versionável no G
 11. `11_ROADMAP_PROPOSTO.md`
 12. `12_RISCOS_DECISOES_JURIDICO.md`
 13. `13_PACOTE_RETORNO.md`
+14. `14_REFERENCIAS_NORMATIVAS.md`
 
 ## Resultado consolidado
 
@@ -34,4 +38,8 @@ Este diretório preserva os entregáveis da LEA-125 em formato versionável no G
 - não implementadas: 34;
 - exigem validação jurídica: 8;
 - não recomendadas: 5;
-- implementação autorizada: não.
+- estado do CPP não verificado: 0;
+- claims de mercado não verificados: existem e estão identificados na auditoria;
+- implementação autorizada: não;
+- migração implementada: não;
+- documentação no GitHub alterada: sim.
