@@ -1,6 +1,6 @@
 # Checkpoint Atual — Controle de Ponto Potiguar
 
-Atualizado em: 21/07/2026
+Atualizado em: 22/07/2026
 
 ## Estado oficial
 
@@ -9,23 +9,47 @@ REPOSITORY=leon337/reconhecimento_facial
 DEFAULT_BRANCH=main
 PROJECT_STATUS=PILOTO_LOCAL_AVANCADO
 CURRENT_PHASE=FASE_10.1.1
-MAIN_SHA=c1a6b550e6c6f137db67f4683e8609df2b0b6fcb
+MAIN_SHA=3908e639be2cd025e4a1eee044db21d1ef52d7ee
 PROJECT_STATE=PROJECT_STATE.md
-LINEAR_ISSUE=LEA-85
+LINEAR_PARENT=LEA-85
 ```
 
-## Pull request ativo
+## PR #28
 
 ```text
 PULL_REQUEST=28
-TITLE=HOTFIX FASE 10.1.1 — ponto facial multiquadro sem piscada
-HEAD_SHA=53483aa139ab6b810f54427ef544c7f9550f7103
-STATE=OPEN
-DRAFT=YES
-MERGEABLE=YES
-CI=PASS
-PRODUCTION_VALIDATION=PASS
-MERGE=NOT_DONE
+AUTHORIZED_HEAD=53483aa139ab6b810f54427ef544c7f9550f7103
+MERGE_METHOD=SQUASH
+MERGED=YES
+MERGE_COMMIT=3908e639be2cd025e4a1eee044db21d1ef52d7ee
+CI_175=SUCCESS
+PRODUCTION_VALIDATION_44=SUCCESS
+```
+
+## Validação funcional
+
+```text
+NOTEBOOK=PASS
+PHONE=PASS
+LIVE_CAMERA_ONLY=PASS
+MULTIFRAME_CAPTURE=PASS
+AUTOMATIC_IDENTIFICATION=PASS
+ENTRY=PASS
+EXIT=PASS
+UNKNOWN_FACE_REJECTION=PASS
+TARGET_LT_10_SECONDS=PASS
+FALSE_IDENTIFICATION_OBSERVED=NO
+```
+
+Tempos observados:
+
+```text
+NOTEBOOK_ENTRY=2.6s
+NOTEBOOK_EXIT=2.5s
+PHONE_ENTRY=3.0s
+PHONE_EXIT=2.8s
+PHONE_PROCESSING_ENTRY=0.9s
+PHONE_PROCESSING_EXIT=0.8s
 ```
 
 ## Infraestrutura atual
@@ -35,30 +59,58 @@ APPLICATION=Flask/Gunicorn
 DATABASE=PostgreSQL 16 local em Docker
 MIGRATIONS=Alembic
 TLS=Caddy
+LAN_IP=192.168.10.101
+BIOMETRIC_STORAGE=volume persistente separado e criptografado
 SUPABASE=NOT_IN_USE
 VERCEL=NOT_CONFIGURED
+HOSTING=LINUX_MINT_LOCAL_PILOT
 ```
 
-## Próximo gate
+## Decisões vigentes
 
 ```text
-NEXT_ACTION=VALIDAR_PR_28_EM_CELULAR_REAL
-NEXT_GATE=OPERATIONAL_VALIDATION
+VERCEL_MIGRATION=NOT_AUTHORIZED
+LOCAL_PILOT=KEEP
+LEA_95=DEFERRED_TO_BACKLOG
+IMPLEMENTATION_CONTINUATION=ALLOWED
+PRODUCTION_HOMOLOGATION=BLOCKED
 ```
 
-## Pendências do gate operacional
+A migração para Vercel foi descartada neste momento. Qualquer futura migração para nuvem exige decisão arquitetural própria.
 
-- testar o PR #28 no celular real do piloto;
-- confirmar fluxo principal abaixo de 10 segundos;
-- testar iluminação adequada, baixa e excessiva;
-- testar enquadramento inadequado e múltiplas pessoas;
-- testar reutilização do desafio de captura;
-- avaliar tentativa com fotografia ou tela diante da câmera;
-- registrar falsos bloqueios e falsos aceites;
-- executar revisão final independente do HEAD exato;
-- decidir merge somente com evidências suficientes;
-- revisar o PR #13 e encerrar se estiver obsoleto.
+## Linear
+
+```text
+LEA_85=In_Progress
+LEA_93=Done
+LEA_94=Done
+LEA_95=Backlog_DEFERRED
+LEA_96=Todo
+LEA_97=Todo
+LEA_98=Todo
+LEA_118=Done
+LEA_119=Documentation_Sync
+```
+
+## Pendências preservadas
+
+- executar as 20 marcações controladas antes de homologar ou ampliar o piloto;
+- calcular média, mediana, P95, máximo e taxa de sucesso;
+- registrar evidências finais;
+- encerrar formalmente a FASE 10.1.1;
+- revisar o PR #13;
+- atualizar o manual antigo;
+- documentar LGPD, retenção e exclusão de dados biométricos;
+- validar backup, restauração e contingência operacional.
+
+## Próxima ação
+
+```text
+NEXT_ACTION=CONTINUE_OFFICIAL_IMPLEMENTATION_ROADMAP
+TEST_DEBT=LEA_95
+NEXT_GATE_BEFORE_HOMOLOGATION=TWENTY_CONTROLLED_PUNCHES
+```
 
 ## Regra de continuidade
 
-Este arquivo representa o checkpoint mais recente do projeto e deve ser atualizado ao final de cada ciclo relevante de trabalho. O histórico técnico detalhado permanece em `PROJECT_STATE.md`, nos PRs e nas issues do Linear.
+Este arquivo representa o checkpoint mais recente do projeto. Em novo chat, consultar primeiro `CHECKPOINT.md`, depois `PROJECT_STATE.md` e, por fim, as issues relacionadas no Linear.
