@@ -8,8 +8,10 @@ Atualizado em: 2026-07-22
 REPOSITORY=leon337/reconhecimento_facial
 DEFAULT_BRANCH=main
 PROJECT_STATUS=PILOTO_LOCAL_AVANCADO
-CURRENT_PHASE=FASE_10.1.1
-MAIN_SHA=3908e639be2cd025e4a1eee044db21d1ef52d7ee
+CURRENT_PHASE=FASE_10.1.1_EM_FECHAMENTO
+BASELINE_FUNCTIONAL_SHA=3908e639be2cd025e4a1eee044db21d1ef52d7ee
+ROADMAP_FILE=ROADMAP_CURRENT.md
+NEXT_CONFIRMED_PHASE=FASE_12_LEA_133
 ```
 
 ## Estado executivo
@@ -18,7 +20,15 @@ O projeto já ultrapassou a prova de conceito. A base atual inclui aplicação F
 
 A FASE 10.1.1 está funcionalmente aprovada no notebook e no telefone. O PR #28 foi integrado por squash e o fluxo de ponto facial multiquadro sem piscada foi validado com câmera ao vivo, identificação automática, entrada, saída e rejeição de rosto não cadastrado.
 
-A homologação estatística permanece pendente porque as 20 marcações controladas foram adiadas de forma consciente para permitir continuidade da implementação.
+A homologação estatística permanece pendente porque as 20 marcações controladas foram adiadas. A continuidade é permitida somente sob o roadmap e os gates oficiais.
+
+A pesquisa de mercado e a extração de escopo da LEA-125 foram produzidas e publicadas no PR #29 como documentação. O PR permanece Draft, sem merge e sem autorização automática do roadmap proposto.
+
+## Objetivo final preservado
+
+Transformar o piloto local em uma plataforma segura, auditável e comercialmente viável de controle de jornada, com foco em empresas com múltiplas obras, equipes externas, baixa conectividade e operação simples.
+
+O produto não deve ser anunciado como juridicamente conforme enquanto os requisitos regulatórios não forem validados por especialista.
 
 ## Entregas integradas na `main`
 
@@ -87,14 +97,39 @@ HOSTING_DECISION=KEEP_LOCAL_PILOT
 
 Em 22/07/2026 foi decidido não migrar o projeto para a Vercel neste momento. O piloto permanece no servidor Linux Mint.
 
-A migração para nuvem exigiria uma decisão arquitetural separada, pois o sistema depende de processamento facial nativo, PostgreSQL, volumes biométricos persistentes, Docker Compose, LGPD, armazenamento privado e backend persistente.
+A migração para nuvem exige decisão arquitetural separada, pois o sistema depende de processamento facial nativo, PostgreSQL, volumes biométricos persistentes, Docker Compose, LGPD, armazenamento privado e backend persistente.
 
 A Vercel não deve ser usada apenas para resolver certificados locais.
 
-## Linear sincronizado
+## Pesquisa de mercado e FASE 11
 
 ```text
-PARENT_ISSUE=LEA-85
+LINEAR_ANALYSIS=LEA-125
+PULL_REQUEST=29
+PR_STATUS=DRAFT_OPEN
+PR_MERGED=NO
+DOCUMENTATION_DIRECTORY=docs/lea-125/
+FUNCTIONS_CATALOGUED=84
+DELIVERED=15
+PARTIAL=22
+NOT_IMPLEMENTED=34
+LEGAL_VALIDATION=8
+NOT_RECOMMENDED=5
+ROADMAP_APPROVED=NO
+```
+
+Pendências documentais:
+
+- revisar formalmente o PR #29;
+- retirar do modo Draft somente após revisão;
+- fazer merge apenas com autorização;
+- reconciliar LEA-125 e LEA-126 a LEA-132 com os entregáveis existentes;
+- sincronizar novamente GitHub e Linear.
+
+## Linear e fases
+
+```text
+LEA_85=In_Progress
 LEA_93=Done
 LEA_94=Done
 LEA_95=Backlog_DEFERRED
@@ -103,19 +138,55 @@ LEA_97=Todo
 LEA_98=Todo
 LEA_118=Done_HOSTING_LOCAL_DECISION
 LEA_119=Documentation_Sync
+LEA_125=In_Progress_DOCUMENTATION_IN_PR_29
+LEA_126_TO_132=DELIVERABLES_EXIST_STATUS_RECONCILIATION_PENDING
+LEA_133=NEXT_CONFIRMED_PHASE_NOT_STARTED
 ```
+
+## Próxima fase confirmada — FASE 12 / LEA-133
+
+A FASE 12 é uma fase de fechamento e baseline, não de expansão funcional. Ela deve:
+
+1. concluir as 20 marcações e métricas;
+2. validar backup e restauração em ambiente isolado;
+3. testar contingência de câmera, rede, servidor e banco;
+4. mapear a dependência do modelo legado `Ponto`;
+5. definir plano de migração para `AttendanceEvent` sem executá-lo;
+6. preservar multitenancy, RBAC, auditoria, criptografia e liveness;
+7. registrar decisão arquitetural sobre REP/PTRP;
+8. separar itens técnicos de `EXIGE_VALIDACAO_JURIDICA`;
+9. produzir o gate explícito para a próxima implementação.
+
+## Roadmap futuro — proposta não aprovada
+
+- FASE 13: núcleo imutável e comprovante;
+- FASE 14: divergências, justificativas e aprovações;
+- FASE 15: jornadas, escalas e cálculos explicáveis;
+- FASE 16: relatórios, espelho e fechamento;
+- FASE 17: segurança e privacidade comercial;
+- FASE 18: offline, mobilidade e geolocalização;
+- FASE 19: V1 comercial multiobra;
+- FASE 20: API e integrações;
+- FASE 21: antifraude e diferenciais responsáveis.
+
+Essas fases não estão autorizadas para implementação. O detalhamento oficial está em `ROADMAP_CURRENT.md`.
 
 ## Pendências atuais
 
+- revisar e concluir documentalmente o PR #29;
+- reconciliar LEA-125 e LEA-126 a LEA-132;
+- autorizar formalmente o início operacional da LEA-133;
 - retomar a LEA-95 antes da homologação estatística ou ampliação do piloto;
 - executar 20 marcações controladas;
 - calcular média, mediana, P95, máximo e taxa de sucesso;
 - atualizar as evidências finais e encerrar formalmente a FASE 10.1.1;
+- validar backup e restauração em ambiente separado;
+- definir e testar contingência manual;
+- mapear o legado `Ponto` e planejar `AttendanceEvent`;
+- registrar decisão REP/PTRP sem declarar conformidade;
 - revisar e encerrar o PR #13 caso esteja obsoleto;
 - atualizar o manual de instalação de 2025;
-- documentar política LGPD, retenção e exclusão de dados biométricos;
-- validar backup e restauração em ambiente separado;
-- definir contingência manual para indisponibilidade de câmera, rede ou servidor.
+- documentar política LGPD, retenção e exclusão de dados biométricos.
 
 ## Gate atual
 
@@ -123,8 +194,22 @@ LEA_119=Documentation_Sync
 FUNCTIONAL_VALIDATION=PASS
 STATISTICAL_VALIDATION=DEFERRED
 PRODUCTION_HOMOLOGATION=BLOCKED
-IMPLEMENTATION_CONTINUATION=ALLOWED
-NEXT_IMPLEMENTATION=FOLLOW_OFFICIAL_ROADMAP_AND_LINEAR
+PR_29_REVIEW=PENDING
+LEA_133_START=REQUIRES_HUMAN_AUTHORIZATION
+IMPLEMENTATION_CONTINUATION=ALLOWED_UNDER_GOVERNANCE
+NEXT_ACTION=REVIEW_PR_29_AND_RECONCILE_LEA_125_TO_132
+NEXT_OPERATIONAL_PHASE=LEA_133_FASE_12
+NEXT_FUNCTIONAL_IMPLEMENTATION=NOT_AUTHORIZED
 ```
 
-GitHub permanece como fonte técnica oficial. Linear deve refletir as missões, gates, decisões e pendências descritas neste documento.
+## Ordem obrigatória de consulta
+
+Em qualquer novo chat ou missão, consultar:
+
+1. `ROADMAP_CURRENT.md`;
+2. `CHECKPOINT.md`;
+3. `PROJECT_STATE.md`;
+4. issues relacionadas no Linear;
+5. PRs e código aplicáveis.
+
+GitHub permanece como fonte técnica oficial. Linear deve refletir as missões, gates, decisões e pendências descritas nestes documentos.
