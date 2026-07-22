@@ -9,12 +9,17 @@ FUNCIONALIDADES_ENTREGUES=15
 FUNCIONALIDADES_PARCIAIS=22
 FUNCIONALIDADES_NÃO_IMPLEMENTADAS=34
 FUNCIONALIDADES_REJEITADAS=5
+ESTADO_CPP_NÃO_VERIFICADO=0
+CLAIMS_DE_MERCADO_NÃO_VERIFICADOS=EXISTEM
 MVP_PROPOSTO=34_FUNCIONALIDADES
 V1_PROPOSTA=24_FUNCIONALIDADES
 V1_1_PROPOSTA=8_FUNCIONALIDADES
 V2_PROPOSTA=8_FUNCIONALIDADES
 FUTURO=5_FUNCIONALIDADES
 PRIMEIRA_FASE_RECOMENDADA=FASE_12_FECHAMENTO_DA_FASE_10_1_1_E_BASELINE_DECISÓRIA
+FASE_12_MIGRATION_SCOPE=MAPEAMENTO_E_PLANO_SEM_EXECUÇÃO
+MIGRATION_IMPLEMENTED=NO
+LEGACY_REMOVED=NO
 RISCOS_CRÍTICOS=REGULATÓRIO_BIOMETRIA_LEGADO_VALIDAÇÃO_OFFLINE_CÁLCULO_MULTITENANCY_ASSINATURAS_OPERAÇÃO
 VALIDAÇÕES_JURÍDICAS=13_QUESTÕES
 DECISÕES_HUMANAS=14_DECISÕES
@@ -24,8 +29,8 @@ IMPLEMENTAÇÃO_AUTORIZADA=NO
 
 ### Bloco compacto de decisão
 
-- **Primeira fase:** fechar FASE 10.1.1, validar restore/contingência, decidir arquitetura REP/PTRP e migrar o fluxo vivo para o domínio imutável.
-- **Não iniciar agora:** PAdES isolado, offline, geofence, API, ERP, WhatsApp ou deepfake sem seus pré-requisitos.
+- **Primeira fase:** fechar FASE 10.1.1, validar restore/contingência, decidir arquitetura REP/PTRP e produzir o mapa do legado e o plano de migração do fluxo vivo para o domínio imutável, sem executar a migração.
+- **Não iniciar agora:** migração funcional, PAdES isolado, offline, geofence, API, ERP, WhatsApp ou deepfake sem seus pré-requisitos.
 - **Perguntas para o chat principal:**
   - O produto continuará como controle interno da Potiguar ou será vendido a terceiros?
   - O produto pretende ser REP-P, somente coletor de um REP-P, PTRP, ou solução interna não anunciada como conforme?
@@ -42,10 +47,13 @@ IMPLEMENTAÇÃO_AUTORIZADA=NO
 
 ```text
 ANALYSIS_CODE_CHANGE=NO
+APPLICATION_CODE_CHANGED=NO
 PUBLICATION_BRANCH_CREATED=YES
 GITHUB_DOCUMENTATION_CHANGED=YES
-LINEAR_CHANGED=NO
+LINEAR_CHANGED_DURING_INITIAL_ANALYSIS=NO
 TESTS_EXECUTED=NO
 ROADMAP_APPROVED=NO
 LEGAL_OPINION_ISSUED=NO
+MIGRATION_IMPLEMENTED=NO
+LEGACY_REMOVED=NO
 ```
