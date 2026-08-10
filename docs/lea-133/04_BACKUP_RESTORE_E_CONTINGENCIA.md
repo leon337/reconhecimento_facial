@@ -1,74 +1,89 @@
 # LEA-133 — Backup, restore isolado e contingência
 
-## 1. Escopo
+## 1. Escopo e regra de evidência
 
-Este documento separa três níveis que não podem ser confundidos:
+Este documento separa:
 
-1. **capacidade do código** de gerar/verificar/restaurar backup;
-2. **validação automatizada isolada** com dados sintéticos;
-3. **exercício operacional do piloto real** no Linux Mint.
+1. capacidade do código de gerar/verificar/restaurar backup;
+2. validação automatizada isolada com dados sintéticos;
+3. exercício operacional do piloto real no Linux Mint.
 
-Um PASS em (2) não é automaticamente um PASS em (3).
+```text
+CI_SYNTHETIC_PASS != PILOT_REAL_DR_PASS
+```
+
+Nenhum resultado automatizado é promovido artificialmente para evidência física do piloto.
 
 ## 2. Capacidade existente
 
-`app/infrastructure/backup.py` oferece:
+`app/infrastructure/backup.py` cobre PostgreSQL com `pg_dump`, manifesto JSON, SHA-256, validação do backup, `pg_restore` com confirmação explícita e retenção.
 
-- validação de URL PostgreSQL;
-- `pg_dump` em formato custom;
-- manifesto JSON;
-- SHA-256 do dump;
-- validação do arquivo contra manifesto;
-- `pg_restore` com confirmação explícita `RESTORE`;
-- retenção de backups.
+O armazenamento biométrico (`BIOMETRIC_STORAGE_FOLDER`) e a chave (`BIOMETRIC_ENCRYPTION_KEY`) ficam fora do dump PostgreSQL. A LEA-133 passou a tratá-los explicitamente no exercício sintético.
 
-A implementação existente cobre o banco. O armazenamento biométrico é filesystem separado (`BIOMETRIC_STORAGE_FOLDER`) e a chave (`BIOMETRIC_ENCRYPTION_KEY`) é configuração/segredo externo. Esses dois componentes não fazem parte do dump PostgreSQL.
+## 3. Workflow ampliado
 
-## 3. Validação automatizada ampliada na LEA-133
-
-O workflow `.github/workflows/production-validation.yml` foi ampliado na branch da LEA-133 para executar um exercício sintético de disaster recovery sem usar dados reais.
-
-Linha de montagem:
+`.github/workflows/production-validation.yml` executa a seguinte linha de montagem:
 
 ```text
-PostgreSQL limpo
-  -> migrations upgrade/downgrade/upgrade
-  -> fixture sintética de empresa/obra/employee/user
+migrations up/down/up
+  -> regressão
+  -> empresa/obra/employee/user sintéticos
   -> template biométrico sintético cifrado
   -> objeto sintético no storage biométrico
-  -> backup PostgreSQL + manifesto + SHA-256
-  -> checksum do storage biométrico
-  -> banco vazio de restore
-  -> pg_restore
-  -> storage biométrico em diretório isolado
+  -> backup PostgreSQL + manifesto + checksum
+  -> checksum do storage
+  -> banco vazio
+  -> restore PostgreSQL
+  -> restore do storage em diretório isolado
   -> validação de checksums
-  -> aplicação apontando para DB/storage restaurados
+  -> aplicação restaurada
   -> health
-  -> empresa/obra
-  -> senha/RBAC
-  -> descriptografia com chave recuperada
+  -> autenticação + RBAC + escopo
+  -> descriptografia com chave
   -> falha esperada sem chave
-  -> marcação sintética após restore
+  -> punch sintético pós-restore
+  -> Compose
 ```
 
-A chave de teste nunca é persistida como artefato. O teste prova que a restauração depende da recuperação segura da chave externa e que a ausência da chave impede descriptografia.
+Após a primeira execução bem-sucedida, o workflow foi endurecido para mascarar a chave sintética gerada com `::add-mask::` e adicionar teste explícito de comportamento fail-closed quando o banco está indisponível.
 
-## 4. Evidências que o workflow deve produzir
+## 4. Evidência do run #63
 
-- JUnit da regressão;
-- diagnóstico do backup;
-- lista do `pg_restore`;
-- diagnóstico do restore;
-- duração do restore do banco no CI;
-- manifesto/checksum do dump;
-- checksum relativo do storage biométrico sintético;
-- diagnóstico da restauração do storage.
+GitHub Actions Production Validation run `31437529880`, job `93614885716`:
 
-Nenhum artefato pode conter chave de criptografia, imagem facial real ou template biométrico real.
+```text
+RESULT=PASS
+MIGRATIONS_UP_DOWN_UP=PASS
+REGRESSION=143_PASSED
+WARNINGS=26_NON_BLOCKING
+POSTGRES_HEALTH=PASS
+POSTGRES_BACKUP=PASS
+BACKUP_CHECKSUM=PASS
+POSTGRES_RESTORE_EMPTY_DB=PASS
+CI_DATABASE_RESTORE_DURATION=415ms
+RESTORED_SCHEMA=PASS
+BIOMETRIC_STORAGE_CHECKSUM_RESTORE=PASS
+BIOMETRIC_TEMPLATE_DECRYPTION_WITH_KEY=PASS
+DECRYPTION_WITHOUT_KEY=EXPECTED_FAIL_PASS
+AUTHENTICATION_AFTER_RESTORE=PASS
+RBAC_AFTER_RESTORE=PASS
+COMPANY_WORKSITE_SCOPE_AFTER_RESTORE=PASS
+SYNTHETIC_PUNCH_AFTER_RESTORE=PASS
+COMPOSE_VALIDATION=PASS
+```
 
-## 5. Interpretação correta
+Artefato publicado:
 
-Se o workflow ampliado passar:
+```text
+NAME=production-validation-report
+ARTIFACT_ID=9081579094
+ZIP_SHA256=80a3aa236cdc1698c54b23cef52dcf1d6450fd00cafbd84893f4cb7a086c5eca
+SIZE_BYTES=6538
+```
+
+Os dados usados são sintéticos. Nenhuma imagem facial real, template real ou chave operacional do piloto foi usada.
+
+## 5. Interpretação
 
 ```text
 SYNTHETIC_DB_RESTORE=PASS
@@ -80,44 +95,40 @@ SYNTHETIC_PUNCH_AFTER_RESTORE=PASS
 PILOT_REAL_DR_EXERCISE=NOT_PROVED_BY_CI
 ```
 
-A última linha é deliberada. O CI não possui acesso ao volume real, à chave operacional real nem aos dispositivos físicos do piloto.
-
-## 6. Runbook de restore do piloto real
+## 6. Runbook do piloto real
 
 ### Preparação
 
 ```text
-1. congelar escrita do piloto
-2. registrar timestamp do início
-3. identificar DATABASE_URL sem expor credenciais
-4. identificar BIOMETRIC_STORAGE_FOLDER
-5. confirmar disponibilidade da chave no cofre/meio seguro
-6. gerar backup do PostgreSQL
-7. gerar manifesto/checksum
-8. gerar manifesto/checksum do storage biométrico
-9. criar ambiente isolado, nunca sobrescrever o piloto
+1 congelar escrita do piloto
+2 registrar início
+3 identificar DATABASE_URL sem expor credenciais
+4 identificar BIOMETRIC_STORAGE_FOLDER
+5 confirmar chave por canal seguro
+6 gerar backup PostgreSQL
+7 registrar manifesto/checksum
+8 registrar manifesto/checksum do storage biométrico
+9 criar ambiente isolado sem sobrescrever o piloto
 ```
 
 ### Restore
 
 ```text
-10. restaurar PostgreSQL em banco vazio
-11. restaurar storage biométrico em diretório isolado
-12. injetar a chave pelo canal seguro
-13. apontar instância isolada para DB/storage restaurados
-14. subir aplicação
-15. GET /health
-16. autenticar administrador de teste
-17. validar RBAC
-18. validar empresa/obra
-19. validar leitura/descriptografia de perfil biométrico autorizado
-20. executar uma marcação controlada
-21. verificar auditoria e ausência de duplicidade
+10 restaurar PostgreSQL em banco vazio
+11 restaurar storage em diretório isolado
+12 injetar chave pelo canal seguro
+13 apontar instância isolada para DB/storage restaurados
+14 subir aplicação
+15 GET /health
+16 autenticar administrador controlado
+17 validar RBAC
+18 validar empresa/obra
+19 validar perfil biométrico autorizado
+20 executar marcação controlada
+21 verificar auditoria e ausência de duplicidade
 ```
 
-### Evidência
-
-Registrar somente dados sanitizados:
+### Evidência sanitizada
 
 ```text
 BACKUP_CREATED_AT=
@@ -136,11 +147,9 @@ CONTROLLED_PUNCH=PASS|FAIL
 AUDIT=PASS|FAIL
 ```
 
-## 7. Contingência operacional
+## 7. Contingência
 
-### 7.1 Câmera indisponível
-
-Estado esperado:
+### Câmera
 
 ```text
 PUNCH_BY_FACE=UNAVAILABLE
@@ -148,100 +157,64 @@ DO_NOT_PRETEND_SUCCESS=YES
 MANUAL_CONTINGENCY=REQUIRED
 ```
 
-Procedimento:
+O operador registra ocorrência manual auditável; não se cria ponto facial retroativo fingindo biometria.
 
-1. estação mostra erro de câmera, não tela verde;
-2. operador registra ocorrência manual em canal controlado definido pela empresa;
-3. registro manual contém pessoa, empresa/obra, horário declarado, motivo e responsável;
-4. quando o serviço retornar, reconciliação é humana e auditável;
-5. não criar ponto facial retroativo fingindo que houve biometria.
-
-### 7.2 Rede indisponível
-
-O produto atual não possui fila offline. Portanto:
+### Rede
 
 ```text
 OFFLINE_QUEUE=NO
 AUTOMATIC_SYNC=NO
 ```
 
-Procedimento atual é contingência manual auditável. Não guardar biometria improvisadamente no navegador/dispositivo.
+A versão atual exige contingência manual controlada. Não armazenar biometria improvisadamente no cliente.
 
-### 7.3 Servidor indisponível
+### Servidor
 
-1. cliente deve apresentar indisponibilidade;
-2. operador usa contingência manual;
-3. reinício deve ser seguido de `/health`;
-4. retornar operação somente após aplicação + DB responderem;
-5. reconciliar registros manuais sem duplicar.
+Falha deve ser visível. O retorno à operação exige serviço disponível e `/health` válido; registros manuais são reconciliados sem duplicidade.
 
-### 7.4 Banco indisponível
+### Banco
 
-`/health` depende de `SELECT 1`; banco indisponível deve resultar em falha, nunca `database=ok`.
-
-Regra:
+`/health` depende de `SELECT 1`. Banco indisponível não pode resultar em estado verde.
 
 ```text
-DATABASE_UNAVAILABLE -> PUNCH_PERSISTENCE_UNAVAILABLE
+DATABASE_UNAVAILABLE -> SERVICE_ERROR
 NO_DB_WRITE -> NO_SUCCESS_RECEIPT
 ```
 
-Nenhum sucesso deve ser exibido antes do commit do registro.
+O head posterior ao run #63 contém teste automatizado específico para essa regra.
 
-## 8. Reconciliação de contingência
+## 8. Reconciliação de contingência futura
 
-Para cada ocorrência manual futura:
+Cada ocorrência manual deve carregar identificador, employee, empresa, obra, horário declarado, horário de registro, motivo, responsável, fonte, status de revisão e vínculo futuro com evento de jornada. A importação deverá ser idempotente e append-only/auditável.
 
-```text
-contingency_id
-employee
-company
-worksite
-declared_at
-recorded_at
-reason
-recorded_by
-source=manual_contingency
-review_status
-linked_attendance_event
-```
-
-A futura importação deve ser idempotente e não pode sobrescrever evento original. Correção deve ser append-only/auditável.
-
-## 9. RPO e RTO
-
-A FASE 12 não inventa metas empresariais. Devem ser distinguidos:
-
-- `RTO_CI_OBSERVED`: medido pelo workflow sintético;
-- `RTO_PILOT_OBSERVED`: somente após exercício no Linux Mint;
-- `RPO_PILOT`: depende da frequência real de backup, ainda precisa de decisão operacional.
-
-Até existir decisão humana e exercício real:
+## 9. RPO/RTO
 
 ```text
-RPO_PILOT=UNDECIDED
+RTO_CI_OBSERVED_DB_RESTORE=415ms_RUN_63
 RTO_PILOT=UNMEASURED
+RPO_PILOT=UNDECIDED
 ```
 
-## 10. Testes
+RPO/RTO empresariais dependem do ambiente e decisão operacional humana; não são inferidos do CI.
+
+## 10. Testes exigidos
 
 ### Unitários
 
 - checksum adulterado falha;
-- manifesto errado falha;
+- manifesto incorreto falha;
 - confirmação diferente de `RESTORE` falha;
 - chave ausente impede descriptografia;
-- regra de reconciliação é idempotente.
+- reconciliação futura é idempotente.
 
 ### Integração
 
 - migrations up/down/up;
-- PostgreSQL -> dump -> banco vazio -> restore;
+- DB -> dump -> banco vazio -> restore;
 - DB + storage biométrico + chave sintética;
-- autenticação/RBAC após restore;
-- empresa/obra após restore;
-- marcação sintética após restore;
-- falha de DB produz estado indisponível.
+- autenticação/RBAC/escopo após restore;
+- punch sintético após restore;
+- DB indisponível produz erro, não estado saudável.
 
 ### Operacional físico
 
@@ -249,17 +222,22 @@ RTO_PILOT=UNMEASURED
 - rede interrompida;
 - servidor parado;
 - banco parado;
-- execução do runbook por operador diferente;
+- runbook executado por operador;
 - restore real isolado sem tocar o piloto.
 
 ## 11. Estado
 
 ```text
 BACKUP_CODE_AUDITED=YES
-SYNTHETIC_FULL_RESTORE_WORKFLOW=IMPLEMENTED_IN_PR30
-CI_RESULT_FOR_NEW_WORKFLOW=PENDING
-PILOT_REAL_RESTORE=REQUIRES_ACCESS_TO_PILOT
-PHYSICAL_CAMERA_NETWORK_SERVER_EXERCISE=REQUIRES_OPERATOR_AND_PILOT
+SYNTHETIC_FULL_RESTORE=PASS
+RUN_63=PASS
+RUN_63_REGRESSION=143_PASSED
+RUN_63_DB_RESTORE=415ms
+SYNTHETIC_KEY_MASKING_HARDENING=IMPLEMENTED_AFTER_RUN_63
+DATABASE_FAIL_CLOSED_TEST=IMPLEMENTED_AFTER_RUN_63
+LATEST_HEAD_CI=REQUIRES_FINAL_CONFIRMATION
+PILOT_REAL_RESTORE=REQUIRES_PILOT_ENVIRONMENT
+PHYSICAL_OUTAGE_EXERCISES=REQUIRE_OPERATOR_AND_PILOT
 CONTINGENCY_RUNBOOK=DEFINED
 LEGAL_CONFORMITY_DECLARED=NO
 ```
