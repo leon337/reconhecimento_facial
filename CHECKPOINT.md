@@ -1,200 +1,227 @@
 # Checkpoint Atual — Controle de Ponto Potiguar
 
-Atualizado em: 22/07/2026
+Atualizado em: 10/08/2026
 
-## Estado oficial
+## Estado oficial reconciliado
 
 ```text
 REPOSITORY=leon337/reconhecimento_facial
 DEFAULT_BRANCH=main
-PROJECT_STATUS=PILOTO_LOCAL_AVANCADO
-CURRENT_PHASE=FASE_10.1.1_EM_FECHAMENTO
+MAIN_SHA_BEFORE_PR30=783ca912c38876e68c12439a0db3616bf2b29a1d
 BASELINE_FUNCTIONAL_SHA=3908e639be2cd025e4a1eee044db21d1ef52d7ee
-PROJECT_STATE=PROJECT_STATE.md
-ROADMAP=ROADMAP_CURRENT.md
-LINEAR_PARENT=LEA-85
-NEXT_PHASE=LEA-133_FASE_12
+PROJECT_STATUS=PILOTO_LOCAL_AVANCADO
+CURRENT_PHASE=FASE_12_LEA_133_BASELINE_COMPLETE
+MISSION=CPP-COMMERCIAL-REDESIGN-AI-OBS-001
+MCF_PROTOCOL=1.1
+MCF_RISK_CLASS=C
+PRF=docs/mcf/PRF_CPP_COMMERCIAL_REDESIGN_AI_OBS_001.md
+PR_30=READY_FOR_FINAL_GREEN_CI_AND_BASELINE_MERGE
 ```
 
-## Objetivo preservado
+## Gate humano vigente
 
-Evoluir o piloto facial para uma plataforma simples, segura, auditável e multiobra de controle de jornada, adequada a equipes externas e locais com conectividade limitada.
-
-Nenhuma alegação de conformidade jurídica está autorizada sem validação especializada.
-
-## PR #28
+Leandro aprovou a direção estratégica **com ressalvas** e autorizou a resolução dessas ressalvas antes da próxima implementação funcional.
 
 ```text
-PULL_REQUEST=28
-AUTHORIZED_HEAD=53483aa139ab6b810f54427ef544c7f9550f7103
-MERGE_METHOD=SQUASH
-MERGED=YES
-MERGE_COMMIT=3908e639be2cd025e4a1eee044db21d1ef52d7ee
-CI_175=SUCCESS
-PRODUCTION_VALIDATION_44=SUCCESS
-```
-
-## Validação funcional
-
-```text
-NOTEBOOK=PASS
-PHONE=PASS
-LIVE_CAMERA_ONLY=PASS
-MULTIFRAME_CAPTURE=PASS
-AUTOMATIC_IDENTIFICATION=PASS
-ENTRY=PASS
-EXIT=PASS
-UNKNOWN_FACE_REJECTION=PASS
-TARGET_LT_10_SECONDS=PASS
-FALSE_IDENTIFICATION_OBSERVED=NO
-```
-
-Tempos observados:
-
-```text
-NOTEBOOK_ENTRY=2.6s
-NOTEBOOK_EXIT=2.5s
-PHONE_ENTRY=3.0s
-PHONE_EXIT=2.8s
-PHONE_PROCESSING_ENTRY=0.9s
-PHONE_PROCESSING_EXIT=0.8s
-```
-
-## Infraestrutura atual
-
-```text
-APPLICATION=Flask/Gunicorn
-DATABASE=PostgreSQL 16 local em Docker
-MIGRATIONS=Alembic
-TLS=Caddy
-LAN_IP=192.168.10.101
-BIOMETRIC_STORAGE=volume persistente separado e criptografado
-SUPABASE=NOT_IN_USE
-VERCEL=NOT_CONFIGURED
-HOSTING=LINUX_MINT_LOCAL_PILOT
-```
-
-## Decisões vigentes
-
-```text
-VERCEL_MIGRATION=NOT_AUTHORIZED
-LOCAL_PILOT=KEEP
-LEA_95=DEFERRED_TO_BACKLOG
-IMPLEMENTATION_CONTINUATION=ALLOWED_UNDER_GOVERNANCE
+GATE_LEANDRO=APPROVED_WITH_RESERVATIONS
+STRATEGIC_DIRECTION=APPROVED
+RESERVATION_RESOLUTION=AUTHORIZED
+FUNCTIONAL_EXPANSION=BLOCKED_UNTIL_NEW_GATE
 PRODUCTION_HOMOLOGATION=BLOCKED
-ROADMAP_13_TO_21_APPROVED=NO
 LEGAL_CONFORMITY_DECLARED=NO
 ```
 
-## FASE 11 — pesquisa e escopo
+## FASE 11 — reconciliada
 
 ```text
-LEA_125=In_Progress
-PR_29=OPEN_DRAFT
-PR_29_MERGED=NO
-DOCUMENTS=14_MARKDOWN_FILES
-CATALOGUE=84_FUNCTIONS
-ANALYSIS_COMPLETED=YES
-LINEAR_RECONCILIATION=PENDING
+LEA_125=Done
+LEA_126_TO_132=Done
+PR_29=MERGED
+PR_29_MERGE_COMMIT=783ca912c38876e68c12439a0db3616bf2b29a1d
+PR_29_SCOPE=DOCUMENTATION_ONLY
+ROADMAP_AUTO_APPROVED=NO
 ```
 
-O conteúdo analítico existe no PR #29, mas ainda exige revisão formal, merge autorizado e reconciliação de LEA-125 e LEA-126 a LEA-132.
+## LEA-95 / LEA-96 — evidência recuperada
 
-## Linear
+A revisão integral do histórico da LEA-95 recuperou a confirmação operacional das 20 marcações:
 
 ```text
-LEA_85=In_Progress
-LEA_93=Done
-LEA_94=Done
-LEA_95=Backlog_DEFERRED
-LEA_96=Todo
-LEA_97=Todo
-LEA_98=Todo
-LEA_118=Done
-LEA_119=Documentation_Sync
-LEA_125=In_Progress
-LEA_126_TO_132=STATUS_RECONCILIATION_PENDING
-LEA_133=NEXT_CONFIRMED_PHASE_NOT_STARTED
+LEA_95=Done
+TOTAL_ATTEMPTS=20
+NOTEBOOK_ATTEMPTS=10
+PHONE_ATTEMPTS=10
+SUCCESSFUL_ATTEMPTS=20_BY_OPERATOR_CONFIRMATION
+SUCCESS_RATE=100_PERCENT_BY_OPERATOR_CONFIRMATION
+FALSE_POSITIVES_REPORTED=0
+ALL_TOTAL_TIMES_LT_10_SECONDS=REPORTED_PASS
+LIVE_CAMERA_ONLY=YES
 ```
 
-## Próxima fase — LEA-133
+Três amostras de telefone preservadas: `2.9s`, `2.9s`, `2.8s`; processamento `0.9s`, `0.9s`, `0.9s`.
 
-A FASE 12 deve ser executada como linha de montagem de validação:
+Os 20 tempos individuais completos não foram recuperados. A LEA-96 foi encerrada conservadoramente:
 
 ```text
-20_MARCACOES
-    -> METRICAS
-    -> RESTORE_ISOLADO
-    -> CONTINGENCIA
-    -> MAPA_DO_LEGADO_PONTO
-    -> PLANO_ATTENDANCE_EVENT
-    -> DECISAO_REP_PTRP
-    -> BASELINE_APROVADA
+LEA_96=Done
+LEA_96_RESULT=PASS_WITH_WARNINGS
+MAX_BOUND=<10s
+P95_BOUND=<10s
+EXACT_MEAN=UNAVAILABLE
+EXACT_MEDIAN=UNAVAILABLE
+EXACT_P95=UNAVAILABLE
+EXACT_MAX=UNAVAILABLE
+STRICT_P95_TARGET_8S=NOT_PROVABLE
+PRODUCTION_HOMOLOGATION=BLOCKED
 ```
 
-Checklist essencial:
-
-- [ ] revisar e reconciliar o PR #29;
-- [ ] autorizar formalmente o início da LEA-133;
-- [ ] executar 20 marcações controladas;
-- [ ] calcular média, mediana, P95, máximo e taxa de sucesso;
-- [ ] validar backup e restore isolado;
-- [ ] testar contingência de câmera, rede, servidor e banco;
-- [ ] mapear o modelo legado `Ponto`;
-- [ ] definir migração futura para `AttendanceEvent` sem implementá-la;
-- [ ] preservar multitenancy, RBAC, auditoria, criptografia e liveness;
-- [ ] registrar decisão REP/PTRP com separação jurídica;
-- [ ] encerrar formalmente a FASE 10.1.1;
-- [ ] escolher explicitamente a próxima fase.
-
-## Roadmap futuro — não autorizado
+## Oito ressalvas do gate
 
 ```text
-FASE_13=NUCLEO_IMUTAVEL_E_COMPROVANTE
-FASE_14=DIVERGENCIAS_E_APROVACOES
-FASE_15=JORNADAS_E_CALCULOS
-FASE_16=RELATORIOS_E_FECHAMENTO
-FASE_17=SEGURANCA_E_PRIVACIDADE_COMERCIAL
-FASE_18=OFFLINE_MOBILIDADE_GEOLOCALIZACAO
-FASE_19=V1_COMERCIAL_MULTIOBRA
-FASE_20=API_E_INTEGRACOES
-FASE_21=ANTIFRAUDE_E_DIFERENCIAIS
+1_STALE_BASELINE=RESOLVED
+2_LEA95_AMBIGUITY=RESOLVED
+3_LEA133_NOT_STARTED=RESOLVED
+4_PONTO_DEPENDENCY=RESOLVED_AS_AUDITED_MAP_AND_MIGRATION_PLAN
+5_OBSERVABILITY_AMBIGUITY=RESOLVED_AS_TRUTH_MATRIX_AND_ARCHITECTURE
+6_MISSING_TELEMETRY=RESOLVED_AS_EXPLICIT_UNAVAILABLE_OR_NOT_IMPLEMENTED_STATES
+7_LEGAL_AUTHORITY=RESOLVED_BY_SPECIALIST_BOUNDARY
+8_AI_AUTONOMY=RESOLVED_BY_GUARDRAILS
 ```
 
-Essas fases são propostas do mapa. Nenhuma implementação está autorizada antes do gate da FASE 12.
+`RESOLVED` significa que a ressalva deixou de ser uma inconsistência aberta e passou a possuir fonte de verdade, decisão, plano, teste e/ou fronteira de autoridade. Não significa que funcionalidades futuras tenham sido implementadas.
 
-## Pendências preservadas
+## Legado `Ponto`
 
-- concluir a validação estatística;
-- registrar evidências finais;
-- encerrar formalmente a FASE 10.1.1;
-- validar restore e contingência;
-- revisar o PR #29 e reconciliar o Linear;
-- mapear e planejar retirada do legado `Ponto`;
-- decidir o papel arquitetural REP/PTRP;
-- revisar o PR #13;
-- atualizar o manual antigo;
-- documentar LGPD, retenção e exclusão de dados biométricos.
+```text
+PONTO_LIVE_WRITE=YES
+PONTO_DUPLICATE_READ=YES
+ATTENDANCE_EVENT_MODEL_EXISTS=YES
+ATTENDANCE_EVENT_IMMUTABLE=YES
+ATTENDANCE_EVENT_LIVE_WRITE=NO
+PONTO_DEPENDENCY_MAP=COMPLETE
+ATTENDANCE_EVENT_CONVERGENCE_PLAN=COMPLETE
+MIGRATION_EXECUTION=NOT_PERFORMED
+```
+
+A migração futura exige ponte `User.employee_id`, preservação de empresa/obra/timestamp, idempotência, reconciliação, rollback e retirada gradual.
+
+## Observabilidade e IA
+
+Sinais reais atuais:
+
+```text
+REQUEST_ID=REAL
+STRUCTURED_HTTP_LOGS=REAL
+API_HEALTH=REAL
+DATABASE_HEALTH=REAL
+IN_MEMORY_METRICS=REAL_NON_DURABLE
+PUNCH_PROCESSING_MS=REAL_PER_REQUEST
+AUDIT_EVENT=REAL
+```
+
+Sinais não existentes ou sem telemetria:
+
+```text
+CAMERA_HEARTBEAT=TELEMETRY_UNAVAILABLE
+STATION_HEARTBEAT=TELEMETRY_UNAVAILABLE
+DURABLE_METRICS=TELEMETRY_UNAVAILABLE
+PILOT_BACKUP_LAST_SUCCESS=TELEMETRY_UNAVAILABLE
+QUEUE=NOT_IMPLEMENTED
+AI=NOT_IMPLEMENTED
+OFFLINE_SYNC=NOT_IMPLEMENTED
+```
+
+Regra permanente: `SEM_TELEMETRIA != SAUDAVEL`.
+
+O primeiro módulo futuro de IA permanece `IA_DIAGNOSTICO` + explicação de eventos, somente leitura. IA não pode aprovar/alterar ponto, pagamento, punição, biometria, acesso, exclusão biométrica, fraude ou conformidade jurídica.
+
+## Backup / restore — evidência final automatizada
+
+Production Validation run #71 (`31438214366`) concluiu com sucesso após hardening:
+
+```text
+RUN_71=PASS
+REGRESSION=143_PASSED
+MIGRATIONS_UP_DOWN_UP=PASS
+POSTGRES_BACKUP_CHECKSUM=PASS
+POSTGRES_RESTORE_TO_EMPTY_DB=PASS
+BIOMETRIC_STORAGE_CHECKSUM_RESTORE=PASS
+BIOMETRIC_TEMPLATE_DECRYPTION_WITH_KEY=PASS
+DECRYPTION_WITHOUT_KEY=EXPECTED_FAIL_PASS
+AUTHENTICATION_AFTER_RESTORE=PASS
+RBAC_AFTER_RESTORE=PASS
+COMPANY_WORKSITE_SCOPE_AFTER_RESTORE=PASS
+SYNTHETIC_PUNCH_AFTER_RESTORE=PASS
+DATABASE_UNAVAILABLE_FAIL_CLOSED=PASS_STATUS_500
+SYNTHETIC_KEY_LOG_MASKING=PASS
+CI_DATABASE_RESTORE_DURATION=258ms
+ARTIFACT_ID=9081842144
+ARTIFACT_SHA256=d16350a5c77c2ac36c5d509764bf68f9fb8a5c142334d7a0caad3c27b3f53793
+```
+
+Isso prova o restore sintético isolado, não o disaster recovery físico do piloto real.
+
+## Auditoria independente MCF
+
+Emily registrou auditoria independente em `docs/lea-133/09_AUDITORIA_INDEPENDENTE.md`.
+
+```text
+INDEPENDENT_AUDIT=COMPLETE
+EMILY_VERDICT=APPROVE_WITH_WARNINGS_FOR_BASELINE_MERGE
+FALSE_CLAIMS_FOUND=NO_AFTER_CORRECTIONS
+```
+
+Achados não bloqueantes para o merge da baseline:
+
+- warning de submódulo sem URL em `.gitmodules` no post-job;
+- warnings de `Query.get()` legado do SQLAlchemy;
+- dívidas de homologação preservadas abaixo.
+
+## Fronteira regulatória
+
+```text
+TARGET_PRODUCT=COMMERCIAL_MULTI_COMPANY_TIME_ATTENDANCE_PLATFORM
+CURRENT_REGULATORY_CLAIM=NONE
+REP_P_CLASSIFICATION=VALIDACAO_ESPECIALIZADA_NECESSARIA
+PTRP_CLASSIFICATION=VALIDACAO_ESPECIALIZADA_NECESSARIA
+COLLECTOR_ROLE=VALIDACAO_ESPECIALIZADA_NECESSARIA
+LGPD_BIOMETRICS=VALIDACAO_ESPECIALIZADA_NECESSARIA
+LEGAL_CONFORMITY_DECLARED=NO
+```
+
+## Gates de homologação preservados
+
+```text
+GATE_HOM_01=REPEAT_20_WITH_FULL_TIMING_DATASET
+GATE_HOM_02=REAL_PILOT_DISASTER_RECOVERY
+GATE_HOM_03=PHYSICAL_CAMERA_NETWORK_SERVER_DB_CONTINGENCY_DRILLS
+EXACT_20_PUNCH_TIMES=NOT_RECOVERED
+STRICT_P95_8S=NOT_PROVABLE
+RPO_PILOT=UNDECIDED
+RTO_PILOT=UNMEASURED
+LEGAL_SPECIALIST_VALIDATION=PENDING
+PRODUCTION_HOMOLOGATION=BLOCKED
+```
+
+Esses gates estão registrados na LEA-98. Eles não são mascarados como concluídos.
+
+## Estado Linear antes do merge da baseline
+
+```text
+LEA_95=Done
+LEA_96=Done_PASS_WITH_WARNINGS
+LEA_97=Done
+LEA_98=Todo_PRODUCTION_GATES_OPEN
+LEA_85=In_Progress_PRODUCTION_HOMOLOGATION_BLOCKED
+LEA_133=In_Progress_READY_TO_CLOSE_ON_PR30_MERGE
+```
 
 ## Próxima ação
 
 ```text
-NEXT_ACTION=REVIEW_PR_29_AND_RECONCILE_LEA_125_TO_132
-NEXT_OPERATIONAL_PHASE=LEA_133_FASE_12
-TEST_DEBT=LEA_95
-NEXT_GATE_BEFORE_HOMOLOGATION=TWENTY_CONTROLLED_PUNCHES
-NEXT_FUNCTIONAL_IMPLEMENTATION=NOT_AUTHORIZED
-NEXT_HUMAN_GATE=AUTHORIZE_LEA_133_AFTER_DOCUMENTAL_SYNC
+NEXT_ACTION=FINAL_GREEN_CI -> LEO_GATE -> PR30_BASELINE_MERGE
+NEXT_FUNCTIONAL_IMPLEMENTATION=BLOCKED
+NEXT_HUMAN_GATE=AFTER_BASELINE_MERGE
 ```
 
-## Regra de continuidade
-
-Em novo chat, consultar nesta ordem:
-
-1. `ROADMAP_CURRENT.md`;
-2. `CHECKPOINT.md`;
-3. `PROJECT_STATE.md`;
-4. LEA-85, LEA-125 e LEA-133 no Linear;
-5. PRs e código relacionados.
-
-Esse fluxo funciona como uma linha de montagem: o roadmap define a sequência, o checkpoint indica a estação atual, o estado oficial preserva a baseline e o Linear controla cada gate.
+A linha de montagem desta fase é: evidência → testes unitários/integração → auditoria independente → Léo → merge da baseline → novo gate de Leandro.

@@ -1,246 +1,238 @@
 # Controle de Ponto Potiguar — Mapa Oficial de Continuidade
 
-Atualizado em: 2026-07-22
+Atualizado em: 2026-08-10
 
 ## Finalidade
 
-Este documento é o mapa operacional para impedir desvio do objetivo final do projeto. Ele separa claramente:
-
-- o que já foi entregue;
-- o que ainda precisa ser validado;
-- a próxima fase confirmada;
-- o roadmap futuro ainda não aprovado;
-- os gates humanos e jurídicos.
-
-## Objetivo final
-
-Transformar o piloto local de reconhecimento facial em uma plataforma segura, auditável e comercialmente viável de controle de jornada, com foco em empresas com múltiplas obras, equipes externas, baixa conectividade e necessidade de operação simples.
-
-O produto não deve ser anunciado como juridicamente conforme enquanto os requisitos regulatórios não forem validados por especialista.
+A direção estratégica foi aprovada **com ressalvas**. A FASE 12 transformou essas ressalvas em uma baseline verificável antes de qualquer nova expansão funcional.
 
 ## Estado estrutural
 
 ```text
 PROJECT=Controle de Ponto Potiguar
 REPOSITORY=leon337/reconhecimento_facial
-CURRENT_PHASE=FASE_10.1.1_EM_FECHAMENTO
+MAIN_SHA_BEFORE_PR30=783ca912c38876e68c12439a0db3616bf2b29a1d
+BASELINE_FUNCTIONAL_SHA=3908e639be2cd025e4a1eee044db21d1ef52d7ee
+CURRENT_PHASE=FASE_12_LEA_133_BASELINE_COMPLETE
 FUNCTIONAL_VALIDATION=PASS
-STATISTICAL_VALIDATION=PENDING
+LEA_95=Done
+LEA_96=Done_PASS_WITH_WARNINGS
+LEA_97=Done
 PRODUCTION_HOMOLOGATION=BLOCKED
-MARKET_ANALYSIS=PR_29_DRAFT
-NEXT_CONFIRMED_PHASE=FASE_12_LEA_133
-IMPLEMENTATION_PHASES_13_TO_21=NOT_AUTHORIZED
-HOSTING=LINUX_MINT_LOCAL_PILOT
-VERCEL_MIGRATION=NOT_AUTHORIZED
+LEA_125_TO_132=Done
+PR_29=MERGED
+PR_30=READY_FOR_FINAL_GREEN_CI_AND_BASELINE_MERGE
+GATE_LEANDRO=APPROVED_WITH_RESERVATIONS
+STRATEGIC_DIRECTION=APPROVED
+NEW_FUNCTIONAL_PHASE=BLOCKED_UNTIL_NEW_GATE
 ```
 
-## Linha de continuidade
+## Linha de montagem executada
 
 ```mermaid
 flowchart TD
-    A[Fundação técnica e segurança] --> B[FASE 10.1.1 Reconhecimento facial multiquadro]
-    B --> C[FASE 11 Pesquisa de mercado e análise LEA-125]
-    C --> D[FASE 12 Fechamento e baseline LEA-133]
-    D --> E[FASE 13 Núcleo imutável e comprovante]
-    E --> F[FASE 14 Divergências e aprovações]
-    F --> G[FASE 15 Jornadas e cálculos]
-    G --> H[FASE 16 Relatórios e fechamento]
-    H --> I[FASE 17 Segurança e privacidade comercial]
-    I --> J[FASE 18 Offline, mobilidade e geolocalização]
-    J --> K[FASE 19 V1 comercial multiobra]
-    K --> L[FASE 20 API e integrações]
-    L --> M[FASE 21 Antifraude e diferenciais]
+    A[Gate aprovado com ressalvas] --> B[Reconciliação de fontes]
+    B --> C[Recuperação LEA-95 e classificação LEA-96]
+    C --> D[Mapa Ponto + plano AttendanceEvent]
+    D --> E[Observabilidade + IA + fronteira jurídica]
+    E --> F[Backup/restore sintético + contingência]
+    F --> G[Testes unitários e de integração / CI]
+    G --> H[Pacote de evidências]
+    H --> I[Auditoria independente Emily]
+    I --> J[Léo avalia merge da baseline]
+    J --> K[Leandro recebe novo gate]
 ```
 
-## Entregue
+## FASE 12 / LEA-133 — blocos concluídos
 
-### Fundação técnica
+### 1. Reconciliação
 
-- [x] Flask/Gunicorn.
-- [x] PostgreSQL 16 e Alembic.
-- [x] Docker Compose e Caddy.
-- [x] Empresas, obras e isolamento organizacional.
-- [x] Colaboradores, usuários e RBAC.
-- [x] Auditoria.
-- [x] Templates biométricos criptografados e armazenamento privado.
-- [x] Scripts de backup e restauração.
-- [x] Piloto local no Linux Mint.
+- [x] `main` inicial registrada;
+- [x] PR #29 confirmado como merged/documental;
+- [x] LEA-125 e LEA-126 a LEA-132 reconciliadas como Done;
+- [x] LEA-133 ativada sob autorização humana;
+- [x] PRF Classe C criado;
+- [x] evidência histórica da LEA-95 recuperada;
+- [x] movimentação temporária incorreta para Backlog corrigida com trilha preservada;
+- [x] LEA-95 reconciliada como Done;
+- [x] lacuna real dos 20 tempos individuais registrada;
+- [x] LEA-96 concluída como `PASS_WITH_WARNINGS`;
+- [x] LEA-97 concluída após consolidação de evidências.
 
-### Reconhecimento facial
+### 2. Legado `Ponto`
 
-- [x] Cadastro biométrico por câmera ao vivo.
-- [x] Captura multiquadro.
-- [x] Galeria e upload bloqueados.
-- [x] Identificação automática.
-- [x] Entrada e saída.
-- [x] Rejeição de rosto não cadastrado.
-- [x] Desafio de uso único e liveness passivo multiquadro.
-- [x] Testes funcionais no notebook e telefone.
-- [x] Tempos observados abaixo de 10 segundos.
-- [x] PR #28 integrado por squash.
+- [x] escrita viva mapeada;
+- [x] leitura anti-duplicidade mapeada;
+- [x] modelos, relacionamentos e testes dependentes inventariados;
+- [x] `AttendanceEvent` confirmado como existente e imutável;
+- [x] ponte `User.employee_id` definida;
+- [x] `ENTRADA -> clock_in` e `SAIDA -> clock_out` definidos;
+- [x] preservação de empresa/obra/timestamp/origem definida;
+- [x] idempotência, reconciliação e rollback definidos;
+- [x] retirada gradual definida;
+- [x] migração mantida fora da FASE 12.
 
-### Pesquisa de mercado
+Artefato: `docs/lea-133/02_MAPA_LEGADO_PONTO_E_PLANO_ATTENDANCE_EVENT.md`.
 
-- [x] Pesquisa competitiva concluída.
-- [x] 84 funcionalidades catalogadas.
-- [x] Classificação: 15 entregues, 22 parciais, 34 não implementadas, 8 jurídicas e 5 não recomendadas.
-- [x] Matriz de lacunas e priorização.
-- [x] Escopo MVP, V1, V1.1, V2 e futuro.
-- [x] Estratégia de testes.
-- [x] Roadmap proposto.
-- [x] Documentação publicada no PR #29 como Draft.
+### 3. Observabilidade
 
-## Pendências imediatas
+- [x] sinais reais classificados;
+- [x] métricas em memória marcadas como não duráveis;
+- [x] câmera/estação/métricas duráveis/backup do piloto marcados como `TELEMETRY_UNAVAILABLE`;
+- [x] queue/IA/sync offline marcados como não implementados;
+- [x] política `SEM_TELEMETRIA != SAUDAVEL` formalizada;
+- [x] health aggregator futuro definido;
+- [x] telemetria técnica separada de dados trabalhistas.
 
-### FASE 10.1.1 — LEA-85
+### 4. IA segura
 
-- [ ] LEA-95: executar 20 marcações controladas.
-- [ ] LEA-96: calcular média, mediana, P95, máximo e taxa de sucesso.
-- [ ] LEA-97: registrar evidências finais.
-- [ ] LEA-98: encerrar formalmente a fase.
+- [x] `IA_DIAGNOSTICO` + explicação de eventos selecionados como primeiros candidatos;
+- [x] modo somente leitura definido;
+- [x] sanitização/campos proibidos definidos;
+- [x] `cannot_conclude` quando faltarem sinais;
+- [x] decisões trabalhistas, disciplinares, biométricas, de acesso, fraude e conformidade proibidas;
+- [x] estratégia de testes unitários, integração e avaliação definida.
 
-### FASE 11 — LEA-125
+### 5. Backup, restore e contingência
 
-- [ ] Revisar formalmente o PR #29.
-- [ ] Retirar o PR #29 do modo Draft somente após revisão.
-- [ ] Aprovar e fazer merge documental quando autorizado.
-- [ ] Reconciliar LEA-125 e LEA-126 a LEA-132 com os entregáveis publicados.
-- [ ] Sincronizar GitHub e Linear após o merge.
+Production Validation run #71 (`31438214366`) passou:
 
-## Próxima fase confirmada — FASE 12 / LEA-133
+```text
+REGRESSION=143_PASSED
+MIGRATIONS_UP_DOWN_UP=PASS
+POSTGRES_BACKUP_CHECKSUM=PASS
+POSTGRES_RESTORE_EMPTY_DB=PASS
+BIOMETRIC_STORAGE_CHECKSUM_RESTORE=PASS
+BIOMETRIC_DECRYPT_WITH_KEY=PASS
+BIOMETRIC_DECRYPT_WITHOUT_KEY=EXPECTED_FAIL_PASS
+LOGIN_RBAC_ORG_SCOPE_AFTER_RESTORE=PASS
+SYNTHETIC_PUNCH_AFTER_RESTORE=PASS
+DATABASE_UNAVAILABLE_FAIL_CLOSED=PASS_STATUS_500
+SYNTHETIC_KEY_LOG_MASKING=PASS
+CI_DATABASE_RESTORE_DURATION=258ms
+ARTIFACT_ID=9081842144
+ARTIFACT_SHA256=d16350a5c77c2ac36c5d509764bf68f9fb8a5c142334d7a0caad3c27b3f53793
+```
 
-### Bloco A — validação estatística
+- [x] runbook do piloto real definido;
+- [x] contingência câmera/rede/servidor/banco definida;
+- [x] ausência de fila offline explicitada;
+- [x] falso recibo de sucesso proibido.
 
-- [ ] Definir protocolo das 20 marcações.
-- [ ] Executar 10 no notebook e 10 no telefone.
-- [ ] Distribuir entrada e saída.
-- [ ] Registrar sucesso, falha, tempo total, processamento e condições.
-- [ ] Calcular métricas.
-- [ ] Confirmar ausência de falso positivo.
-- [ ] Classificar como PASS, PASS_WITH_WARNINGS ou FAIL.
+CI sintético não substitui exercício físico do piloto.
 
-### Bloco B — backup e restauração
+### 6. Vinte marcações e métricas
 
-- [ ] Criar backup controlado.
-- [ ] Registrar manifesto e checksums.
-- [ ] Restaurar PostgreSQL, biometria e chaves em ambiente isolado.
-- [ ] Validar login, RBAC, empresa, obra, biometria e marcação.
-- [ ] Medir RPO e RTO observados.
+```text
+LEA_95=Done
+TOTAL=20
+NOTEBOOK=10
+PHONE=10
+SUCCESS_RATE=100_PERCENT_BY_OPERATOR_CONFIRMATION
+FALSE_POSITIVE=0_REPORTED
+ALL_TIMES_LT_10S=REPORTED
+```
 
-### Bloco C — contingência
+- [x] execução física anterior confirmada no histórico;
+- [x] 20/20 sucessos confirmados pelo operador;
+- [x] 0 falsos positivos reportados;
+- [x] limite `MAX < 10s` registrado;
+- [x] limite `P95 < 10s` registrado;
+- [x] três amostras visuais preservadas;
+- [x] estatísticas exatas da série completa recusadas por ausência dos dados;
+- [x] LEA-96 = `PASS_WITH_WARNINGS`;
+- [x] homologação de produção mantida bloqueada.
 
-- [ ] Simular falhas de câmera, rede, servidor e banco.
-- [ ] Definir procedimento manual temporário.
-- [ ] Definir reconciliação sem duplicidade.
-- [ ] Criar e testar runbook operacional.
+### 7. Fronteira regulatória
 
-### Bloco D — legado e domínio imutável
+- [x] direção comercial multiempresa/multiobra definida;
+- [x] `CURRENT_REGULATORY_CLAIM=NONE`;
+- [x] REP-P/PTRP/coletor/SREP separados de decisão técnica;
+- [x] biometria/LGPD e requisitos trabalhistas sob validação especializada;
+- [x] engenharia/IA/marketing proibidos de declarar conformidade sem validação.
 
-- [ ] Mapear leituras e escritas do modelo `Ponto`.
-- [ ] Mapear rotas e serviços dependentes.
-- [ ] Comparar `Ponto` com `AttendanceEvent`.
-- [ ] Definir adaptador, idempotência, reconciliação e rollback.
-- [ ] Planejar retirada gradual do legado.
-- [ ] Não executar a migração nesta fase.
+### 8. Evidência e auditoria
 
-### Bloco E — decisões arquiteturais e jurídicas
+- [x] pacote consolidado `07_EVIDENCIAS_EXECUCAO.md`;
+- [x] contrato de próximo gate `08_CONTRATO_PROXIMO_GATE.md`;
+- [x] auditoria independente `09_AUDITORIA_INDEPENDENTE.md`;
+- [x] Emily = `APPROVE_WITH_WARNINGS_FOR_BASELINE_MERGE`;
+- [x] LEA-97 = Done;
+- [x] LEA-98 recebeu gates explícitos de homologação;
+- [x] LEA-85 permanece aberta sem falsa homologação;
+- [ ] último head documental precisa permanecer verde antes do merge;
+- [ ] Léo aplica gate delegado para merge da baseline;
+- [ ] PR #30 é integrado;
+- [ ] LEA-133 é fechada após merge.
 
-- [ ] Definir se o produto será interno ou preparado para clientes.
-- [ ] Definir papel pretendido: REP-P, coletor, PTRP, combinação ou solução interna.
-- [ ] Separar decisão técnica de validação jurídica.
-- [ ] Validar com especialistas trabalhistas e de privacidade os itens regulatórios.
-- [ ] Não declarar conformidade.
+## Oito ressalvas — resultado
 
-### Gate de saída da FASE 12
+```text
+R1=RESOLVED
+R2=RESOLVED
+R3=RESOLVED
+R4=RESOLVED_AS_AUDITED_MAP_AND_CONTROLLED_PLAN
+R5=RESOLVED_AS_TRUTH_MATRIX
+R6=RESOLVED_AS_TRUTHFUL_STATE_MODEL
+R7=RESOLVED_BY_SPECIALIST_BOUNDARY
+R8=RESOLVED_BY_AI_GUARDRAILS
+```
 
-- [ ] FASE 10.1.1 formalmente encerrada ou desvios registrados.
-- [ ] Restore isolado comprovado.
-- [ ] Contingência testada.
-- [ ] Dependência do legado documentada.
-- [ ] Plano para `AttendanceEvent` aprovado.
-- [ ] Decisão REP/PTRP registrada como hipótese ou decisão validada.
-- [ ] GitHub e Linear sincronizados.
-- [ ] Próxima fase escolhida explicitamente.
+Isso não converte funcionalidades futuras em entregas prontas:
 
-## Roadmap futuro — proposta, não autorização
+```text
+CAMERA_HEARTBEAT=NAO_IMPLEMENTADO
+DURABLE_METRICS=NAO_IMPLEMENTADO
+AI=NAO_IMPLEMENTADA
+PONTO_TO_ATTENDANCE_EVENT_MIGRATION=NAO_IMPLEMENTADA
+```
 
-### FASE 13 — núcleo imutável e comprovante
+## Gates separados de homologação de produção
 
-- Migrar a rota viva para `AttendanceEvent`.
-- Implementar intervalos, sequência temporal e idempotência.
-- Gerar comprovante recuperável.
-- Preservar evento original e reduzir o legado.
+Registrados na LEA-98:
 
-### FASE 14 — divergências e aprovações
+```text
+GATE_HOM_01=REPEAT_20_WITH_FULL_TIMING_DATASET
+GATE_HOM_02=REAL_PILOT_DISASTER_RECOVERY
+GATE_HOM_03=PHYSICAL_CAMERA_NETWORK_SERVER_DB_CONTINGENCY_DRILLS
+RPO_PILOT=UNDECIDED
+RTO_PILOT=UNMEASURED
+LEGAL_SPECIALIST_VALIDATION=PENDING
+PRODUCTION_HOMOLOGATION=BLOCKED
+```
 
-- Solicitação de correção, justificativas e anexos.
-- Aprovação ou recusa pelo gestor.
-- Ajustes append-only e trilha auditável.
+## Direção estratégica candidata ao próximo gate
 
-### FASE 15 — jornadas e cálculos
+Nenhum bloco começa automaticamente:
 
-- Jornadas, escalas, múltiplos intervalos e tolerâncias.
-- Horas extras, adicional noturno, feriados e banco de horas.
-- Cálculos reproduzíveis e explicáveis.
+```text
+NF_01=PRODUTO_E_DESIGN_SYSTEM
+NF_02=REDESIGN_COMERCIAL
+NF_03=EXPERIENCIA_OPERACIONAL
+NF_04=OBSERVABILIDADE
+NF_05=ARQUITETURA_E_PRIMEIRO_MODULO_IA
+NF_06=IDENTIDADE_E_DISPOSITIVOS
+NF_07=REAVALIACAO_DO_ROADMAP
+NF_08=VALIDACOES_TECNICAS_REMANESCENTES
+```
 
-### FASE 16 — relatórios e fechamento
-
-- Relatório diário e painel de pendências.
-- Espelho de ponto e fechamento mensal.
-- Exportação e conferência do colaborador.
-
-### FASE 17 — segurança e privacidade comercial
-
-- Aviso de privacidade, finalidade, base legal e retenção.
-- Direitos do titular, MFA, rate limiting, monitoramento e rotação de chaves.
-- Testes de segurança e privacidade.
-
-### FASE 18 — offline, mobilidade e geolocalização
-
-- Decidir PWA ou aplicativo nativo.
-- Fila offline protegida e sincronização resiliente.
-- GPS, geofence e estações compartilhadas.
-
-### FASE 19 — V1 comercial multiobra
-
-- Centros de custo, equipes, transferências e desligamentos.
-- Portal do colaborador, painel do gestor e onboarding.
-- Primeiro cliente piloto externo.
-
-### FASE 20 — API e integrações
-
-- API versionada e OpenAPI.
-- Webhooks, autenticação e rate limiting.
-- Primeiro conector de folha ou ERP.
-
-### FASE 21 — antifraude e diferenciais
-
-- Avaliação de PAD e proteção contra foto, vídeo e deepfake.
-- Acessibilidade e baixo consumo de dados.
-- PIN ou QR dinâmico como contingência.
-
-## Regras permanentes de governança
+## Regras permanentes
 
 1. GitHub é a fonte técnica oficial.
-2. Linear representa missões, gates, dependências e decisões.
-3. Antes de qualquer nova implementação, consultar nesta ordem:
-   - `ROADMAP_CURRENT.md`;
-   - `CHECKPOINT.md`;
-   - `PROJECT_STATE.md`;
-   - issues relacionadas no Linear.
-4. Nenhuma fase futura é aprovada automaticamente.
-5. Toda implementação deve ter testes unitários e de integração definidos antes do código.
-6. Alterações de domínio devem preservar multitenancy, RBAC, auditoria, biometria criptografada e liveness.
-7. Nenhuma conclusão jurídica deve ser declarada sem validação especializada.
-8. Nenhum dado biométrico real, segredo ou chave deve ser publicado no GitHub.
-9. Cada fase deve possuir gate de entrada, gate de saída e evidências reproduzíveis.
-10. O objetivo central permanece: controle de jornada simples, seguro, auditável, multiobra e adequado a equipes de campo.
+2. Linear representa fases, gates, dependências e decisões.
+3. Divergências permanecem rastreáveis.
+4. Sem evidência não há PASS estrito.
+5. Testes unitários e de integração precedem implementações funcionais.
+6. Multitenancy, RBAC, auditoria, criptografia biométrica e liveness são invariantes.
+7. Ausência de telemetria nunca vira estado verde.
+8. Nenhum dado biométrico real, segredo ou chave deve ser publicado.
+9. IA não toma decisão trabalhista/autoritativa.
+10. Conformidade jurídica exige validação especializada.
 
 ## Próxima ação oficial
 
 ```text
-NEXT_ACTION=REVIEW_PR_29_AND_RECONCILE_LEA_125_TO_LEA_132
-NEXT_OPERATIONAL_PHASE=LEA_133_FASE_12
-NEXT_FUNCTIONAL_IMPLEMENTATION=NOT_AUTHORIZED
-NEXT_HUMAN_GATE=AUTHORIZE_EXECUTION_OF_LEA_133_AFTER_DOCUMENTAL_SYNC
+NEXT_ACTION=FINAL_GREEN_CI -> LEO_GATE -> PR30_BASELINE_MERGE -> CLOSE_LEA_133
+NEXT_FUNCTIONAL_IMPLEMENTATION=BLOCKED
+NEXT_HUMAN_GATE=AFTER_BASELINE_MERGE
 ```

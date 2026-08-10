@@ -56,7 +56,10 @@ jobs:
 
       - name: Definir chave biométrica sintética
         if: env.BIOMETRIC_ENCRYPTION_KEY == ''
-        run: echo "BIOMETRIC_ENCRYPTION_KEY=$(python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())')" >> "$GITHUB_ENV"
+        run: |
+          key=$(python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())')
+          echo "::add-mask::$key"
+          echo "BIOMETRIC_ENCRYPTION_KEY=$key" >> "$GITHUB_ENV"
 
       - name: Validar migrations upgrade downgrade upgrade
         run: |
@@ -97,6 +100,68 @@ jobs:
           assert 'Content-Security-Policy' in security.headers
           PY
 
+      - name: Preparar fixture sintética para disaster recovery
+        env:
+          BIOMETRIC_STORAGE_FOLDER: /tmp/controle-ponto-biometrics-source
+        run: |
+          rm -rf /tmp/controle-ponto-biometrics-source /tmp/controle-ponto-biometrics-restore
+          mkdir -p /tmp/controle-ponto-biometrics-source
+          python - <<'PY'
+          import json
+          from main import create_app
+          from app.biometric_models import BiometricProfile
+          from app.biometrics import encrypt_template, save_private_image_bytes
+          from app.models import Company, Employee, User, Worksite, db
+          from app.rbac import AccessRole
+
+          app = create_app({
+              "TESTING": True,
+              "AUTO_CREATE_SCHEMA": False,
+              "BIOMETRIC_STORAGE_FOLDER": "/tmp/controle-ponto-biometrics-source",
+          })
+          with app.app_context():
+              company = Company(name="Empresa DR Sintética", slug="empresa-dr-sintetica")
+              worksite = Worksite(name="Obra DR Sintética", code="DR-01", company=company)
+              employee = Employee(
+                  name="Colaborador DR Sintético",
+                  registration="DR-001",
+                  company=company,
+                  worksite=worksite,
+              )
+              user = User(
+                  username="admin-dr",
+                  access_role=AccessRole.ADMIN.value,
+                  company=company,
+                  worksite=worksite,
+                  employee=employee,
+                  name="Admin DR Sintético",
+              )
+              user.set_password("senha-dr-sintetica")
+              db.session.add_all([company, worksite, employee, user])
+              db.session.flush()
+
+              object_key, _ = save_private_image_bytes(b"synthetic-biometric-image", ".bin")
+              payload = json.dumps({"encoding": [0.01, 0.02, 0.03], "fixture": "dr"}, sort_keys=True)
+              profile = BiometricProfile(
+                  user_id=user.id,
+                  encrypted_template=encrypt_template(payload),
+                  image_object_key=object_key,
+                  algorithm_version="synthetic-dr-1",
+                  active=True,
+              )
+              db.session.add(profile)
+              db.session.commit()
+
+              assert user.id is not None
+              assert user.employee_id == employee.id
+              assert profile.id is not None
+          PY
+          (
+            cd /tmp/controle-ponto-biometrics-source
+            find . -type f -print0 | sort -z | xargs -0 sha256sum
+          ) > biometric-storage.sha256
+          test -s biometric-storage.sha256
+
       - name: Validar cliente PostgreSQL e conexão
         run: |
           pg_dump --version
@@ -130,20 +195,139 @@ jobs:
           verify_backup(Path(os.environ['ARCHIVE_PATH']), Path(os.environ['MANIFEST_PATH']))
           PY
 
+      - name: Preparar restauração do armazenamento biométrico
+        run: |
+          cp -a /tmp/controle-ponto-biometrics-source /tmp/controle-ponto-biometrics-restore
+          (
+            cd /tmp/controle-ponto-biometrics-restore
+            sha256sum -c "$GITHUB_WORKSPACE/biometric-storage.sha256"
+          ) | tee biometric-restore-diagnostic.txt
+
       - name: Criar banco vazio para restauração
         run: createdb -h 127.0.0.1 -U controle_ponto controle_ponto_restore
 
       - name: Restaurar backup no banco vazio
         run: |
           set -o pipefail
+          start_ms=$(date +%s%3N)
           DATABASE_URL=postgresql://controle_ponto:hml-password@127.0.0.1:5432/controle_ponto_restore \
             python scripts/restore_postgres.py "$ARCHIVE_PATH" --manifest "$MANIFEST_PATH" --confirm RESTORE --fresh-database \
             2>&1 | tee restore-diagnostic.txt
+          end_ms=$(date +%s%3N)
+          restore_ms=$((end_ms - start_ms))
+          echo "CI_DATABASE_RESTORE_DURATION_MS=$restore_ms" | tee restore-metrics.txt
+          echo "RESTORE_DURATION_MS=$restore_ms" >> "$GITHUB_ENV"
 
       - name: Validar schema restaurado
         run: |
           psql -h 127.0.0.1 -U controle_ponto -d controle_ponto_restore -v ON_ERROR_STOP=1 -c 'SELECT 1;'
           test "$(psql -h 127.0.0.1 -U controle_ponto -d controle_ponto_restore -tAc "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='public';")" -gt 0
+
+      - name: Validar aplicação, RBAC, biometria e marcação após restore
+        env:
+          DATABASE_URL: postgresql://controle_ponto:hml-password@127.0.0.1:5432/controle_ponto_restore
+          BIOMETRIC_STORAGE_FOLDER: /tmp/controle-ponto-biometrics-restore
+        run: |
+          python - <<'PY'
+          import json
+          from io import BytesIO
+          from pathlib import Path
+
+          from main import create_app
+          from app.biometric_models import BiometricProfile
+          from app.biometrics import BiometricCryptoError, decrypt_template
+          from app.models import Company, Ponto, User, Worksite
+          from app.punch.service import RecognitionResult
+          from app.rbac import Permission
+          import app.punch.routes as punch_routes
+
+          restored_app = create_app({
+              "TESTING": True,
+              "AUTO_CREATE_SCHEMA": False,
+              "WTF_CSRF_ENABLED": False,
+              "BIOMETRIC_STORAGE_FOLDER": "/tmp/controle-ponto-biometrics-restore",
+          })
+
+          with restored_app.app_context():
+              company = Company.query.filter_by(slug="empresa-dr-sintetica").one()
+              worksite = Worksite.query.filter_by(company_id=company.id, code="DR-01").one()
+              user = User.query.filter_by(username="admin-dr").one()
+              profile = BiometricProfile.query.filter_by(user_id=user.id).one()
+
+              assert user.company_id == company.id
+              assert user.worksite_id == worksite.id
+              assert user.employee_id is not None
+              assert user.check_password("senha-dr-sintetica")
+              assert user.can(Permission.USERS_VIEW)
+              assert user.can(Permission.PUNCH_CREATE)
+              assert profile.active is True
+              assert profile.image_object_key
+              assert (Path(restored_app.config["BIOMETRIC_STORAGE_FOLDER"]) / profile.image_object_key).is_file()
+              decoded = json.loads(decrypt_template(profile.encrypted_template))
+              assert decoded["fixture"] == "dr"
+              user_id = user.id
+
+          no_key_app = create_app({
+              "TESTING": True,
+              "AUTO_CREATE_SCHEMA": False,
+              "BIOMETRIC_ENCRYPTION_KEY": None,
+              "BIOMETRIC_STORAGE_FOLDER": "/tmp/controle-ponto-biometrics-restore",
+          })
+          with no_key_app.app_context():
+              profile = BiometricProfile.query.filter_by(user_id=user_id).one()
+              try:
+                  decrypt_template(profile.encrypted_template)
+              except BiometricCryptoError as exc:
+                  assert str(exc) == "biometric_encryption_key_missing"
+              else:
+                  raise AssertionError("decryption_without_key_should_fail")
+
+          client = restored_app.test_client()
+          health = client.get("/health")
+          assert health.status_code == 200, health.data
+          assert health.get_json()["database"] == "ok"
+
+          login = client.post(
+              "/admin/login",
+              data={"username": "admin-dr", "password": "senha-dr-sintetica"},
+              follow_redirects=False,
+          )
+          assert login.status_code in {302, 303}, login.data
+
+          def recognize(image, tolerance, company_id=None, worksite_id=None):
+              with restored_app.app_context():
+                  return RecognitionResult(User.query.filter_by(id=user_id).one(), "matched")
+
+          punch_routes.recognize_registered_user = recognize
+          punch = client.post(
+              "/punch",
+              data={"tipo": "ENTRADA", "image": (BytesIO(b"synthetic-camera-frame"), "captura.jpg")},
+              content_type="multipart/form-data",
+          )
+          assert punch.status_code == 201, punch.data
+          assert punch.get_json()["status"] == "ok"
+
+          with restored_app.app_context():
+              assert Ponto.query.filter_by(user_id=user_id, tipo="ENTRADA").count() == 1
+          PY
+
+      - name: Validar falha segura com banco indisponível
+        run: |
+          python - <<'PY'
+          from main import create_app
+
+          app = create_app({
+              "TESTING": True,
+              "PROPAGATE_EXCEPTIONS": False,
+              "AUTO_CREATE_SCHEMA": False,
+              "SQLALCHEMY_DATABASE_URI": "postgresql://controle_ponto:hml-password@127.0.0.1:5999/controle_ponto_indisponivel?connect_timeout=1",
+          })
+          response = app.test_client().get("/health")
+          assert response.status_code == 500, response.data
+          payload = response.get_json()
+          assert payload["error"] == "internal_error"
+          assert payload["request_id"]
+          PY
 
       - name: Validar Compose de produção
         env:
@@ -162,5 +346,8 @@ jobs:
             backup-diagnostic.txt
             restore-diagnostic.txt
             restore-list.txt
+            restore-metrics.txt
+            biometric-storage.sha256
+            biometric-restore-diagnostic.txt
           if-no-files-found: warn
           retention-days: 14
