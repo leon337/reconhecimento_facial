@@ -1,40 +1,56 @@
 # Checkpoint Atual — Controle de Ponto Potiguar
 
-Atualizado em: 22/07/2026
+Atualizado em: 10/08/2026
 
-## Estado oficial
+## Estado oficial reconciliado
 
 ```text
 REPOSITORY=leon337/reconhecimento_facial
 DEFAULT_BRANCH=main
-PROJECT_STATUS=PILOTO_LOCAL_AVANCADO
-CURRENT_PHASE=FASE_10.1.1_EM_FECHAMENTO
+MAIN_SHA=783ca912c38876e68c12439a0db3616bf2b29a1d
 BASELINE_FUNCTIONAL_SHA=3908e639be2cd025e4a1eee044db21d1ef52d7ee
-PROJECT_STATE=PROJECT_STATE.md
-ROADMAP=ROADMAP_CURRENT.md
-LINEAR_PARENT=LEA-85
-NEXT_PHASE=LEA-133_FASE_12
+PROJECT_STATUS=PILOTO_LOCAL_AVANCADO
+CURRENT_PHASE=FASE_12_LEA_133_EM_EXECUCAO
+WORK_MODE=RESOLUCAO_DE_RESSALVAS
+MCF_PROTOCOL=1.1
+MCF_RISK_CLASS=C
+PRF=docs/mcf/PRF_CPP_COMMERCIAL_REDESIGN_AI_OBS_001.md
 ```
 
-## Objetivo preservado
+## Gate humano de 10/08/2026
 
-Evoluir o piloto facial para uma plataforma simples, segura, auditável e multiobra de controle de jornada, adequada a equipes externas e locais com conectividade limitada.
+Leandro confirmou alinhamento com o Mestre e aprovou a direção estratégica proposta pelo Léo **com ressalvas**.
 
-Nenhuma alegação de conformidade jurídica está autorizada sem validação especializada.
-
-## PR #28
+A ordem é vinculante:
 
 ```text
-PULL_REQUEST=28
-AUTHORIZED_HEAD=53483aa139ab6b810f54427ef544c7f9550f7103
-MERGE_METHOD=SQUASH
-MERGED=YES
-MERGE_COMMIT=3908e639be2cd025e4a1eee044db21d1ef52d7ee
-CI_175=SUCCESS
-PRODUCTION_VALIDATION_44=SUCCESS
+GATE_LEANDRO=APPROVED_WITH_RESERVATIONS
+STRATEGIC_DIRECTION=APPROVED
+RESOLVE_RESERVATIONS_FIRST=YES
+LEA_133_START=AUTHORIZED
+FUNCTIONAL_IMPLEMENTATION=BLOCKED
+NEW_STRATEGIC_PHASE=BLOCKED_UNTIL_RESERVATIONS_RESOLVED
+PRODUCTION_HOMOLOGATION=BLOCKED
+LEGAL_CONFORMITY_DECLARED=NO
 ```
 
-## Validação funcional
+## FASE 11 — estado final
+
+```text
+LEA_125=Done
+LEA_126_TO_132=Done
+PR_29=MERGED
+PR_29_MERGE_COMMIT=783ca912c38876e68c12439a0db3616bf2b29a1d
+PR_29_SCOPE=DOCUMENTATION_ONLY
+APPLICATION_CODE_CHANGED_BY_PR_29=NO
+ROADMAP_AUTO_APPROVED_BY_PR_29=NO
+```
+
+O checkpoint anterior estava desatualizado ao registrar LEA-125 como `In Progress` e PR #29 como Draft aberto. Esta versão corrige essa divergência.
+
+## FASE 10.1.1 — validação
+
+### Validação funcional preservada
 
 ```text
 NOTEBOOK=PASS
@@ -46,155 +62,153 @@ ENTRY=PASS
 EXIT=PASS
 UNKNOWN_FACE_REJECTION=PASS
 TARGET_LT_10_SECONDS=PASS
-FALSE_IDENTIFICATION_OBSERVED=NO
+FALSE_IDENTIFICATION_OBSERVED_IN_FUNCTIONAL_TESTS=NO
 ```
 
-Tempos observados:
+Tempos históricos observados:
 
 ```text
 NOTEBOOK_ENTRY=2.6s
 NOTEBOOK_EXIT=2.5s
 PHONE_ENTRY=3.0s
 PHONE_EXIT=2.8s
-PHONE_PROCESSING_ENTRY=0.9s
-PHONE_PROCESSING_EXIT=0.8s
 ```
 
-## Infraestrutura atual
+### Dívida estatística reconciliada
 
 ```text
-APPLICATION=Flask/Gunicorn
-DATABASE=PostgreSQL 16 local em Docker
-MIGRATIONS=Alembic
-TLS=Caddy
-LAN_IP=192.168.10.101
-BIOMETRIC_STORAGE=volume persistente separado e criptografado
-SUPABASE=NOT_IN_USE
-VERCEL=NOT_CONFIGURED
-HOSTING=LINUX_MINT_LOCAL_PILOT
-```
-
-## Decisões vigentes
-
-```text
-VERCEL_MIGRATION=NOT_AUTHORIZED
-LOCAL_PILOT=KEEP
-LEA_95=DEFERRED_TO_BACKLOG
-IMPLEMENTATION_CONTINUATION=ALLOWED_UNDER_GOVERNANCE
-PRODUCTION_HOMOLOGATION=BLOCKED
-ROADMAP_13_TO_21_APPROVED=NO
-LEGAL_CONFORMITY_DECLARED=NO
-```
-
-## FASE 11 — pesquisa e escopo
-
-```text
-LEA_125=In_Progress
-PR_29=OPEN_DRAFT
-PR_29_MERGED=NO
-DOCUMENTS=14_MARKDOWN_FILES
-CATALOGUE=84_FUNCTIONS
-ANALYSIS_COMPLETED=YES
-LINEAR_RECONCILIATION=PENDING
-```
-
-O conteúdo analítico existe no PR #29, mas ainda exige revisão formal, merge autorizado e reconciliação de LEA-125 e LEA-126 a LEA-132.
-
-## Linear
-
-```text
-LEA_85=In_Progress
-LEA_93=Done
-LEA_94=Done
-LEA_95=Backlog_DEFERRED
+LEA_95=Backlog
+LEA_95_TECHNICAL_COMPLETION=NO
+TWENTY_CONTROLLED_PUNCHES=NOT_EVIDENCED
 LEA_96=Todo
 LEA_97=Todo
 LEA_98=Todo
-LEA_118=Done
-LEA_119=Documentation_Sync
-LEA_125=In_Progress
-LEA_126_TO_132=STATUS_RECONCILIATION_PENDING
-LEA_133=NEXT_CONFIRMED_PHASE_NOT_STARTED
+STATISTICAL_VALIDATION=PENDING
+PRODUCTION_HOMOLOGATION=BLOCKED
 ```
 
-## Próxima fase — LEA-133
+A LEA-95 havia sido marcada como `Done` no tracker sem evidência das 20 marcações. Em 10/08/2026 ela foi devolvida para `Backlog`, preservando a descrição `STATUS=DEFERRED` e o bloqueio de homologação.
 
-A FASE 12 deve ser executada como linha de montagem de validação:
+## FASE 12 — LEA-133
 
 ```text
-20_MARCACOES
-    -> METRICAS
-    -> RESTORE_ISOLADO
-    -> CONTINGENCIA
-    -> MAPA_DO_LEGADO_PONTO
-    -> PLANO_ATTENDANCE_EVENT
-    -> DECISAO_REP_PTRP
-    -> BASELINE_APROVADA
+LEA_133=In_Progress
+MISSION=CPP-COMMERCIAL-REDESIGN-AI-OBS-001
+PRIMARY_OBJECTIVE=RESOLVE_RESERVATIONS_AND_ESTABLISH_DECISION_BASELINE
+APPLICATION_CODE_CHANGE=NOT_AUTHORIZED_IN_THIS_BLOCK
+DATABASE_MIGRATION=NOT_AUTHORIZED
+DEPLOY=NOT_AUTHORIZED
 ```
 
-Checklist essencial:
+### Ressalvas que precisam ser resolvidas
 
-- [ ] revisar e reconciliar o PR #29;
-- [ ] autorizar formalmente o início da LEA-133;
-- [ ] executar 20 marcações controladas;
-- [ ] calcular média, mediana, P95, máximo e taxa de sucesso;
-- [ ] validar backup e restore isolado;
-- [ ] testar contingência de câmera, rede, servidor e banco;
-- [ ] mapear o modelo legado `Ponto`;
-- [ ] definir migração futura para `AttendanceEvent` sem implementá-la;
-- [ ] preservar multitenancy, RBAC, auditoria, criptografia e liveness;
-- [ ] registrar decisão REP/PTRP com separação jurídica;
-- [ ] encerrar formalmente a FASE 10.1.1;
-- [ ] escolher explicitamente a próxima fase.
+- [x] reconciliar PR #29 e LEA-125 com o estado real;
+- [x] reabrir tecnicamente a LEA-95 no tracker;
+- [x] registrar autorização humana e ativar LEA-133;
+- [ ] reconciliar integralmente `PROJECT_STATE.md`, `ROADMAP_CURRENT.md` e Linear;
+- [ ] produzir mapa auditável das leituras/escritas do modelo legado `Ponto`;
+- [ ] produzir plano de convergência para `AttendanceEvent`, sem executar migração;
+- [ ] documentar limites da observabilidade atual e telemetria faltante;
+- [ ] documentar guardrails e arquitetura do primeiro módulo de IA;
+- [ ] validar backup/restore em ambiente isolado;
+- [ ] definir e testar contingência para câmera, rede, servidor e banco;
+- [ ] executar 20 marcações controladas com operador e dispositivos disponíveis;
+- [ ] calcular média, mediana, P95, máximo, taxa de sucesso e registrar falso positivo observado;
+- [ ] executar auditoria independente das evidências;
+- [ ] encerrar LEA-96, LEA-97, LEA-98 e LEA-85 somente quando os gates forem satisfeitos.
 
-## Roadmap futuro — não autorizado
+## Dependência do legado
+
+O estado técnico já verificado mostra que `AttendanceEvent`, `AttendanceAdjustment` e `AttendanceClosure` existem, porém a rota viva de marcação ainda grava o modelo legado `Ponto`.
 
 ```text
-FASE_13=NUCLEO_IMUTAVEL_E_COMPROVANTE
-FASE_14=DIVERGENCIAS_E_APROVACOES
-FASE_15=JORNADAS_E_CALCULOS
-FASE_16=RELATORIOS_E_FECHAMENTO
-FASE_17=SEGURANCA_E_PRIVACIDADE_COMERCIAL
-FASE_18=OFFLINE_MOBILIDADE_GEOLOCALIZACAO
-FASE_19=V1_COMERCIAL_MULTIOBRA
-FASE_20=API_E_INTEGRACOES
-FASE_21=ANTIFRAUDE_E_DIFERENCIAIS
+PONTO_LIVE_WRITE=YES
+ATTENDANCE_EVENT_LIVE_WRITE=NO
+MIGRATION_PLAN=REQUIRED
+MIGRATION_EXECUTION=NOT_AUTHORIZED
 ```
 
-Essas fases são propostas do mapa. Nenhuma implementação está autorizada antes do gate da FASE 12.
+## Observabilidade — classificação atual
 
-## Pendências preservadas
+```text
+HTTP_LOGS=REAL
+REQUEST_ID=REAL
+API_HEALTH=REAL
+DATABASE_HEALTH=REAL
+IN_MEMORY_METRICS=REAL_BUT_NON_DURABLE
+PUNCH_PROCESSING_MS=REAL_PER_REQUEST
+CAMERA_HEARTBEAT=UNAVAILABLE
+STATION_HEARTBEAT=UNAVAILABLE
+BACKUP_LAST_SUCCESS_TELEMETRY=UNAVAILABLE
+QUEUE_TELEMETRY=UNAVAILABLE
+AI_HEALTH=UNAVAILABLE
+DURABLE_METRICS=UNAVAILABLE
+```
 
-- concluir a validação estatística;
-- registrar evidências finais;
-- encerrar formalmente a FASE 10.1.1;
-- validar restore e contingência;
-- revisar o PR #29 e reconciliar o Linear;
-- mapear e planejar retirada do legado `Ponto`;
-- decidir o papel arquitetural REP/PTRP;
-- revisar o PR #13;
-- atualizar o manual antigo;
-- documentar LGPD, retenção e exclusão de dados biométricos.
+Nenhum componente sem telemetria deve aparecer como saudável por inferência.
+
+## IA — limites aprovados
+
+O primeiro candidato estratégico continua sendo diagnóstico assistido + explicação de eventos, em modo somente leitura.
+
+A IA pode analisar, explicar, resumir, recomendar e priorizar investigação. Ela não pode autonomamente:
+
+- aprovar ou alterar jornada;
+- alterar pagamento;
+- punir colaborador;
+- sobrescrever resultado biométrico;
+- conceder acesso;
+- excluir biometria;
+- declarar fraude;
+- declarar conformidade jurídica.
+
+## Questões regulatórias
+
+```text
+REP_PTRP_ROLE=UNDECIDED
+LEGAL_VALIDATION=REQUIRED
+LGPD_BIOMETRICS=REQUIRES_SPECIALIZED_VALIDATION
+PAdES_AFD_AEJ_RETENTION=REQUIRES_SPECIALIZED_VALIDATION
+```
+
+Nenhuma conclusão jurídica é derivada apenas de engenharia.
+
+## Direção estratégica aprovada, ainda bloqueada para implementação
+
+Após o fechamento das ressalvas e novo gate:
+
+```text
+NF_01=PRODUTO_E_DESIGN_SYSTEM
+NF_02=REDESIGN_COMERCIAL
+NF_03=EXPERIENCIA_OPERACIONAL
+NF_04=OBSERVABILIDADE
+NF_05=ARQUITETURA_E_PRIMEIRO_MODULO_IA
+NF_06=IDENTIDADE_E_DISPOSITIVOS
+NF_07=REAVALIACAO_DO_ROADMAP
+NF_08=RETORNO_AS_VALIDACOES_TECNICAS_REMANESCENTES
+```
+
+Essa sequência está aprovada como direção estratégica, não como autorização para implementação imediata.
 
 ## Próxima ação
 
 ```text
-NEXT_ACTION=REVIEW_PR_29_AND_RECONCILE_LEA_125_TO_132
-NEXT_OPERATIONAL_PHASE=LEA_133_FASE_12
-TEST_DEBT=LEA_95
-NEXT_GATE_BEFORE_HOMOLOGATION=TWENTY_CONTROLLED_PUNCHES
-NEXT_FUNCTIONAL_IMPLEMENTATION=NOT_AUTHORIZED
-NEXT_HUMAN_GATE=AUTHORIZE_LEA_133_AFTER_DOCUMENTAL_SYNC
+NEXT_ACTION=COMPLETE_BASELINE_RECONCILIATION_AND_TECHNICAL_EVIDENCE_PLAN
+NEXT_OPERATIONAL_ISSUE=LEA_133
+NEXT_PHYSICAL_GATE=LEA_95_TWENTY_CONTROLLED_PUNCHES
+NEXT_FUNCTIONAL_IMPLEMENTATION=BLOCKED
+NEXT_HUMAN_GATE=AFTER_RESERVATIONS_RESOLVED
 ```
 
 ## Regra de continuidade
 
-Em novo chat, consultar nesta ordem:
+Consultar nesta ordem:
 
-1. `ROADMAP_CURRENT.md`;
-2. `CHECKPOINT.md`;
-3. `PROJECT_STATE.md`;
-4. LEA-85, LEA-125 e LEA-133 no Linear;
-5. PRs e código relacionados.
+1. `CHECKPOINT.md`;
+2. `PROJECT_STATE.md`;
+3. `ROADMAP_CURRENT.md`;
+4. `docs/mcf/PRF_CPP_COMMERCIAL_REDESIGN_AI_OBS_001.md`;
+5. LEA-85, LEA-95 a LEA-98, LEA-125 e LEA-133 no Linear;
+6. PRs e código aplicáveis.
 
-Esse fluxo funciona como uma linha de montagem: o roadmap define a sequência, o checkpoint indica a estação atual, o estado oficial preserva a baseline e o Linear controla cada gate.
+O pipeline funciona como uma linha de montagem: cada estação só libera a seguinte quando a evidência exigida está presente.
