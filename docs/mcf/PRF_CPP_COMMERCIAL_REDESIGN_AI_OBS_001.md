@@ -18,150 +18,154 @@ DATE=2026-08-10
 
 ## Decisão humana vinculante
 
-Leandro aprovou a direção estratégica proposta pelo Léo **com ressalvas** e determinou que as ressalvas sejam resolvidas antes de qualquer avanço para a nova fase funcional.
-
-Interpretação operacional:
+Leandro aprovou a direção estratégica proposta pelo Léo **com ressalvas** e determinou que elas sejam resolvidas antes de qualquer nova fase funcional.
 
 ```text
 STRATEGIC_DIRECTION=APPROVED
 RESERVATION_RESOLUTION=AUTHORIZED
-FUNCTIONAL_IMPLEMENTATION=BLOCKED
-NEW_STRATEGIC_PHASE=BLOCKED_UNTIL_RESERVATIONS_RESOLVED
+FUNCTIONAL_EXPANSION=BLOCKED_UNTIL_NEW_GATE
+PRODUCTION_HOMOLOGATION=BLOCKED
 LEGAL_CONFORMITY_DECLARATION=PROHIBITED
 AUTONOMOUS_LABOR_DECISIONS_BY_AI=PROHIBITED
 ```
 
-## Objetivo imediato
+## Objetivo
 
-Reconciliar o estado oficial do projeto e eliminar inconsistências documentais, de rastreabilidade e de governança antes do novo roadmap de redesign comercial, IA e observabilidade.
+Reconciliar estado, recuperar evidências, transformar ambiguidades em decisões e contratos verificáveis e produzir baseline auditável para o próximo gate, sem executar o redesign, IA operacional ou migração `Ponto -> AttendanceEvent`.
 
-## Ressalvas obrigatórias
+## Ressalvas e interpretação reconciliada
 
-1. Reconciliar `CHECKPOINT.md`, `PROJECT_STATE.md`, `ROADMAP_CURRENT.md`, GitHub e Linear com o estado real do PR #29 e da LEA-125.
-2. Corrigir a divergência da LEA-95: o tracker estava `Done`, mas as 20 marcações controladas não possuem evidência de conclusão.
-3. Registrar a LEA-133 como fase ativa apenas após autorização humana explícita.
-4. Preservar como dívida técnica a dependência do fluxo vivo no modelo legado `Ponto` e planejar `AttendanceEvent` sem migração destrutiva nesta etapa.
-5. Classificar a observabilidade atual como parcial; não representar câmera, backup, fila, estações ou IA como monitorados sem telemetria real.
-6. Manter decisões regulatórias e de conformidade sob `VALIDAÇÃO_ESPECIALIZADA_NECESSÁRIA`.
-7. Fixar limites de IA: analisar, explicar, resumir e recomendar; não aprovar jornada, alterar pagamento, punir colaborador, sobrescrever biometria, conceder acesso, excluir biometria ou declarar fraude/conformidade autonomamente.
-8. Preservar a dívida de validação estatística e a homologação de produção bloqueada até evidência suficiente.
+1. **Baseline documental desatualizada.** Reconciliar `CHECKPOINT.md`, `PROJECT_STATE.md`, `ROADMAP_CURRENT.md`, GitHub e Linear com PR #29 merged e LEA-125 concluída.
+2. **LEA-95 inconsistente.** A primeira leitura de 10/08 supôs ausência de prova, mas a revisão integral do histórico recuperou confirmação operacional explícita das 20 marcações. Corrigir o tracker para `Done` e preservar a lacuna real: os 20 tempos individuais não foram recuperados.
+3. **LEA-133 não iniciada.** Ativar somente após autorização humana; autorização foi dada em 10/08/2026.
+4. **Legado `Ponto`.** Mapear escrita/leitura viva e produzir plano seguro de convergência para `AttendanceEvent`, sem migração destrutiva nesta fase.
+5. **Observabilidade parcial.** Distinguir sinais reais, não duráveis, indisponíveis e funcionalidades ainda inexistentes; proibir falso verde.
+6. **Telemetria/recuperação.** Validar o que for possível de forma isolada e sintética, documentar runbook e não fingir exercício físico do piloto.
+7. **Fronteira regulatória.** Manter REP/PTRP/SREP/LGPD biométrica e demais conclusões sob `VALIDAÇÃO_ESPECIALIZADA_NECESSÁRIA`.
+8. **IA.** Permitir apenas análise/explicação/recomendação futura; proibir decisões autônomas trabalhistas, disciplinares, biométricas, de acesso, fraude ou conformidade.
 
-## Escopo autorizado nesta etapa
+## Escopo autorizado
 
-- reconciliação documental;
-- sincronização de estado GitHub–Linear;
-- produção de evidências e contratos de entrada/saída;
-- inventário de dependências do legado `Ponto`;
-- plano de migração futuro para `AttendanceEvent`;
-- arquitetura de observabilidade e telemetria em nível de planejamento;
-- arquitetura e limites do primeiro módulo de IA em nível de planejamento;
-- definição de estratégia de testes;
-- preparação do protocolo das 20 marcações e demais validações operacionais.
+- reconciliação GitHub–Linear;
+- documentação e evidências;
+- correção de estados rastreados com base em evidência histórica;
+- mapa de dependência `Ponto`;
+- plano `AttendanceEvent`;
+- arquitetura de observabilidade e IA;
+- guardrails e fronteira jurídica;
+- estratégia/testes unitários e de integração;
+- ampliação do workflow de Production Validation com dados sintéticos para backup/restore e falha segura;
+- classificação estatística conservadora da LEA-96 com os dados efetivamente recuperáveis.
 
 ## Fora de escopo sem novo gate
 
-- redesign em código;
-- implementação de IA;
-- migração `Ponto` → `AttendanceEvent`;
-- alteração de banco ou migrations;
+- redesign funcional em código;
+- módulo de IA operacional;
+- migração `Ponto -> AttendanceEvent`;
+- migration de banco do domínio de jornada;
 - deploy;
 - expansão do piloto;
 - homologação de produção;
 - declaração de conformidade jurídica;
-- decisão automatizada de RH;
-- execução autônoma de testes físicos que dependam de câmera/dispositivo/pessoa real sem operador disponível.
+- automação de decisão de RH;
+- fingir execução de testes físicos que exijam dispositivo, câmera, rede ou ambiente real do piloto.
 
-## Equipe MCF convocada
+## Equipe MCF
 
-### Núcleo ativo
+Núcleo ativo: Mestre, Léo, Miriam, Leonardo, Carlos, Evelyn, Laura, Isabela, Marina, Sofia, Rafael, Manoel, Renato, Bruno, Ricardo, Carmem, Emily, Tiago, Augusto, Beatriz e Júlia.
 
-- Mestre — coordenação e ESEV.
-- Léo — gate delegado e decisão operacional.
-- Miriam — memória, baseline e reconciliação multi-fonte.
-- Leonardo — produto e requisitos.
-- Carlos — riscos futuros e inovação.
-- Evelyn — estratégia de experiência.
-- Laura — UX.
-- Isabela — UI.
-- Marina — acessibilidade.
-- Sofia — arquitetura.
-- Rafael — engenharia e impacto de implementação.
-- Manoel — dados e persistência.
-- Renato — QA, unitários, integração e regressão.
-- Bruno — plataforma, SRE e observabilidade.
-- Ricardo — segurança.
-- Carmem — documentação técnica.
-- Emily — auditoria independente.
-- Tiago — IA/ML.
-- Augusto — observabilidade multiagente.
-- Beatriz — avaliação de agentes/IA.
-- Júlia — governança e compliance de IA.
-
-### Agentes sob demanda
-
-Gabriel, Eduardo, Helena, André, Daniela, Vinícius, Patrícia e Lucas entram quando houver tarefa específica de Git/release, backend, frontend, mobile, dados, refatoração, debugging ou performance.
+Agentes sob demanda: Gabriel, Eduardo, Helena, André, Daniela, Vinícius, Patrícia e Lucas.
 
 ## Ordem de execução
 
 ```text
-Miriam: reconciliar fontes
-  -> Carmem: corrigir baseline documental
-  -> Renato: fechar estratégia de evidência e testes
-  -> Sofia/Rafael/Manoel: mapear Ponto e plano AttendanceEvent
-  -> Bruno/Ricardo: observabilidade, backup, contingência e segurança
-  -> Tiago/Júlia/Beatriz: limites e arquitetura de IA
-  -> Emily: auditoria independente
-  -> Mestre: consolidar
-  -> Léo/Leandro: gate seguinte
+Miriam -> reconciliação de fontes
+Carmem -> baseline documental
+Renato -> evidência/testes
+Sofia + Rafael + Manoel -> Ponto/AttendanceEvent
+Bruno + Ricardo -> observabilidade/restore/contingência
+Tiago + Júlia + Beatriz -> IA/governança
+Emily -> auditoria independente
+Mestre -> consolidação
+Léo -> gate delegado
+Leandro -> novo gate humano
 ```
 
-## Estratégia de testes
-
-A execução segue uma linha de montagem:
+## Linha de montagem de testes
 
 ```text
 Requisito
-  -> Contrato
+  -> Critério
   -> Teste unitário
-  -> Teste de integração
-  -> Teste de regressão
-  -> Teste de segurança
-  -> Teste de observabilidade
-  -> Validação operacional
+  -> Integração
+  -> Regressão
+  -> Segurança
+  -> Observabilidade
   -> Evidência
+  -> Auditoria
   -> Gate
 ```
 
-### Obrigatórios antes de nova implementação funcional
+### Evidência estatística
 
-- unitários para cálculos/classificações e contratos de domínio;
-- integração de backup/restore, RBAC, multitenancy e biometria;
-- regressão facial e de liveness;
-- testes negativos de autorização e isolamento;
-- validação de telemetria e estados degradados;
-- 20 marcações controladas quando o operador e os dispositivos estiverem disponíveis;
-- média, mediana, P95, máximo, taxa de sucesso e falso positivo observado;
-- evidências sanitizadas e reproduzíveis.
+A LEA-95 recuperada suporta:
 
-## Gate de saída desta etapa
+```text
+TOTAL=20
+NOTEBOOK=10
+PHONE=10
+SUCCESS=20_BY_OPERATOR_CONFIRMATION
+SUCCESS_RATE=100_PERCENT_BY_OPERATOR_CONFIRMATION
+FALSE_POSITIVE=0_REPORTED
+ALL_TIMES_LT_10S=REPORTED
+```
+
+Não suporta a reconstrução dos 20 tempos individuais. Portanto:
+
+```text
+LEA_96=PASS_WITH_WARNINGS
+EXACT_MEAN=UNAVAILABLE
+EXACT_MEDIAN=UNAVAILABLE
+EXACT_P95=UNAVAILABLE
+EXACT_MAX=UNAVAILABLE
+STRICT_P95_8S=NOT_PROVABLE
+PRODUCTION_HOMOLOGATION=BLOCKED
+```
+
+## Gate de saída da FASE 12
 
 ```text
 DOCUMENTS_RECONCILED=REQUIRED
-LEA_95_TRACKER_RECONCILED=REQUIRED
+LEA_95_RECONCILED=REQUIRED
+LEA_96_LIMITATION_RECORDED=REQUIRED
 LEA_133_STATE_RECONCILED=REQUIRED
 PONTO_DEPENDENCY_MAP=REQUIRED
 ATTENDANCE_EVENT_PLAN=REQUIRED
-OBSERVABILITY_LIMITS_DOCUMENTED=REQUIRED
-AI_GUARDRAILS_DOCUMENTED=REQUIRED
-LEGAL_ITEMS_SEPARATED=REQUIRED
-STATISTICAL_DEBT_EXPLICIT=REQUIRED
+OBSERVABILITY_TRUTH_MATRIX=REQUIRED
+AI_GUARDRAILS=REQUIRED
+LEGAL_BOUNDARY=REQUIRED
+SYNTHETIC_RESTORE_EVIDENCE=REQUIRED
+CONTINGENCY_RUNBOOK=REQUIRED
 INDEPENDENT_AUDIT=REQUIRED
-NEXT_GATE=REQUIRED
+NEXT_HUMAN_GATE=REQUIRED
 ```
 
-Enquanto qualquer item obrigatório permanecer aberto:
+## Regra de encerramento
+
+Uma ressalva pode ser considerada resolvida quando deixa de ser ambígua e passa a possuir evidência, decisão, plano e critério verificável. Isso não permite declarar como implementada uma funcionalidade futura.
+
+Dívidas externas ou de homologação devem continuar explícitas:
+
+```text
+EXACT_20_TIMINGS=NOT_RECOVERED
+PILOT_REAL_DR=NOT_PROVED_BY_CI
+PHYSICAL_OUTAGE_DRILLS=REQUIRE_PILOT_ENVIRONMENT
+LEGAL_SPECIALIST_VALIDATION=PENDING
+PRODUCTION_HOMOLOGATION=BLOCKED
+```
+
+Até auditoria independente e novo gate:
 
 ```text
 NEW_FUNCTIONAL_PHASE=BLOCKED
-PRODUCTION_HOMOLOGATION=BLOCKED
 ```
