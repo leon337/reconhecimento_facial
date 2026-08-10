@@ -56,7 +56,10 @@ jobs:
 
       - name: Definir chave biométrica sintética
         if: env.BIOMETRIC_ENCRYPTION_KEY == ''
-        run: echo "BIOMETRIC_ENCRYPTION_KEY=$(python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())')" >> "$GITHUB_ENV"
+        run: |
+          key=$(python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())')
+          echo "::add-mask::$key"
+          echo "BIOMETRIC_ENCRYPTION_KEY=$key" >> "$GITHUB_ENV"
 
       - name: Validar migrations upgrade downgrade upgrade
         run: |
@@ -306,6 +309,24 @@ jobs:
 
           with restored_app.app_context():
               assert Ponto.query.filter_by(user_id=user_id, tipo="ENTRADA").count() == 1
+          PY
+
+      - name: Validar falha segura com banco indisponível
+        run: |
+          python - <<'PY'
+          from main import create_app
+
+          app = create_app({
+              "TESTING": True,
+              "PROPAGATE_EXCEPTIONS": False,
+              "AUTO_CREATE_SCHEMA": False,
+              "SQLALCHEMY_DATABASE_URI": "postgresql://controle_ponto:hml-password@127.0.0.1:5999/controle_ponto_indisponivel?connect_timeout=1",
+          })
+          response = app.test_client().get("/health")
+          assert response.status_code == 500, response.data
+          payload = response.get_json()
+          assert payload["error"] == "internal_error"
+          assert payload["request_id"]
           PY
 
       - name: Validar Compose de produção
