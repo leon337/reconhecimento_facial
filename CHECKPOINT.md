@@ -10,31 +10,29 @@ DEFAULT_BRANCH=main
 MAIN_SHA=783ca912c38876e68c12439a0db3616bf2b29a1d
 BASELINE_FUNCTIONAL_SHA=3908e639be2cd025e4a1eee044db21d1ef52d7ee
 PROJECT_STATUS=PILOTO_LOCAL_AVANCADO
-CURRENT_PHASE=FASE_12_LEA_133_EM_EXECUCAO
+CURRENT_PHASE=FASE_12_LEA_133_FECHAMENTO
 WORK_MODE=RESOLUCAO_DE_RESSALVAS
+MISSION=CPP-COMMERCIAL-REDESIGN-AI-OBS-001
 MCF_PROTOCOL=1.1
 MCF_RISK_CLASS=C
 PRF=docs/mcf/PRF_CPP_COMMERCIAL_REDESIGN_AI_OBS_001.md
+PR_30=DRAFT_OPEN
 ```
 
-## Gate humano de 10/08/2026
+## Gate humano vigente
 
-Leandro confirmou alinhamento com o Mestre e aprovou a direção estratégica proposta pelo Léo **com ressalvas**.
-
-A ordem é vinculante:
+Leandro aprovou a direção estratégica **com ressalvas** e autorizou o Mestre a executar a FASE 12 para resolvê-las antes da próxima implementação funcional.
 
 ```text
 GATE_LEANDRO=APPROVED_WITH_RESERVATIONS
 STRATEGIC_DIRECTION=APPROVED
-RESOLVE_RESERVATIONS_FIRST=YES
-LEA_133_START=AUTHORIZED
-FUNCTIONAL_IMPLEMENTATION=BLOCKED
-NEW_STRATEGIC_PHASE=BLOCKED_UNTIL_RESERVATIONS_RESOLVED
+RESERVATION_RESOLUTION=AUTHORIZED
+FUNCTIONAL_EXPANSION=BLOCKED_UNTIL_NEW_GATE
 PRODUCTION_HOMOLOGATION=BLOCKED
 LEGAL_CONFORMITY_DECLARED=NO
 ```
 
-## FASE 11 — estado final
+## FASE 11 — reconciliada
 
 ```text
 LEA_125=Done
@@ -42,15 +40,14 @@ LEA_126_TO_132=Done
 PR_29=MERGED
 PR_29_MERGE_COMMIT=783ca912c38876e68c12439a0db3616bf2b29a1d
 PR_29_SCOPE=DOCUMENTATION_ONLY
-APPLICATION_CODE_CHANGED_BY_PR_29=NO
-ROADMAP_AUTO_APPROVED_BY_PR_29=NO
+ROADMAP_AUTO_APPROVED=NO
 ```
 
-O checkpoint anterior estava desatualizado ao registrar LEA-125 como `In Progress` e PR #29 como Draft aberto. Esta versão corrige essa divergência.
+O checkpoint anterior que ainda tratava PR #29 como Draft e LEA-125 como `In Progress` foi substituído por esta baseline.
 
-## FASE 10.1.1 — validação
+## FASE 10.1.1 — evidência reconciliada
 
-### Validação funcional preservada
+### Validação funcional
 
 ```text
 NOTEBOOK=PASS
@@ -61,11 +58,10 @@ AUTOMATIC_IDENTIFICATION=PASS
 ENTRY=PASS
 EXIT=PASS
 UNKNOWN_FACE_REJECTION=PASS
-TARGET_LT_10_SECONDS=PASS
 FALSE_IDENTIFICATION_OBSERVED_IN_FUNCTIONAL_TESTS=NO
 ```
 
-Tempos históricos observados:
+Tempos funcionais históricos preservados:
 
 ```text
 NOTEBOOK_ENTRY=2.6s
@@ -74,141 +70,202 @@ PHONE_ENTRY=3.0s
 PHONE_EXIT=2.8s
 ```
 
-### Dívida estatística reconciliada
+### LEA-95 — 20 marcações
+
+A revisão integral do histórico da issue recuperou a confirmação operacional das 20 marcações que havia sido omitida na primeira reconciliação de 10/08/2026.
 
 ```text
-LEA_95=Backlog
-LEA_95_TECHNICAL_COMPLETION=NO
-TWENTY_CONTROLLED_PUNCHES=NOT_EVIDENCED
-LEA_96=Todo
-LEA_97=Todo
-LEA_98=Todo
-STATISTICAL_VALIDATION=PENDING
+LEA_95=Done
+TOTAL_ATTEMPTS=20
+NOTEBOOK_ATTEMPTS=10
+PHONE_ATTEMPTS=10
+ALL_ATTEMPTS_CONFIRMED=YES
+SUCCESSFUL_ATTEMPTS=20_BY_OPERATOR_CONFIRMATION
+SUCCESS_RATE=100_PERCENT_BY_OPERATOR_CONFIRMATION
+FALSE_POSITIVES_REPORTED=0
+TARGET_TOTAL_TIME_LT_10_SECONDS=PASS_REPORTED
+LIVE_CAMERA_ONLY=YES
+```
+
+Três amostras de telefone foram preservadas: `2.9s`, `2.9s`, `2.8s`, com processamento `0.9s`, `0.9s`, `0.9s`.
+
+### LEA-96 — classificação conservadora
+
+Os 20 tempos individuais não foram recuperados. Logo, estatísticas exatas não foram reconstruídas artificialmente.
+
+```text
+LEA_96=Done
+LEA_96_RESULT=PASS_WITH_WARNINGS
+SUCCESS_RATE=100_PERCENT_BY_OPERATOR_CONFIRMATION
+FALSE_POSITIVE=0_REPORTED
+MAX_BOUND=<10s
+P95_BOUND=<10s
+EXACT_MEAN=UNAVAILABLE
+EXACT_MEDIAN=UNAVAILABLE
+EXACT_P95=UNAVAILABLE
+EXACT_MAX=UNAVAILABLE
+STRICT_P95_TARGET_8S=NOT_PROVABLE
 PRODUCTION_HOMOLOGATION=BLOCKED
 ```
 
-A LEA-95 havia sido marcada como `Done` no tracker sem evidência das 20 marcações. Em 10/08/2026 ela foi devolvida para `Backlog`, preservando a descrição `STATUS=DEFERRED` e o bloqueio de homologação.
+O warning de evidência deve permanecer visível em qualquer futura homologação. Para homologação estrita, a bateria deverá ser repetida preservando os 20 tempos individuais.
 
-## FASE 12 — LEA-133
+## FASE 12 — ressalvas tratadas
 
 ```text
-LEA_133=In_Progress
-MISSION=CPP-COMMERCIAL-REDESIGN-AI-OBS-001
-PRIMARY_OBJECTIVE=RESOLVE_RESERVATIONS_AND_ESTABLISH_DECISION_BASELINE
-APPLICATION_CODE_CHANGE=NOT_AUTHORIZED_IN_THIS_BLOCK
-DATABASE_MIGRATION=NOT_AUTHORIZED
-DEPLOY=NOT_AUTHORIZED
+BASELINE_RECONCILIATION=COMPLETE
+LEA_95_AMBIGUITY=RESOLVED
+PONTO_DEPENDENCY_MAP=COMPLETE
+ATTENDANCE_EVENT_CONVERGENCE_PLAN=COMPLETE
+OBSERVABILITY_TRUTH_MATRIX=COMPLETE
+FALSE_GREEN_POLICY=DEFINED
+AI_DIAGNOSTIC_ARCHITECTURE=DEFINED
+AI_GUARDRAILS=DEFINED
+REGULATORY_BOUNDARY=DEFINED
+LEGAL_VALIDATION=REQUIRED
+CONTINGENCY_RUNBOOK=DEFINED
+SYNTHETIC_ISOLATED_RESTORE=PASS_ON_RUN_63
 ```
 
-### Ressalvas que precisam ser resolvidas
+Artefatos:
 
-- [x] reconciliar PR #29 e LEA-125 com o estado real;
-- [x] reabrir tecnicamente a LEA-95 no tracker;
-- [x] registrar autorização humana e ativar LEA-133;
-- [ ] reconciliar integralmente `PROJECT_STATE.md`, `ROADMAP_CURRENT.md` e Linear;
-- [ ] produzir mapa auditável das leituras/escritas do modelo legado `Ponto`;
-- [ ] produzir plano de convergência para `AttendanceEvent`, sem executar migração;
-- [ ] documentar limites da observabilidade atual e telemetria faltante;
-- [ ] documentar guardrails e arquitetura do primeiro módulo de IA;
-- [ ] validar backup/restore em ambiente isolado;
-- [ ] definir e testar contingência para câmera, rede, servidor e banco;
-- [ ] executar 20 marcações controladas com operador e dispositivos disponíveis;
-- [ ] calcular média, mediana, P95, máximo, taxa de sucesso e registrar falso positivo observado;
-- [ ] executar auditoria independente das evidências;
-- [ ] encerrar LEA-96, LEA-97, LEA-98 e LEA-85 somente quando os gates forem satisfeitos.
+- `docs/lea-133/01_RECONCILIACAO_EVIDENCIAS.md`;
+- `docs/lea-133/02_MAPA_LEGADO_PONTO_E_PLANO_ATTENDANCE_EVENT.md`;
+- `docs/lea-133/03_OBSERVABILIDADE_IA_E_GUARDRAILS.md`;
+- `docs/lea-133/04_BACKUP_RESTORE_E_CONTINGENCIA.md`;
+- `docs/lea-133/05_DECISAO_ARQUITETURAL_REGULATORIA.md`;
+- `docs/lea-133/06_LEA96_METRICAS_E_CLASSIFICACAO.md`.
 
-## Dependência do legado
+## Legado `Ponto`
 
-O estado técnico já verificado mostra que `AttendanceEvent`, `AttendanceAdjustment` e `AttendanceClosure` existem, porém a rota viva de marcação ainda grava o modelo legado `Ponto`.
+A dependência deixou de ser apenas uma ressalva genérica e foi mapeada.
 
 ```text
 PONTO_LIVE_WRITE=YES
+PONTO_DUPLICATE_READ=YES
+ATTENDANCE_EVENT_MODEL_EXISTS=YES
+ATTENDANCE_EVENT_IMMUTABLE=YES
 ATTENDANCE_EVENT_LIVE_WRITE=NO
-MIGRATION_PLAN=REQUIRED
-MIGRATION_EXECUTION=NOT_AUTHORIZED
+MIGRATION_PLAN=COMPLETE
+MIGRATION_EXECUTION=NOT_PERFORMED
 ```
 
-## Observabilidade — classificação atual
+A rota viva continua em `Ponto` por decisão de escopo da FASE 12. A próxima migração deve ocorrer apenas em fase funcional autorizada, com idempotência, reconciliação, rollback e preservação histórica.
+
+## Observabilidade
+
+### Sinais reais atuais
 
 ```text
-HTTP_LOGS=REAL
 REQUEST_ID=REAL
+STRUCTURED_HTTP_LOGS=REAL
 API_HEALTH=REAL
 DATABASE_HEALTH=REAL
-IN_MEMORY_METRICS=REAL_BUT_NON_DURABLE
+IN_MEMORY_METRICS=REAL_NON_DURABLE
 PUNCH_PROCESSING_MS=REAL_PER_REQUEST
-CAMERA_HEARTBEAT=UNAVAILABLE
-STATION_HEARTBEAT=UNAVAILABLE
-BACKUP_LAST_SUCCESS_TELEMETRY=UNAVAILABLE
-QUEUE_TELEMETRY=UNAVAILABLE
-AI_HEALTH=UNAVAILABLE
-DURABLE_METRICS=UNAVAILABLE
+AUDIT_EVENT=REAL
 ```
 
-Nenhum componente sem telemetria deve aparecer como saudável por inferência.
-
-## IA — limites aprovados
-
-O primeiro candidato estratégico continua sendo diagnóstico assistido + explicação de eventos, em modo somente leitura.
-
-A IA pode analisar, explicar, resumir, recomendar e priorizar investigação. Ela não pode autonomamente:
-
-- aprovar ou alterar jornada;
-- alterar pagamento;
-- punir colaborador;
-- sobrescrever resultado biométrico;
-- conceder acesso;
-- excluir biometria;
-- declarar fraude;
-- declarar conformidade jurídica.
-
-## Questões regulatórias
+### Sinais ainda não implementados
 
 ```text
-REP_PTRP_ROLE=UNDECIDED
-LEGAL_VALIDATION=REQUIRED
-LGPD_BIOMETRICS=REQUIRES_SPECIALIZED_VALIDATION
-PAdES_AFD_AEJ_RETENTION=REQUIRES_SPECIALIZED_VALIDATION
+CAMERA_HEARTBEAT=TELEMETRY_UNAVAILABLE
+STATION_HEARTBEAT=TELEMETRY_UNAVAILABLE
+DURABLE_METRICS=TELEMETRY_UNAVAILABLE
+PILOT_BACKUP_LAST_SUCCESS=TELEMETRY_UNAVAILABLE
+QUEUE_TELEMETRY=NOT_APPLICABLE_QUEUE_NOT_IMPLEMENTED
+AI_HEALTH=NOT_APPLICABLE_AI_NOT_IMPLEMENTED
+OFFLINE_SYNC_TELEMETRY=NOT_APPLICABLE_SYNC_NOT_IMPLEMENTED
 ```
 
-Nenhuma conclusão jurídica é derivada apenas de engenharia.
+Regra permanente: `SEM_TELEMETRIA != SAUDAVEL`.
 
-## Direção estratégica aprovada, ainda bloqueada para implementação
+## Backup / restore
 
-Após o fechamento das ressalvas e novo gate:
+O workflow de Production Validation foi ampliado na branch da LEA-133 com dados sintéticos para restaurar e verificar, de forma isolada:
 
 ```text
-NF_01=PRODUTO_E_DESIGN_SYSTEM
-NF_02=REDESIGN_COMERCIAL
-NF_03=EXPERIENCIA_OPERACIONAL
-NF_04=OBSERVABILIDADE
-NF_05=ARQUITETURA_E_PRIMEIRO_MODULO_IA
-NF_06=IDENTIDADE_E_DISPOSITIVOS
-NF_07=REAVALIACAO_DO_ROADMAP
-NF_08=RETORNO_AS_VALIDACOES_TECNICAS_REMANESCENTES
+POSTGRES_BACKUP_AND_CHECKSUM=PASS_RUN_63
+POSTGRES_RESTORE_TO_EMPTY_DB=PASS_RUN_63
+BIOMETRIC_STORAGE_CHECKSUM_RESTORE=PASS_RUN_63
+BIOMETRIC_TEMPLATE_DECRYPTION_WITH_KEY=PASS_RUN_63
+DECRYPTION_WITHOUT_KEY=EXPECTED_FAIL_PASS_RUN_63
+AUTHENTICATION_AFTER_RESTORE=PASS_RUN_63
+RBAC_AFTER_RESTORE=PASS_RUN_63
+COMPANY_WORKSITE_SCOPE_AFTER_RESTORE=PASS_RUN_63
+SYNTHETIC_PUNCH_AFTER_RESTORE=PASS_RUN_63
+CI_DATABASE_RESTORE_DURATION=415ms_RUN_63
+REGRESSION=143_PASSED_RUN_63
 ```
 
-Essa sequência está aprovada como direção estratégica, não como autorização para implementação imediata.
+O run posterior adiciona máscara da chave sintética e teste explícito de banco indisponível; seu resultado deve ser usado como evidência final do PR #30 quando concluído.
 
-## Próxima ação
+Isso não é fingido como exercício do volume real do piloto:
 
 ```text
-NEXT_ACTION=COMPLETE_BASELINE_RECONCILIATION_AND_TECHNICAL_EVIDENCE_PLAN
-NEXT_OPERATIONAL_ISSUE=LEA_133
-NEXT_PHYSICAL_GATE=LEA_95_TWENTY_CONTROLLED_PUNCHES
+PILOT_REAL_DISASTER_RECOVERY=NOT_EXECUTED_BY_CI
+RPO_PILOT=UNDECIDED
+RTO_PILOT=UNMEASURED
+```
+
+## Contingência
+
+O procedimento foi definido para câmera, rede, servidor e banco. O sistema atual não possui fila offline. Falha de persistência não pode produzir recibo de sucesso. Ocorrências manuais futuras devem ser auditáveis e reconciliadas sem simular biometria retroativa.
+
+## IA
+
+O primeiro módulo recomendado permanece `IA_DIAGNOSTICO` + explicação de eventos, somente leitura.
+
+```text
+AI_IMPLEMENTED=NO
+AI_CAN_ANALYZE_FUTURE=YES
+AI_CAN_EXPLAIN_FUTURE=YES
+AI_CAN_RECOMMEND_INVESTIGATION_FUTURE=YES
+AI_CAN_APPROVE_ATTENDANCE=NO
+AI_CAN_CHANGE_PAY=NO
+AI_CAN_PUNISH_EMPLOYEE=NO
+AI_CAN_OVERRIDE_BIOMETRICS=NO
+AI_CAN_GRANT_ACCESS=NO
+AI_CAN_DELETE_BIOMETRICS=NO
+AI_CAN_DECLARE_FRAUD=NO
+AI_CAN_DECLARE_LEGAL_CONFORMITY=NO
+```
+
+## Fronteira regulatória
+
+```text
+TARGET_PRODUCT=COMMERCIAL_MULTI_COMPANY_TIME_ATTENDANCE_PLATFORM
+CURRENT_REGULATORY_CLAIM=NONE
+REP_P_CLASSIFICATION=VALIDACAO_ESPECIALIZADA_NECESSARIA
+PTRP_CLASSIFICATION=VALIDACAO_ESPECIALIZADA_NECESSARIA
+COLLECTOR_ROLE=VALIDACAO_ESPECIALIZADA_NECESSARIA
+LGPD_BIOMETRICS=VALIDACAO_ESPECIALIZADA_NECESSARIA
+LEGAL_CONFORMITY_DECLARED=NO
+```
+
+## Gates ainda externos à resolução arquitetural
+
+As ressalvas de baseline foram transformadas em estados verificáveis, decisões e planos. Permanecem como **bloqueios de homologação**, não como fatos a inventar:
+
+```text
+EXACT_20_PUNCH_TIMES=LOST_NOT_RECOVERED
+STRICT_P95_8S=NOT_PROVABLE
+PILOT_REAL_DR_EXERCISE=PENDING_OPERATOR_ENVIRONMENT
+PHYSICAL_CAMERA_NETWORK_SERVER_OUTAGE_EXERCISE=PENDING_OPERATOR_ENVIRONMENT
+LEGAL_SPECIALIST_VALIDATION=PENDING_EXTERNAL_SPECIALIST
+PRODUCTION_HOMOLOGATION=BLOCKED
+```
+
+## Próximo gate
+
+```text
+LEA_97=IN_PROGRESS_AT_THIS_CHECKPOINT
+LEA_98=WAITING_FINAL_AUDIT
+LEA_85=WAITING_FINAL_AUDIT
+LEA_133=WAITING_FINAL_AUDIT
+PR_30=DRAFT_OPEN
 NEXT_FUNCTIONAL_IMPLEMENTATION=BLOCKED
-NEXT_HUMAN_GATE=AFTER_RESERVATIONS_RESOLVED
+NEXT_HUMAN_GATE=AFTER_INDEPENDENT_AUDIT
 ```
 
-## Regra de continuidade
-
-Consultar nesta ordem:
-
-1. `CHECKPOINT.md`;
-2. `PROJECT_STATE.md`;
-3. `ROADMAP_CURRENT.md`;
-4. `docs/mcf/PRF_CPP_COMMERCIAL_REDESIGN_AI_OBS_001.md`;
-5. LEA-85, LEA-95 a LEA-98, LEA-125 e LEA-133 no Linear;
-6. PRs e código aplicáveis.
-
-O pipeline funciona como uma linha de montagem: cada estação só libera a seguinte quando a evidência exigida está presente.
+O pipeline continua como linha de montagem: evidência → auditoria → Léo → gate humano. Nenhuma próxima fase funcional é liberada apenas porque a documentação foi produzida.
