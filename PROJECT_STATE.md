@@ -7,31 +7,33 @@ Atualizado em: 2026-08-10
 ```text
 REPOSITORY=leon337/reconhecimento_facial
 DEFAULT_BRANCH=main
-MAIN_SHA=783ca912c38876e68c12439a0db3616bf2b29a1d
+MAIN_SHA_BEFORE_PR30=783ca912c38876e68c12439a0db3616bf2b29a1d
 BASELINE_FUNCTIONAL_SHA=3908e639be2cd025e4a1eee044db21d1ef52d7ee
 PROJECT_STATUS=PILOTO_LOCAL_AVANCADO
-CURRENT_PHASE=FASE_12_LEA_133_FECHAMENTO
+CURRENT_PHASE=FASE_12_LEA_133_BASELINE_COMPLETE
 MISSION=CPP-COMMERCIAL-REDESIGN-AI-OBS-001
 MCF_PROTOCOL=1.1
 MCF_RISK_CLASS=C
-PR_30=DRAFT_OPEN
+PR_30=READY_FOR_FINAL_GREEN_CI_AND_BASELINE_MERGE
 ```
 
 ## Estado executivo
 
-A FASE 11 está documentalmente encerrada: PR #29 integrado, LEA-125 e LEA-126 a LEA-132 concluídas. O merge não alterou código funcional, não aprovou automaticamente o roadmap e não declarou conformidade jurídica.
+A FASE 11 está encerrada: PR #29 integrado, LEA-125 e LEA-126 a LEA-132 concluídas. O PR #29 foi documental e não autorizou automaticamente o roadmap nem declarou conformidade jurídica.
 
-A FASE 12 foi autorizada em 10/08/2026 para resolver as ressalvas do gate `APPROVED_WITH_RESERVATIONS`. O trabalho de reconciliação, arquitetura, evidência, testes automatizados e governança está no PR #30.
+A FASE 12 foi autorizada em 10/08/2026 para resolver as oito ressalvas do gate `APPROVED_WITH_RESERVATIONS`. O trabalho foi consolidado no PR #30 com reconciliação de fontes, recuperação de evidências, mapa do legado `Ponto`, plano `AttendanceEvent`, observabilidade, IA, fronteira regulatória, backup/restore sintético, contingência e auditoria independente.
 
 ```text
 STRATEGIC_DIRECTION=APPROVED
-RESERVATION_RESOLUTION=AUTHORIZED
+RESERVATIONS_1_TO_8=RESOLVED_AT_BASELINE_GOVERNANCE_ARCHITECTURE_LEVEL
 NEXT_FUNCTIONAL_PHASE=BLOCKED_UNTIL_NEW_HUMAN_GATE
 PRODUCTION_HOMOLOGATION=BLOCKED
 LEGAL_CONFORMITY_DECLARED=NO
 ```
 
-## Estado da validação facial
+`RESOLVED` não significa que módulos futuros já foram implementados. Significa que as inconsistências abertas receberam fonte de verdade, decisão, evidência, plano, teste e/ou fronteira de autoridade.
+
+## Validação facial
 
 ### Funcional
 
@@ -47,9 +49,9 @@ UNKNOWN_FACE_REJECTION=PASS
 FALSE_IDENTIFICATION_OBSERVED_IN_FUNCTIONAL_TESTS=NO
 ```
 
-### 20 marcações — LEA-95
+### LEA-95 — vinte marcações
 
-A evidência histórica da própria issue confirma a execução das 20 tentativas.
+A evidência histórica da própria issue confirma:
 
 ```text
 LEA_95=Done
@@ -62,11 +64,11 @@ FALSE_POSITIVES_REPORTED=0
 ALL_TOTAL_TIMES_LT_10_SECONDS=REPORTED_PASS
 ```
 
-A primeira reconciliação de 10/08 havia movido a LEA-95 indevidamente para Backlog; a leitura integral dos comentários recuperou a evidência e o tracker voltou para `Done`. A trilha foi mantida, não apagada.
+A primeira reconciliação de 10/08 havia devolvido a tarefa a Backlog por leitura incompleta; a evidência histórica foi recuperada e a correção ficou registrada na trilha.
 
-### Métricas — LEA-96
+### LEA-96 — estatística conservadora
 
-Os 20 tempos individuais não foram recuperados. Portanto:
+Os 20 tempos individuais não foram preservados nas fontes recuperáveis.
 
 ```text
 LEA_96=Done
@@ -77,16 +79,15 @@ EXACT_MEAN=UNAVAILABLE
 EXACT_MEDIAN=UNAVAILABLE
 EXACT_P95=UNAVAILABLE
 EXACT_MAX=UNAVAILABLE
-P95_TARGET_8S=NOT_PROVABLE
+STRICT_P95_8S=NOT_PROVABLE
+PRODUCTION_HOMOLOGATION=BLOCKED
 ```
 
-A limitação impede homologação estatística estrita. Uma futura homologação deve repetir a bateria preservando cada tentativa.
+Uma futura homologação estrita deve repetir a bateria persistindo cada tentativa.
 
 ## Domínio de jornada
 
-Existem `AttendanceEvent`, `AttendanceAdjustment` e `AttendanceClosure`, mas o fluxo operacional atual continua escrevendo `Ponto`.
-
-A dependência foi mapeada no PR #30:
+O fluxo operacional continua escrevendo `Ponto`; `AttendanceEvent` existe e é imutável, mas ainda não recebe a escrita viva.
 
 ```text
 PONTO_LIVE_WRITE=YES
@@ -99,11 +100,11 @@ ATTENDANCE_EVENT_CONVERGENCE_PLAN=COMPLETE
 MIGRATION_IMPLEMENTED=NO
 ```
 
-O plano futuro prevê mapeamento determinístico `User -> Employee`, preservação de empresa/obra/timestamp, idempotência, reconciliação, rollback e retirada gradual. Nenhuma migração destrutiva foi executada.
+O plano exige `User.employee_id`, preservação de empresa/obra/timestamp, idempotência, reconciliação, rollback e retirada gradual. A migração permanece para fase funcional autorizada separadamente.
 
 ## Observabilidade
 
-O estado real atual é uma fundação parcial:
+Estado real:
 
 ```text
 REQUEST_ID=REAL
@@ -122,25 +123,24 @@ AI=NOT_IMPLEMENTED
 OFFLINE_SYNC=NOT_IMPLEMENTED
 ```
 
-A política `SEM_TELEMETRIA != SAUDAVEL` foi formalizada. A arquitetura futura usa health aggregator determinístico; IA apenas explica sinais existentes.
+Política vigente: `SEM_TELEMETRIA != SAUDAVEL`.
 
 ## IA e governança
 
-O primeiro candidato futuro é diagnóstico assistido + explicação de eventos, somente leitura.
+Primeiro candidato futuro: diagnóstico assistido + explicação de eventos, somente leitura.
 
-Pode futuramente analisar, resumir, explicar e recomendar investigação. Não pode autonomamente aprovar/alterar ponto, alterar pagamento, punir colaborador, sobrescrever biometria, conceder acesso, excluir biometria, declarar fraude ou conformidade jurídica.
+A IA poderá analisar, resumir, explicar e recomendar investigação. Não poderá autonomamente aprovar/alterar ponto, alterar pagamento, punir colaborador, sobrescrever reconhecimento biométrico, conceder acesso, excluir biometria, declarar fraude ou conformidade jurídica.
 
-Dados biométricos brutos, templates, chaves, senhas, tokens e payloads sensíveis ficam fora do contrato padrão de IA.
+Dados biométricos brutos, templates, chaves, senhas e tokens ficam fora do contrato padrão.
 
 ## Backup, restore e contingência
 
-A Production Validation da branch da LEA-133 foi ampliada com fixture totalmente sintética para validar restauração isolada do banco e do armazenamento biométrico, dependência da chave, autenticação, RBAC, escopo empresa/obra e uma marcação sintética após restore.
-
-O run #63 concluiu com sucesso:
+Production Validation run #71 (`31438214366`) passou após o hardening final:
 
 ```text
-MIGRATIONS_UP_DOWN_UP=PASS
+RUN_71=PASS
 REGRESSION=143_PASSED
+MIGRATIONS_UP_DOWN_UP=PASS
 POSTGRES_BACKUP_CHECKSUM=PASS
 POSTGRES_RESTORE_EMPTY_DB=PASS
 BIOMETRIC_STORAGE_CHECKSUM_RESTORE=PASS
@@ -148,29 +148,32 @@ BIOMETRIC_DECRYPTION_WITH_KEY=PASS
 BIOMETRIC_DECRYPTION_WITHOUT_KEY=EXPECTED_FAIL_PASS
 LOGIN_AFTER_RESTORE=PASS
 RBAC_AFTER_RESTORE=PASS
-COMPANY_WORKSITE_AFTER_RESTORE=PASS
+COMPANY_WORKSITE_SCOPE_AFTER_RESTORE=PASS
 SYNTHETIC_PUNCH_AFTER_RESTORE=PASS
-CI_DATABASE_RESTORE_DURATION=415ms
+DATABASE_UNAVAILABLE_FAIL_CLOSED=PASS_STATUS_500
+SYNTHETIC_KEY_LOG_MASKING=PASS
+CI_DATABASE_RESTORE_DURATION=258ms
+ARTIFACT_ID=9081842144
+ARTIFACT_SHA256=d16350a5c77c2ac36c5d509764bf68f9fb8a5c142334d7a0caad3c27b3f53793
 ```
 
-Um run posterior do PR #30 acrescenta máscara explícita da chave sintética e teste fail-closed para banco indisponível. O resultado final desse run deve ser anexado antes do encerramento.
+O exercício usa dados sintéticos e não substitui disaster recovery do piloto real. O runbook de contingência para câmera, rede, servidor e banco está documentado e proíbe falso sucesso ou biometria retroativa simulada.
 
-Não há equivalência entre CI sintético e exercício físico do piloto:
+## Auditoria independente
+
+`docs/lea-133/09_AUDITORIA_INDEPENDENTE.md` registra:
 
 ```text
-PILOT_REAL_DR_EXERCISE=NOT_EXECUTED_BY_CI
-PHYSICAL_CAMERA_OUTAGE=REQUIRES_PILOT_OPERATOR
-PHYSICAL_NETWORK_OUTAGE=REQUIRES_PILOT_OPERATOR
-PHYSICAL_SERVER_OUTAGE=REQUIRES_PILOT_OPERATOR
-RPO_PILOT=UNDECIDED
-RTO_PILOT=UNMEASURED
+INDEPENDENT_AUDIT=COMPLETE
+EMILY_VERDICT=APPROVE_WITH_WARNINGS_FOR_BASELINE_MERGE
+FALSE_CLAIMS_FOUND=NO_AFTER_CORRECTIONS
 ```
 
-O runbook de contingência está documentado e proíbe falso sucesso ou biometria retroativa simulada.
+Achados baixos não bloqueantes: warning de `.gitmodules` no post-job e `Query.get()` legado do SQLAlchemy. Eles não alteraram o resultado dos testes.
 
 ## Fronteira regulatória e comercial
 
-A direção de produto é preparar uma plataforma comercial multiempresa/multiobra. Isso não define enquadramento jurídico.
+A direção é preparar plataforma comercial multiempresa/multiobra, sem inferir enquadramento legal.
 
 ```text
 CURRENT_REGULATORY_CLAIM=NONE
@@ -181,46 +184,44 @@ LGPD_BIOMETRICS=VALIDACAO_ESPECIALIZADA_NECESSARIA
 ENGINEERING_CAN_DECLARE_COMPLIANCE=NO
 ```
 
-## Ressalvas do gate — estado
+## Oito ressalvas — estado final da baseline
 
 ```text
-1_STALE_BASELINE=RESOLVED
-2_LEA95_AMBIGUITY=RESOLVED
-3_LEA133_NOT_STARTED=RESOLVED
-4_PONTO_DEPENDENCY=RESOLVED_AS_AUDITED_MAP_AND_MIGRATION_PLAN
-5_OBSERVABILITY_AMBIGUITY=RESOLVED_AS_TRUTH_MATRIX_AND_ARCHITECTURE
-6_MISSING_TELEMETRY=RESOLVED_AS_EXPLICIT_UNAVAILABLE_OR_NOT_IMPLEMENTED_STATES
-7_LEGAL_AUTHORITY=RESOLVED_BY_SPECIALIST_BOUNDARY
-8_AI_AUTONOMY=RESOLVED_BY_GUARDRAILS
+R1_STALE_BASELINE=RESOLVED
+R2_LEA95_AMBIGUITY=RESOLVED
+R3_LEA133_NOT_STARTED=RESOLVED
+R4_PONTO_DEPENDENCY=RESOLVED_AS_AUDITED_MAP_AND_CONTROLLED_PLAN
+R5_OBSERVABILITY_AMBIGUITY=RESOLVED_AS_TRUTH_MATRIX
+R6_MISSING_TELEMETRY=RESOLVED_AS_TRUTHFUL_UNAVAILABLE_NOT_IMPLEMENTED_STATES
+R7_LEGAL_AUTHORITY=RESOLVED_BY_SPECIALIST_BOUNDARY
+R8_AI_AUTONOMY=RESOLVED_BY_GUARDRAILS
 ```
 
-`RESOLVED` aqui significa que a ressalva deixou de ser ambígua e ganhou decisão, evidência, plano e critério. Não significa que funcionalidades futuras, como métricas duráveis ou heartbeat de câmera, tenham sido implementadas nesta fase.
+## Gates que continuam bloqueando homologação de produção
 
-## Dívidas que permanecem como gates de homologação
+Eles foram separados das oito ressalvas e registrados na LEA-98:
 
 ```text
-EXACT_20_TIMINGS=NOT_RECOVERED
-STRICT_P95_8S=NOT_PROVABLE
-PILOT_REAL_DR=NOT_YET_EXECUTED
-PHYSICAL_OUTAGE_DRILLS=NOT_YET_EXECUTED
+GATE_HOM_01=REPEAT_20_WITH_FULL_TIMING_DATASET
+GATE_HOM_02=REAL_PILOT_DISASTER_RECOVERY
+GATE_HOM_03=PHYSICAL_CAMERA_NETWORK_SERVER_DB_CONTINGENCY_DRILLS
+RPO_PILOT=UNDECIDED
+RTO_PILOT=UNMEASURED
 LEGAL_SPECIALIST_VALIDATION=PENDING
 PRODUCTION_HOMOLOGATION=BLOCKED
 ```
 
-Essas dívidas não são mascaradas para encerrar a FASE 12; são carregadas explicitamente para o gate apropriado.
-
-## Situação de execução
+## Linear antes do merge da baseline
 
 ```text
 LEA_95=Done
 LEA_96=Done_PASS_WITH_WARNINGS
-LEA_97=In_Progress
-LEA_98=Waiting_Final_Audit
-LEA_85=In_Progress_Waiting_Final_Audit
-LEA_133=In_Progress_Waiting_Final_Audit
-PR_30=DRAFT_OPEN
+LEA_97=Done
+LEA_98=Todo_PRODUCTION_GATES_OPEN
+LEA_85=In_Progress_PRODUCTION_HOMOLOGATION_BLOCKED
+LEA_133=In_Progress_READY_TO_CLOSE_ON_PR30_MERGE
 ```
 
 ## Próximo passo
 
-Finalizar CI do head, consolidar evidências, realizar auditoria independente MCF, sincronizar LEA-97/98/85/133 e retornar a Leandro para o novo gate. Nenhuma nova implementação funcional é iniciada automaticamente.
+Executar CI no último head documental, aplicar o gate delegado do Léo, fazer o merge do PR #30 como baseline da FASE 12 e fechar a LEA-133. O merge não autoriza automaticamente NF-01 nem qualquer outra fase funcional; a próxima autorização é um novo gate humano de Leandro.
