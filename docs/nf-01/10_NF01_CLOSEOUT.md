@@ -1,100 +1,163 @@
-# NF-01 — Closeout
+# NF-01 — Closeout / Estado Atual
 
 **Missão:** `CPP-NF-01-PRODUTO-DESIGN-SYSTEM`  
 **MCF:** 1.1 / Classe C  
-**Base:** `main@2a388fdc40817dca8f7bd96232e723c0e520702b`  
+**Base original da NF-01:** `main@2a388fdc40817dca8f7bd96232e723c0e520702b`  
 **Branch:** `docs/nf-01-produto-design-system`  
 **PR:** #32  
-**Estado atual:** `REFINEMENT_AND_VISUAL_AUDIT_IN_PROGRESS`
+**Estado:** `CANONICAL_DECISIONS_DOCUMENTED__VISUAL_RECONCILIATION_PENDING`
 
-## 1. Motivo da reabertura do gate
+## 1. Situação
 
-A documentação técnica inicial da NF-01 foi concluída e auditada, mas Leandro indicou corretamente que o resultado não estava suficientemente visível para um gate humano de produto. Antes da aprovação final, foi autorizada uma RC específica de UI/UX.
+A NF-01 permanece aberta. O ciclo de UX/UI de 11/08/2026 aprofundou o onboarding, corrigiu o shell, congelou componentes estruturais e executou uma RC transversal que encontrou e fechou lacunas críticas, altas e médias em nível de especificação.
 
-A RC-01 encontrou refinamentos em navegação, Dashboard, pós-cadastro/biometria, Design System, saúde operacional e Registrar Ponto. Leandro concordou com as conclusões e autorizou aplicar esses refinamentos.
+As decisões deixaram de depender do histórico do chat e foram oficializadas em:
 
-O gate humano final permanece suspenso até existir material visual auditável.
+```text
+12_NF01_CANONICAL_DECISIONS_2026-08-11.md
+```
+
+Esse arquivo é a referência canônica deste ciclo, subordinada a `DECISOES_CONGELADAS.md`.
 
 ## 2. Estado dos entregáveis
 
 ```text
-01_PRODUCT_DEFINITION.md=COMPLETE
-02_UI_INVENTORY.md=COMPLETE
-03_INFORMATION_ARCHITECTURE.md=REFINED_RC01
-04_ROLES_PERMISSIONS_AND_STATES.md=REFINED_RC01
-05_DESIGN_SYSTEM.md=REFINED_RC01_WITH_MICROTOKENS
-06_COMPONENT_CATALOG.md=COMPLETE
-07_WIREFRAMES.md=REFINED_RC01
-08_RESPONSIVE_ACCESSIBILITY.md=COMPLETE
-09_TEST_AND_ACCEPTANCE_STRATEGY.md=COMPLETE
-10_NF01_CLOSEOUT.md=REOPENED_FOR_VISUAL_AUDIT
-11_RC01_UI_UX_REFINEMENTS.md=COMPLETE
+01_PRODUCT_DEFINITION.md................ COMPLETE
+02_UI_INVENTORY.md...................... COMPLETE
+03_INFORMATION_ARCHITECTURE.md.......... EXISTING_BASELINE
+04_ROLES_PERMISSIONS_AND_STATES.md...... EXISTING_BASELINE
+05_DESIGN_SYSTEM.md..................... CANONICALIZED_2026_08_11
+06_COMPONENT_CATALOG.md................. CANONICALIZED_2026_08_11
+07_WIREFRAMES.md........................ CANONICALIZED_2026_08_11
+08_RESPONSIVE_ACCESSIBILITY.md.......... CANONICALIZED_2026_08_11
+09_TEST_AND_ACCEPTANCE_STRATEGY.md...... CANONICALIZED_2026_08_11
+10_NF01_CLOSEOUT.md..................... UPDATED
+11_RC01_UI_UX_REFINEMENTS.md............ HISTORICAL_RC01
+12_NF01_CANONICAL_DECISIONS_2026-08-11.. CANONICAL_CURRENT_CYCLE
 ```
 
-## 3. Critérios atuais
+## 3. Contratos congelados no ciclo atual
 
 ```text
-PRODUCT_DEFINITION=COMPLETE
-CURRENT_UI_INVENTORY=COMPLETE
-INFORMATION_ARCHITECTURE=REFINED
-NAVIGATION_MAP=SIMPLIFIED_FOR_VISIBLE_SHELL
-ROLE_PERMISSION_MATRIX=COMPLETE
-POST_CREATE_BIOMETRIC_FLOW=CORRECTED
-STATE_MODEL=COMPLETE
-DESIGN_TOKENS=COMPLETE_WITH_MICROTOKENS
-COMPONENT_CATALOG=COMPLETE
-WIREFRAMES=REFINED
-RESPONSIVE_SPEC=COMPLETE
-ACCESSIBILITY_SPEC=COMPLETE
-NF02_TEST_CONTRACT=COMPLETE
-RC01=COMPLETE
-RC01_FINDINGS=ACCEPTED_BY_LEANDRO
-FIGMA_FOUNDATION=PENDING
-SCREEN_MOCKUPS=PENDING
-VISUAL_AUDIT_LEANDRO=PENDING
-FINAL_HUMAN_GATE=NOT_READY
+NEW_EMPLOYEE_FUNCTIONAL_CONTRACT=FROZEN
+DIMENSIONING_POLICY=FROZEN
+COLLAPSIBLE_SIDEBAR=FROZEN
+HORIZONTAL_STEPPER=FROZEN
+CONTEXT_DRAWER=FROZEN
+STICKY_FORM_ACTIONS=FROZEN
+RESPONSIVE_FORM_GRID=FROZEN
+FORM_SECTION_PROGRESSIVE_DISCLOSURE=FROZEN
+FIELD_GROUP=FROZEN
+ENTITY_PICKER=FROZEN
+DATE_TIME_PERIOD_PICKER=FROZEN
+ICON_SYSTEM_LUCIDE=FROZEN
+MOTION_SYSTEM=FROZEN
+SEMANTIC_DOM_ORDER=FROZEN
+TOAST_POLICY=FROZEN
 ```
 
-## 4. Invariantes
+## 4. RC transversal
+
+```text
+RC_TRANSVERSAL=COMPLETE
+CRITICAL_GAPS_CLOSED=6/6
+HIGH_GAPS_CLOSED=9/9
+MEDIUM_GAPS_CLOSED=6/6
+CRITICAL_OPEN=0
+HIGH_OPEN=0
+MEDIUM_OPEN=0
+```
+
+A RC fechou, entre outros:
+
+- Wizard State + Draft/Conflict;
+- Dependency Invalidation;
+- Conditional Data Lifecycle;
+- Submit Outcome Reconciliation;
+- Runtime Permission Revalidation;
+- Back/Forward/Refresh;
+- Session Expiration Recovery;
+- Stepper Discoverability;
+- App Context vs Form Company;
+- Required/Optional Policy;
+- Error Hierarchy;
+- Step Focus Management;
+- Mobile Keyboard Safe Actions;
+- Date/Time/Period;
+- Design Tokens;
+- Icon System;
+- Motion/Reduced Motion;
+- DOM semantic order;
+- Toast Policy;
+- Global Component Catalog.
+
+## 5. Invariantes
 
 ```text
 PRODUCTION_CODE_CHANGED=NO
-NF_02_STARTED=NO
-AI_IMPLEMENTED=NO
+APP_CHANGED=NO
+TEMPLATES_CHANGED=NO
+STATIC_CHANGED=NO
+MIGRATIONS_CHANGED=NO
+BACKEND_CHANGED=NO
+DECISOES_CONGELADAS_CHANGED=NO
+NF02_STARTED=NO
 PONTO_MIGRATION=NO
+AI_IMPLEMENTED=NO
 OBSERVABILITY_BACKEND_IMPLEMENTED=NO
 DEPLOY=NO
 PRODUCTION_HOMOLOGATION=BLOCKED
 LEGAL_CONFORMITY_DECLARED=NO
-DECISOES_CONGELADAS_CHANGED=NO
 PR_32_MERGED=NO
 ```
 
-## 5. Próxima sequência obrigatória
+## 6. Artefatos visuais
+
+Estado conceitual:
 
 ```text
-RC-01 refinada
-→ fundação visual no Figma
-→ auditoria da fundação
-→ primeira tela em arquivo próprio
-→ auditoria por tela
-→ correções quando necessárias
-→ conjunto visual completo
-→ auditoria independente atualizada
-→ CI/evidências atualizadas
-→ gate humano final de Leandro
+Dashboard V3.................... conteudo preservado; shell deve ser reconciliado
+Funcionarios Desktop V1......... aprovado anteriormente; shell deve ser reconciliado
+Novo Funcionario V1............. historico/comparacao
+Novo Funcionario V2............. contrato funcional preservado; layout deve ser reconciliado
 ```
 
-## 6. Gate humano
+Direções substituídas:
 
-O fechamento formal da NF-01 continua reservado a **LEANDRO**, mas não deve ser solicitado antes da auditoria visual.
+```text
+sidebar sempre expandida................ SUPERSEDED
+stepper vertical do onboarding.......... SUPERSEDED
+painel contextual direito permanente.... SUPERSEDED
+larguras rígidas em px como regra geral. SUPERSEDED
+emoji como iconografia de produção....... SUPERSEDED
+```
+
+## 7. Próxima sequência obrigatória
+
+```text
+1. validar documentação canônica no repositório
+2. reconciliar qualquer documento residual conflitante
+3. consolidar wireframe do AppShell
+4. reconciliar Dashboard
+5. reconciliar Funcionários
+6. reconciliar Novo Funcionário
+7. validar coerência entre as três telas
+8. validar responsividade/a11y no Design Lab
+9. atualizar evidências e revisão independente
+10. solicitar Gate humano final de LEANDRO
+```
+
+## 8. Gate
 
 ```text
 HUMAN_GATE_REQUIRED=YES
-HUMAN_GATE_NOW=PREMATURE
-MERGE_BEFORE_FINAL_VISUAL_AUDIT=NO
-NF02_PROMPT_BEFORE_CLOSEOUT=NO
-NF02_START_IN_THIS_CHAT=NO
+FINAL_HUMAN_GATE=NOT_READY
+PR_32_MERGE=BLOCKED_UNTIL_EXPLICIT_APPROVAL
+NF02=NOT_STARTED
 ```
 
-O prompt da NF-02 somente será produzido após fechamento explícito da NF-01.
+Não iniciar NF-02 por inferência.
+
+Não fazer merge do PR #32 sem autorização humana explícita.
+
+Não declarar conformidade jurídica/regulatória.
