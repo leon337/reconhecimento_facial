@@ -54,8 +54,6 @@ A NF-01 não cria novas permissões no backend.
 
 ## 3. Personas de experiência ≠ papéis RBAC
 
-As três experiências estratégicas são agrupamentos de UX:
-
 | Experiência | Papéis atuais mais próximos | Regra |
 |---|---|---|
 | Funcionário/Estação | `operator` ou contexto de estação | foco em `punch:create`; sem shell admin |
@@ -72,7 +70,8 @@ As três experiências estratégicas são agrupamentos de UX:
 4. **403 inesperado:** renderizar `NO_PERMISSION` com retorno seguro; não revelar recurso sensível.
 5. **Escopo:** empresa/obra correntes devem ser visíveis antes de ações administrativas sensíveis.
 6. **Ação destrutiva:** exige confirmação nominal/contextual; backend revalida permissão.
-7. **Dados futuros:** não adicionar permissões fictícias à UI. Os nomes `system:health`, `system:logs`, `org:*` usados nos documentos são requisitos candidatos, não backend entregue.
+7. **Dados futuros:** não adicionar permissões fictícias à UI.
+8. **Próxima etapa:** nenhum fluxo pode anunciar uma próxima ação que o papel atual não possa executar.
 
 ## 5. Matriz visual das telas atuais
 
@@ -87,7 +86,29 @@ As três experiências estratégicas são agrupamentos de UX:
 
 A tela pública/estação de ponto atual não está protegida por uma sessão administrativa; o modelo futuro de estação deverá preservar escopo e segurança sem fundir essa experiência ao admin.
 
-## 6. Estados obrigatórios do Design System
+## 6. Correção RC-01 — fluxo pós-cadastro de funcionário
+
+O fluxo anterior indicava `Próxima etapa: cadastro biométrico` para qualquer usuário que conseguisse criar funcionário. Isso conflita com o RBAC real, porque `manager` possui `users:create` mas não possui `biometrics:manage`.
+
+Fluxo refinado:
+
+```mermaid
+flowchart TD
+    A[Salvar funcionário] --> B{Criação confirmada?}
+    B -->|não| E[Mostrar erros e preservar formulário]
+    B -->|sim| C{Possui biometrics:manage?}
+    C -->|sim| D[Oferecer Cadastrar biometria agora]
+    C -->|não| F[Mostrar Cadastro concluído + Voltar para funcionários]
+```
+
+### Regra visual
+
+- `super_admin` e `admin`: após criação, podem receber CTA `Cadastrar biometria agora`.
+- `manager`: após criação, recebe conclusão e retorno seguro; nenhum CTA de biometria é exibido.
+- a UI não revela a existência de ação proibida por meio de botão desabilitado.
+- o backend continua revalidando autorização em qualquer requisição de biometria.
+
+## 7. Estados obrigatórios do Design System
 
 | Estado | Significado | Pode executar ação? | Mensagem esperada |
 |---|---|---|---|
@@ -102,7 +123,7 @@ A tela pública/estação de ponto atual não está protegida por uma sessão ad
 | `NO_PERMISSION` | usuário autenticado sem autorização | não | acesso insuficiente + retorno seguro |
 | `TELEMETRY_UNAVAILABLE` | não há sinal suficiente para avaliar saúde | diagnóstico não conclusivo | “Não há telemetria suficiente” |
 
-## 7. Relações semânticas obrigatórias
+## 8. Relações semânticas obrigatórias
 
 ```text
 TELEMETRY_UNAVAILABLE != HEALTHY
@@ -114,15 +135,7 @@ WARNING != ERROR
 READY != HEALTHY_TECHNICAL_STATUS
 ```
 
-### Explicação
-
-- `TELEMETRY_UNAVAILABLE`: desconhecemos o estado; não usar verde.
-- `NOT_IMPLEMENTED`: recurso não existe; mostrar “Planejado” somente onde fizer sentido.
-- `OFFLINE`: estado de conectividade; um fluxo futuro poderá suportá-lo sem falhar.
-- `DEGRADED`: parte da capacidade está disponível.
-- `DOWN/UNAVAILABLE`: componente existente está indisponível, quando há sinal técnico que prove isso.
-
-## 8. Fonte técnica para status “OK”
+## 9. Fonte técnica para status “OK”
 
 Nenhum `StatusBadge` com `OK/Healthy` pode ser emitido sem fonte declarada.
 
@@ -130,18 +143,16 @@ Nenhum `StatusBadge` com `OK/Healthy` pode ser emitido sem fonte declarada.
 |---|---|---|
 | API | resposta `/health` | disponível/indisponível para a própria API |
 | Banco | `SELECT 1` no `/health` | conectado/não confirmado |
-| Câmera da estação | apenas estado local da sessão do navegador | pronta/falhou **naquela sessão**, sem health global |
-| Reconhecimento | resultado de cada tentativa + contadores não duráveis | resultado por tentativa; não “serviço saudável” persistente |
-| Métricas | `/metrics` em memória | “dados desde início do processo”, não histórico |
+| Câmera da estação | estado local da sessão | pronta/falhou naquela sessão |
+| Reconhecimento | resultado de cada tentativa + contadores não duráveis | resultado por tentativa; não saúde persistente |
+| Métricas | `/metrics` em memória | dados desde início do processo, não histórico |
 | Estação | sem heartbeat | `TELEMETRY_UNAVAILABLE` |
 | Backup do piloto | sem last-success telemétrico | `TELEMETRY_UNAVAILABLE` |
 | IA | não implementada | `NOT_IMPLEMENTED`, não `ERROR` |
 | Fila | não implementada | `NOT_IMPLEMENTED` |
 | Offline sync | não implementado | `NOT_IMPLEMENTED` |
 
-## 9. Precedência de estados para componentes
-
-Quando mais de uma condição for verdadeira:
+## 10. Precedência de estados para componentes
 
 ```text
 NO_PERMISSION
@@ -157,9 +168,7 @@ NO_PERMISSION
 
 `SUCCESS` é transacional e temporário; não substitui estado contínuo do recurso.
 
-Exemplo: um card de estação sem heartbeat deve mostrar `TELEMETRY_UNAVAILABLE`, mesmo que a marca seja verde e a última operação registrada tenha sido bem-sucedida.
-
-## 10. Contrato de mensagens
+## 11. Contrato de mensagens
 
 Cada mensagem relevante deve responder, quando aplicável:
 
@@ -172,7 +181,7 @@ HÁ UM ID PARA SUPORTE?
 
 ### Funcionário
 
-Evitar jargão técnico. Exemplo conceitual:
+Evitar jargão técnico.
 
 ```text
 Não foi possível confirmar seu rosto.
@@ -187,7 +196,7 @@ Pode incluir contexto de entidade/unidade.
 
 Pode incluir código técnico e request ID em detalhe expansível/copiável.
 
-## 11. Estados específicos da câmera
+## 12. Estados específicos da câmera
 
 ```text
 CAMERA_UNAVAILABLE
@@ -200,9 +209,7 @@ CAPTURE_REJECTED
 PUNCH_CONFIRMED
 ```
 
-Esses estados mapeiam para os estados semânticos globais sem criar novo significado de cor.
-
-## 12. Estados de ação destrutiva
+## 13. Estados de ação destrutiva
 
 Remoção de biometria:
 
@@ -215,12 +222,13 @@ READY
 
 O modal deve citar o funcionário e a consequência; nunca usar confirmação genérica “Tem certeza?”.
 
-## 13. Decisão
+## 14. Decisão RC-01
 
 ```text
 ROLE_PERMISSION_MATRIX=COMPLETE
 CURRENT_RBAC=PRESERVED
-VISUAL_PERMISSION_RULES=DEFINED
+POST_CREATE_BIOMETRIC_FLOW=PERMISSION_AWARE
+FORBIDDEN_NEXT_STEP_CTA=PROHIBITED
 STATE_MODEL=COMPLETE
 FALSE_GREEN=PROHIBITED
 ```
