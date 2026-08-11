@@ -5,45 +5,57 @@
 **Base:** `main@2a388fdc40817dca8f7bd96232e723c0e520702b`  
 **Branch:** `docs/nf-01-produto-design-system`  
 **PR:** #32  
-**Estado:** `AGUARDANDO_CI_FINAL_E_GATE_LEANDRO`
+**Estado atual:** `REFINEMENT_AND_VISUAL_AUDIT_IN_PROGRESS`
 
-## 1. Entregáveis
+## 1. Motivo da reabertura do gate
+
+A documentação técnica inicial da NF-01 foi concluída e auditada, mas Leandro indicou corretamente que o resultado não estava suficientemente visível para um gate humano de produto. Antes da aprovação final, foi autorizada uma RC específica de UI/UX.
+
+A RC-01 encontrou refinamentos em navegação, Dashboard, pós-cadastro/biometria, Design System, saúde operacional e Registrar Ponto. Leandro concordou com as conclusões e autorizou aplicar esses refinamentos.
+
+O gate humano final permanece suspenso até existir material visual auditável.
+
+## 2. Estado dos entregáveis
 
 ```text
 01_PRODUCT_DEFINITION.md=COMPLETE
 02_UI_INVENTORY.md=COMPLETE
-03_INFORMATION_ARCHITECTURE.md=COMPLETE
-04_ROLES_PERMISSIONS_AND_STATES.md=COMPLETE
-05_DESIGN_SYSTEM.md=COMPLETE
+03_INFORMATION_ARCHITECTURE.md=REFINED_RC01
+04_ROLES_PERMISSIONS_AND_STATES.md=REFINED_RC01
+05_DESIGN_SYSTEM.md=REFINED_RC01_WITH_MICROTOKENS
 06_COMPONENT_CATALOG.md=COMPLETE
-07_WIREFRAMES.md=COMPLETE
+07_WIREFRAMES.md=REFINED_RC01
 08_RESPONSIVE_ACCESSIBILITY.md=COMPLETE
 09_TEST_AND_ACCEPTANCE_STRATEGY.md=COMPLETE
-10_NF01_CLOSEOUT.md=COMPLETE_PRE_HUMAN_GATE
+10_NF01_CLOSEOUT.md=REOPENED_FOR_VISUAL_AUDIT
+11_RC01_UI_UX_REFINEMENTS.md=COMPLETE
 ```
 
-## 2. Critérios da NF-01
+## 3. Critérios atuais
 
 ```text
 PRODUCT_DEFINITION=COMPLETE
 CURRENT_UI_INVENTORY=COMPLETE
-INFORMATION_ARCHITECTURE=COMPLETE
-NAVIGATION_MAP=COMPLETE
+INFORMATION_ARCHITECTURE=REFINED
+NAVIGATION_MAP=SIMPLIFIED_FOR_VISIBLE_SHELL
 ROLE_PERMISSION_MATRIX=COMPLETE
+POST_CREATE_BIOMETRIC_FLOW=CORRECTED
 STATE_MODEL=COMPLETE
-DESIGN_TOKENS=COMPLETE
+DESIGN_TOKENS=COMPLETE_WITH_MICROTOKENS
 COMPONENT_CATALOG=COMPLETE
-WIREFRAMES=COMPLETE
+WIREFRAMES=REFINED
 RESPONSIVE_SPEC=COMPLETE
 ACCESSIBILITY_SPEC=COMPLETE
 NF02_TEST_CONTRACT=COMPLETE
-INDEPENDENT_REVIEW=COMPLETE_APPROVE_WITH_CONDITIONS
-GITHUB_PUBLICATION=PR_32_OPEN_DRAFT
-CI_FINAL_HEAD=PENDING
-HUMAN_GATE=PENDING_LEANDRO
+RC01=COMPLETE
+RC01_FINDINGS=ACCEPTED_BY_LEANDRO
+FIGMA_FOUNDATION=PENDING
+SCREEN_MOCKUPS=PENDING
+VISUAL_AUDIT_LEANDRO=PENDING
+FINAL_HUMAN_GATE=NOT_READY
 ```
 
-## 3. Invariantes verificadas no diff substantivo
+## 4. Invariantes
 
 ```text
 PRODUCTION_CODE_CHANGED=NO
@@ -55,66 +67,34 @@ DEPLOY=NO
 PRODUCTION_HOMOLOGATION=BLOCKED
 LEGAL_CONFORMITY_DECLARED=NO
 DECISOES_CONGELADAS_CHANGED=NO
+PR_32_MERGED=NO
 ```
 
-## 4. Evidências
-
-- branch criada a partir do HEAD real da `main`;
-- fontes estratégicas/técnicas recuperadas antes das decisões;
-- UI atual confrontada com templates, rotas, JS, RBAC e observabilidade;
-- PR #32 publicado;
-- comparação `base..candidate` mostrou somente documentação/PRF e sincronização de documentos de estado;
-- nenhum arquivo em `app/`, `templates/`, `static/`, `migrations/`, deploy ou infraestrutura foi alterado;
-- `DECISOES_CONGELADAS.md` não foi alterado;
-- Production Validation #82 passou no candidato substantivo;
-- CI `tests` passou no candidato substantivo;
-- CI `docker-build` ainda aguardava conclusão no instante da auditoria, portanto CI verde no HEAD final permanece condição de gate.
-
-## 5. Auditoria independente
-
-O recibo está em:
-
-`artifacts/phases/PHASE-NF01-PRODUTO-DESIGN-SYSTEM/PHASE-NF01-INDEPENDENT-REVIEW.md`
-
-Veredito:
+## 5. Próxima sequência obrigatória
 
 ```text
-VERDICT=APPROVE_WITH_CONDITIONS
-SUBSTANTIVE_SPEC=PASS
-CONDITION_1=FINAL_CI_HEAD_MUST_PASS
-CONDITION_2=HUMAN_GATE_LEANDRO_REQUIRED_BEFORE_MERGE
-WARNING_1=SHA256_MANIFEST_REMAINS_PENDING_UNTIL_FINAL_HEAD
+RC-01 refinada
+→ fundação visual no Figma
+→ auditoria da fundação
+→ primeira tela em arquivo próprio
+→ auditoria por tela
+→ correções quando necessárias
+→ conjunto visual completo
+→ auditoria independente atualizada
+→ CI/evidências atualizadas
+→ gate humano final de Leandro
 ```
 
-A revisão confirmou, entre outros pontos:
-- telas reais versus futuras separadas;
-- RBAC real preservado;
-- `TELEMETRY_UNAVAILABLE != HEALTHY` aplicado transversalmente;
-- 26/26 componentes obrigatórios especificados;
-- wireframes mínimos presentes;
-- responsividade e acessibilidade testáveis;
-- contrato de testes da NF-02 completo;
-- nenhuma migração/IA/backend de observabilidade atravessou a NF-01.
+## 6. Gate humano
 
-## 6. Limitação do PRF
-
-`ARTIFACT-MANIFEST.sha256` registra `PENDING` enquanto o candidato ainda recebe commits de evidência. Nenhum hash foi inventado. A integridade durante a revisão é ancorada pelo Git HEAD e pelo diff da PR #32.
-
-## 7. Gate humano
-
-O fechamento formal da NF-01 é reservado a **LEANDRO**.
+O fechamento formal da NF-01 continua reservado a **LEANDRO**, mas não deve ser solicitado antes da auditoria visual.
 
 ```text
 HUMAN_GATE_REQUIRED=YES
-MERGE_BEFORE_HUMAN_GATE=NO
+HUMAN_GATE_NOW=PREMATURE
+MERGE_BEFORE_FINAL_VISUAL_AUDIT=NO
 NF02_PROMPT_BEFORE_CLOSEOUT=NO
 NF02_START_IN_THIS_CHAT=NO
 ```
-
-### Decisões possíveis
-
-- `APROVAR_NF01_E_AUTORIZAR_MERGE`;
-- `APROVAR_COM_RESSALVAS` e listar remediações;
-- `REPROVAR` e indicar correções.
 
 O prompt da NF-02 somente será produzido após fechamento explícito da NF-01.
