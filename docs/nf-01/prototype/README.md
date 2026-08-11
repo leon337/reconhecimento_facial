@@ -25,6 +25,7 @@ prototype/
 ├── assets/
 │   ├── design-tokens.css
 │   ├── components.css
+│   ├── dashboard-v3.css
 │   └── interactions.js
 ├── components/
 │   └── catalog.html
@@ -46,7 +47,7 @@ Depois abra:
 http://localhost:4173/
 ```
 
-Dashboard V2:
+Dashboard V3:
 
 ```text
 http://localhost:4173/screens/02.01-dashboard.html
@@ -64,15 +65,20 @@ http://localhost:4173/screens/02.01-dashboard.html
 - ausência de dependência funcional do backend;
 - ausência de números ou estados apresentados como reais sem aviso de mockup.
 
-## Critério visual do Dashboard V2
+## Critério visual do Dashboard V3
 
-A V2 aplica a RC Visual 02 aprovada:
+A V3 preserva a estrutura aprovada da V2 e aplica a RC Visual seguinte:
 
-- tipografia mais confortável;
-- cards com elevação sutil e superfícies em níveis;
-- atalhos reconstruídos;
-- botões e links com estados reais de interação;
-- tabela/lista com melhor rastreamento visual;
+- remoção do contexto duplicado da sidebar;
+- correção do botão hambúrguer que aparecia indevidamente no desktop;
+- navegação lateral com melhor conforto tipográfico;
+- tratamento de scrollbar somente quando a altura realmente exigir rolagem;
+- KPIs alinhados no mesmo eixo visual;
+- tipografia operacional ampliada;
+- hierarquia de elevação entre KPI, painel principal e painéis auxiliares;
+- painel de atenção simplificado para não transformar estado neutro em alerta;
+- atalhos com maior altura e legibilidade;
+- manutenção de hover, focus-visible e pressed reais;
 - microinterações moderadas;
 - `prefers-reduced-motion` respeitado;
 - alvos interativos mínimos de 44 px;
