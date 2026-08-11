@@ -1,24 +1,30 @@
-# NF-01 — RC-01 de UI/UX e refinamentos aprovados
+# NF-01 — RC-01 de UI/UX — Registro Histórico
 
-**Estado:** `REFINEMENTS_APPLIED_TO_SPEC`  
-**Autorização humana:** Leandro concordou com as conclusões da RC e autorizou aplicar os refinamentos.  
-**Escopo:** somente documentação/especificação da NF-01; sem código de produção e sem NF-02.
+**Estado:** `HISTORICAL__SUPERSEDED_WHERE_CONFLICTING`  
+**Escopo original:** documentação/especificação da NF-01.  
+**Produção:** não alterada.
 
-## 1. Problemas encontrados pela RC
+> A RC-01 permanece registrada para preservar a evolução das decisões, porém a direção atual de UX/UI foi aprofundada em 11/08/2026.
+>
+> **Fonte canônica atual:** `12_NF01_CANONICAL_DECISIONS_2026-08-11.md`.
+>
+> Em caso de conflito, usar o registro canônico atual, sempre subordinado a `DECISOES_CONGELADAS.md`.
+
+## 1. Achados históricos da RC-01
+
+A RC-01 identificou:
 
 1. sidebar inicial excessivamente carregada com roadmap futuro;
-2. Dashboard misturava gestão operacional com diagnóstico técnico;
-3. pós-cadastro indicava biometria mesmo para `manager`, que não possui `biometrics:manage`;
-4. Design System não congelava algumas medidas necessárias para mockups consistentes;
-5. Registrar Ponto exigia seleção Entrada/Saída, mas mantinha CTA genérico `Identificar e registrar`;
-6. Saúde operacional podia sugerir recência global para sinais com fontes diferentes;
-7. formulário de funcionário não agrupava visualmente dados pessoais, vínculo operacional e acesso.
+2. Dashboard misturando gestão operacional e diagnóstico técnico;
+3. pós-cadastro sugerindo biometria para usuário sem `biometrics:manage`;
+4. necessidade de uma fundação de Design System mais consistente;
+5. CTA de Registrar Ponto genérico apesar da escolha Entrada/Saída;
+6. Saúde operacional precisando declarar fonte e recência por sinal;
+7. formulário de funcionário precisando de agrupamento e melhor hierarquia.
 
-## 2. Refinamentos aplicados
+## 2. Decisões históricas preservadas
 
-### Arquitetura e navegação
-
-A arquitetura estratégica completa foi preservada, mas a navegação inicial passou a ser operacionalmente reduzida:
+### Navegação operacional reduzida
 
 ```text
 Dashboard
@@ -38,115 +44,86 @@ SISTEMA
 Configurações
 ```
 
-Jornada, Relatórios, PREDIX/Inteligência, Estações e Backup permanecem no roadmap e não ocupam a sidebar inicial por padrão.
+Essa redução continua válida como direção inicial da sidebar, sujeita ao `CollapsibleSidebar` canônico atual.
 
 ### Dashboard
 
-- operação da equipe passa a ser prioridade visual;
-- saúde técnica deixa de competir com cards operacionais;
-- valores só aparecem quando houver consulta real;
-- dado ausente não é representado por `0` ilustrativo;
-- PREDIX não ocupa card principal antes de existir capacidade real.
+- operação da equipe como prioridade;
+- saúde técnica separada da operação principal;
+- números apenas com fonte real;
+- dado ausente não vira `0` ilustrativo;
+- IA/PREDIX não ocupa card principal antes de existir capacidade real.
+
+Essas decisões continuam válidas.
 
 ### Funcionário → Biometria
 
 ```text
-Salvar funcionário
-  → sucesso
-  → possui biometrics:manage?
-      → sim: oferecer Cadastrar biometria agora
-      → não: concluir e voltar para funcionários
+Salvar/concluir funcionário
+  → usuário possui biometrics:manage?
+      → sim: oferecer fluxo biométrico quando permitido pelo onboarding
+      → não: não renderizar CTA proibido
 ```
 
-Nenhum CTA proibido é mostrado desabilitado.
-
-### Design System
-
-Foram congelados microtokens de referência para mockups:
-
-```text
-sidebar expanded = 248px
-sidebar collapsed = 72px
-topbar = 64px
-input = 44px
-button = 44px
-CTA kiosk = 56px
-table row default = 56px
-table row compact = 48px
-icons = 16 / 20 / 24px
-desktop reference = 1440x1024
-mobile reference = 360px
-```
-
-Manrope permanece como fonte de referência para a auditoria visual.
+A regra permanece válida, mas o onboarding atual é um wizard de oito etapas com biometria própria na Etapa 6.
 
 ### Registrar Ponto
-
-CTA passa a refletir a seleção:
 
 ```text
 Entrada → Registrar entrada
 Saída   → Registrar saída
 ```
 
-A seleção permanece visível durante processamento e o shell continua separado do admin.
+O shell de `/punch` continua separado do admin.
 
 ### Saúde operacional
 
-Cada sinal declara:
+Cada sinal continua declarando:
 
 ```text
 componente
 estado textual
 fonte
-última atualização própria
-impacto quando aplicável
+ultima atualizacao propria
+impacto quando aplicavel
 ```
 
-Sem heartbeat ou sinal suficiente: `TELEMETRY_UNAVAILABLE`.
+Sem sinal suficiente: `TELEMETRY_UNAVAILABLE`.
 
-## 3. Arquivos atualizados
-
-- `03_INFORMATION_ARCHITECTURE.md`;
-- `04_ROLES_PERMISSIONS_AND_STATES.md`;
-- `05_DESIGN_SYSTEM.md`;
-- `07_WIREFRAMES.md`;
-- `11_RC01_UI_UX_REFINEMENTS.md`.
-
-## 4. Itens ainda não executados
+## 3. Decisões da RC-01 substituídas pelo ciclo 11/08/2026
 
 ```text
-FIGMA_FOUNDATION=NEXT
-FINAL_SCREEN_MOCKUPS=NOT_STARTED
-SCREEN_EXPORTS=NOT_STARTED
-VISUAL_AUDIT_LEANDRO=NOT_STARTED
-NF01_FINAL_HUMAN_GATE=NOT_READY
-NF02=NOT_STARTED
+microtokens rigidamente congelados em px........ SUPERSEDED
+sidebar fixed dimensions as global rule......... SUPERSEDED
+icon library ainda indefinida................... SUPERSEDED → Lucide
+stepper/painel lateral anteriores................ SUPERSEDED
+Figma como próximo passo obrigatório imediato... SUPERSEDED pela sequência atual de reconciliação documental/Design Lab
+```
+
+A política atual usa `rem`, `fr`, `minmax`, `clamp`, unidades de viewport limitadas e container queries, conforme `05_DESIGN_SYSTEM.md`.
+
+## 4. Continuidade correta
+
+Não continuar o projeto a partir deste arquivo isoladamente.
+
+Antes de qualquer proposta de UX/UI, ler:
+
+```text
+DECISOES_CONGELADAS.md
+12_NF01_CANONICAL_DECISIONS_2026-08-11.md
+05_DESIGN_SYSTEM.md
+06_COMPONENT_CATALOG.md
+07_WIREFRAMES.md
+08_RESPONSIVE_ACCESSIBILITY.md
+09_TEST_AND_ACCEPTANCE_STRATEGY.md
+```
+
+## 5. Estado
+
+```text
+RC01=HISTORICAL_COMPLETE
+CURRENT_CANONICAL_RC=12_NF01_CANONICAL_DECISIONS_2026-08-11.md
 PRODUCTION_CODE=UNCHANGED
-```
-
-## 5. Próximo estágio
-
-Criar a fundação visual editável no Figma antes da primeira tela final. A fundação deverá materializar tokens, tipografia, cores, grids, controles, estados e amostras de componentes sem iniciar a NF-02.
-
-Depois da fundação:
-
-```text
-Design System visual
-→ auditoria
-→ Dashboard
-→ auditoria
-→ demais telas, uma por arquivo
-→ auditoria final
-→ gate formal NF-01
-```
-
-## 6. Decisão
-
-```text
-RC01=COMPLETE
-RC01_FINDINGS=ACCEPTED_BY_LEANDRO
-REFINEMENTS=APPLIED_TO_SPEC
-READY_FOR_FIGMA_FOUNDATION=YES
-READY_FOR_FINAL_NF01_GATE=NO
+NF02=NOT_STARTED
+FINAL_HUMAN_GATE=NOT_READY
 ```
