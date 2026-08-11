@@ -5,7 +5,7 @@
 **Base:** `main@2a388fdc40817dca8f7bd96232e723c0e520702b`  
 **Branch:** `docs/nf-01-produto-design-system`  
 **PR:** #32  
-**Estado:** `AGUARDANDO_AUDITORIA_FINAL_E_GATE_LEANDRO`
+**Estado:** `AGUARDANDO_CI_FINAL_E_GATE_LEANDRO`
 
 ## 1. Entregáveis
 
@@ -19,7 +19,7 @@
 07_WIREFRAMES.md=COMPLETE
 08_RESPONSIVE_ACCESSIBILITY.md=COMPLETE
 09_TEST_AND_ACCEPTANCE_STRATEGY.md=COMPLETE
-10_NF01_CLOSEOUT.md=THIS_FILE
+10_NF01_CLOSEOUT.md=COMPLETE_PRE_HUMAN_GATE
 ```
 
 ## 2. Critérios da NF-01
@@ -37,14 +37,16 @@ WIREFRAMES=COMPLETE
 RESPONSIVE_SPEC=COMPLETE
 ACCESSIBILITY_SPEC=COMPLETE
 NF02_TEST_CONTRACT=COMPLETE
-INDEPENDENT_REVIEW=PENDING_FINAL_HEAD
+INDEPENDENT_REVIEW=COMPLETE_APPROVE_WITH_CONDITIONS
 GITHUB_PUBLICATION=PR_32_OPEN_DRAFT
+CI_FINAL_HEAD=PENDING
+HUMAN_GATE=PENDING_LEANDRO
 ```
 
-## 3. Invariantes
+## 3. Invariantes verificadas no diff substantivo
 
 ```text
-PRODUCTION_CODE_CHANGED=NO_EXPECTED_PENDING_FINAL_DIFF
+PRODUCTION_CODE_CHANGED=NO
 NF_02_STARTED=NO
 AI_IMPLEMENTED=NO
 PONTO_MIGRATION=NO
@@ -52,36 +54,53 @@ OBSERVABILITY_BACKEND_IMPLEMENTED=NO
 DEPLOY=NO
 PRODUCTION_HOMOLOGATION=BLOCKED
 LEGAL_CONFORMITY_DECLARED=NO
-DECISOES_CONGELADAS_CHANGED=NO_EXPECTED_PENDING_FINAL_DIFF
+DECISOES_CONGELADAS_CHANGED=NO
 ```
 
-## 4. Evidências já verificadas
+## 4. Evidências
 
 - branch criada a partir do HEAD real da `main`;
 - fontes estratégicas/técnicas recuperadas antes das decisões;
 - UI atual confrontada com templates, rotas, JS, RBAC e observabilidade;
 - PR #32 publicado;
-- primeira inspeção de changed-files mostrou apenas `docs/nf-01/` e `artifacts/phases/...` antes deste closeout;
-- CI e Production Validation foram disparados para o candidato e devem ser rechecados no HEAD final.
+- comparação `base..candidate` mostrou somente documentação/PRF e sincronização de documentos de estado;
+- nenhum arquivo em `app/`, `templates/`, `static/`, `migrations/`, deploy ou infraestrutura foi alterado;
+- `DECISOES_CONGELADAS.md` não foi alterado;
+- Production Validation #82 passou no candidato substantivo;
+- CI `tests` passou no candidato substantivo;
+- CI `docker-build` ainda aguardava conclusão no instante da auditoria, portanto CI verde no HEAD final permanece condição de gate.
 
-## 5. Auditoria independente — contrato
+## 5. Auditoria independente
 
-Emily deve revisar o HEAD final e responder no mínimo:
+O recibo está em:
 
-1. existe tela declarada REAL sem prova no código?
-2. alguma tela futura foi apresentada como operacional?
-3. RBAC foi alterado conceitualmente sem backend?
-4. alguma cor de marca implica health sem fonte?
-5. estados obrigatórios estão completos e não conflitantes?
-6. componentes obrigatórios estão todos especificados?
-7. wireframes mínimos estão presentes?
-8. responsividade e acessibilidade têm critérios testáveis?
-9. NF-02 recebeu contrato de unitário/integração/regressão/a11y/responsivo?
-10. diff toca código de produção, `DECISOES_CONGELADAS.md`, migrações ou deploy?
+`artifacts/phases/PHASE-NF01-PRODUTO-DESIGN-SYSTEM/PHASE-NF01-INDEPENDENT-REVIEW.md`
 
-Resultado será registrado sobre o HEAD final, não presumido neste texto.
+Veredito:
 
-## 6. Gate humano
+```text
+VERDICT=APPROVE_WITH_CONDITIONS
+SUBSTANTIVE_SPEC=PASS
+CONDITION_1=FINAL_CI_HEAD_MUST_PASS
+CONDITION_2=HUMAN_GATE_LEANDRO_REQUIRED_BEFORE_MERGE
+WARNING_1=SHA256_MANIFEST_REMAINS_PENDING_UNTIL_FINAL_HEAD
+```
+
+A revisão confirmou, entre outros pontos:
+- telas reais versus futuras separadas;
+- RBAC real preservado;
+- `TELEMETRY_UNAVAILABLE != HEALTHY` aplicado transversalmente;
+- 26/26 componentes obrigatórios especificados;
+- wireframes mínimos presentes;
+- responsividade e acessibilidade testáveis;
+- contrato de testes da NF-02 completo;
+- nenhuma migração/IA/backend de observabilidade atravessou a NF-01.
+
+## 6. Limitação do PRF
+
+`ARTIFACT-MANIFEST.sha256` registra `PENDING` enquanto o candidato ainda recebe commits de evidência. Nenhum hash foi inventado. A integridade durante a revisão é ancorada pelo Git HEAD e pelo diff da PR #32.
+
+## 7. Gate humano
 
 O fechamento formal da NF-01 é reservado a **LEANDRO**.
 
