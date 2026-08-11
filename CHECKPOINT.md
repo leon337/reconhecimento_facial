@@ -16,18 +16,26 @@ MCF_PROTOCOL=1.1
 MCF_RISK_CLASS=C
 PR_30=MERGED
 LEA_133=Done
+DECISION_FREEZE=ACTIVE
+DECISION_FREEZE_DOC=DECISOES_CONGELADAS.md
+NF_01=READY_FOR_NEW_CHAT_NOT_STARTED
 ```
 
-## Gate encerrado
+## Gates encerrados
 
 Leandro aprovou a direção estratégica com ressalvas e autorizou a FASE 12 para resolvê-las. O PR #30 foi integrado após CI verde, Production Validation verde, auditoria independente e gate delegado do Léo.
 
+Em 10/08/2026, Leandro também aprovou explicitamente o congelamento das decisões antes da NF-01, incluindo a sequência NF-01 → NF-08 e a regra de uma NF por chat.
+
 ```text
-GATE_ENTRY=APPROVED_WITH_RESERVATIONS
+GATE_ENTRY_FASE_12=APPROVED_WITH_RESERVATIONS
 EIGHT_RESERVATIONS=RESOLVED_AT_BASELINE_GOVERNANCE_ARCHITECTURE_LEVEL
 EMILY_VERDICT=APPROVE_WITH_WARNINGS_FOR_BASELINE_MERGE
 LEO_GATE=APPROVE_WITH_WARNINGS_FOR_BASELINE_MERGE
-NEXT_FUNCTIONAL_IMPLEMENTATION=REQUIRES_NEW_HUMAN_GATE
+DECISION_FREEZE_GATE=APPROVED_BY_LEANDRO
+NF_SEQUENCE=APPROVED
+ONE_NF_PER_CHAT=MANDATORY
+NF_01_IMPLEMENTATION_STARTED=NO
 PRODUCTION_HOMOLOGATION=BLOCKED
 LEGAL_CONFORMITY_DECLARED=NO
 ```
@@ -106,7 +114,7 @@ Regra: `SEM_TELEMETRIA != SAUDAVEL`.
 
 Primeiro candidato futuro de IA: diagnóstico assistido + explicação de eventos, somente leitura. IA não pode tomar decisões trabalhistas, disciplinares, biométricas, de acesso, fraude ou conformidade jurídica.
 
-## Evidência automatizada
+## Evidência automatizada da FASE 12
 
 Head final do PR #30: `b174ab7bb3968970a31a13e1b968eb9178a8389b`.
 
@@ -158,12 +166,15 @@ LEA_85=In_Progress
 PRODUCTION_HOMOLOGATION=BLOCKED
 ```
 
-## Próximo gate
+## Próximo trabalho
 
 ```text
 FASE_12=COMPLETE
-NEXT_FUNCTIONAL_PHASE=NOT_STARTED
-NEXT_HUMAN_GATE=LEANDRO
+DECISION_FREEZE=ACTIVE
+NF_01=READY_FOR_NEW_CHAT_NOT_STARTED
+NEXT_CHAT=NF_01_ONLY
+NF_01_SCOPE=PRODUTO_E_DESIGN_SYSTEM
+NF_01_PRODUCTION_CODE=NO
 ```
 
-A próxima fase funcional só começa após decisão explícita de Leandro.
+A NF-01 deverá ser iniciada em um novo chat. O encerramento de uma NF não autoriza automaticamente a seguinte.

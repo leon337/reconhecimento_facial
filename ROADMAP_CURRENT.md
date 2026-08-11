@@ -19,8 +19,11 @@ LEA_133=Done
 PR_29=MERGED
 PR_30=MERGED
 PRODUCTION_HOMOLOGATION=BLOCKED
-NEXT_FUNCTIONAL_PHASE=NOT_STARTED
-NEXT_HUMAN_GATE=LEANDRO
+DECISION_FREEZE=ACTIVE
+DECISION_FREEZE_DOC=DECISOES_CONGELADAS.md
+NF_ROADMAP=APPROVED_SEQUENCE
+NF_01=READY_FOR_NEW_CHAT_NOT_STARTED
+NF_02_TO_NF_08=NOT_STARTED
 ```
 
 ## Linha de montagem concluída da FASE 12
@@ -38,7 +41,8 @@ flowchart TD
     I --> J[Gate delegado Léo]
     J --> K[PR #30 integrado]
     K --> L[LEA-133 encerrada]
-    L --> M[Novo gate humano Leandro]
+    L --> M[Decision Freeze aprovado por Leandro]
+    M --> N[NF-01 em novo chat]
 ```
 
 ## Oito ressalvas — encerradas
@@ -145,9 +149,9 @@ LEGAL_SPECIALIST_VALIDATION=PENDING
 PRODUCTION_HOMOLOGATION=BLOCKED
 ```
 
-## Direção estratégica candidata ao novo gate
+## Roadmap NF oficial congelado
 
-Nenhum bloco começa automaticamente:
+A sequência foi congelada em `DECISOES_CONGELADAS.md` após gate humano explícito de Leandro. Cada NF será executada em um chat próprio e nenhuma NF autoriza automaticamente a seguinte.
 
 ```text
 NF_01=PRODUTO_E_DESIGN_SYSTEM
@@ -160,23 +164,40 @@ NF_07=REAVALIACAO_DO_ROADMAP
 NF_08=VALIDACOES_TECNICAS_REMANESCENTES
 ```
 
+Estado de entrada:
+
+```text
+NF_01=READY_FOR_NEW_CHAT_NOT_STARTED
+NF_02_TO_NF_08=NOT_STARTED
+ONE_NF_PER_CHAT=MANDATORY
+```
+
+## Roadmap histórico
+
+As FASES 13 a 21 permanecem preservadas como histórico/proposta, mas não têm autorização automática. A reconciliação formal desse roadmap ocorrerá na NF-07.
+
 ## Regras permanentes
 
 1. GitHub é a fonte técnica oficial.
-2. Linear representa fases, gates, dependências e decisões.
-3. Sem evidência não há PASS estrito.
-4. Testes unitários e de integração precedem implementações funcionais.
-5. Multitenancy, RBAC, auditoria, criptografia biométrica e liveness são invariantes.
-6. Ausência de telemetria nunca vira estado verde.
-7. Nenhum dado biométrico real, segredo ou chave deve ser publicado.
-8. IA não toma decisão trabalhista/autoritativa.
-9. Conformidade jurídica exige validação especializada.
-10. O próximo bloco funcional depende de gate humano explícito.
+2. `DECISOES_CONGELADAS.md` é a fonte estratégica oficial até novo gate humano versionado.
+3. Linear representa fases, gates, dependências e decisões.
+4. Sem evidência não há PASS estrito.
+5. Testes unitários e de integração precedem implementações funcionais.
+6. Multitenancy, RBAC, auditoria, criptografia biométrica e liveness são invariantes.
+7. Ausência de telemetria nunca vira estado verde.
+8. Nenhum dado biométrico real, segredo ou chave deve ser publicado.
+9. IA não toma decisão trabalhista/autoritativa.
+10. Conformidade jurídica exige validação especializada.
+11. Uma NF por chat é obrigatória.
+12. O fechamento de uma NF não inicia automaticamente a seguinte.
 
 ## Próxima ação oficial
 
 ```text
 FASE_12=COMPLETE
-NEXT_ACTION=NEW_HUMAN_GATE
-NEXT_FUNCTIONAL_IMPLEMENTATION=BLOCKED_UNTIL_GATE
+DECISION_FREEZE=ACTIVE
+NEXT_WORK_BLOCK=NF_01_PRODUTO_E_DESIGN_SYSTEM
+NF_01_START_MODE=NEW_CHAT_ONLY
+NF_01_PRODUCTION_CODE=NO
+NEXT_CHAT=NF_01_ONLY
 ```
