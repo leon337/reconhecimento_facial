@@ -1,5 +1,8 @@
 # NF-01 — Design System
 
+> **Fonte canônica complementar:** `12_NF01_CANONICAL_DECISIONS_2026-08-11.md`.
+> Em caso de conflito entre versões anteriores deste arquivo e o registro canônico de 11/08/2026, prevalece o registro canônico, sem alterar `DECISOES_CONGELADAS.md`.
+
 ## 1. Direção visual
 
 ```text
@@ -8,306 +11,276 @@ SUPERFICIES=NEUTROS_CLAROS
 ACENTO_PREMIUM=DOURADO_MODERADO
 DADOS=GRAFITE
 STATUS=CORES_SEMANTICAS_INDEPENDENTES_DA_MARCA
+FONT=MANROPE
+ICON_FAMILY=LUCIDE
 ```
 
-> O verde institucional é marca. Ele **não** significa automaticamente sistema saudável.
+Regra central:
+
+```text
+VERDE_DA_MARCA != SISTEMA_SAUDAVEL
+TELEMETRY_UNAVAILABLE != HEALTHY
+DEGRADED != DOWN
+OFFLINE != ERROR
+NOT_IMPLEMENTED != ERROR
+```
 
 ## 2. Princípios
 
 1. clareza operacional antes de decoração;
-2. alta legibilidade e contraste;
-3. componentes densos no admin, simples no ponto;
-4. espaços consistentes em múltiplos de 4 px;
-5. uma cor semântica nunca é a única forma de comunicar estado;
-6. foco de teclado sempre visível;
-7. motion curto e dispensável;
-8. superfícies claras; dados e texto em grafite;
-9. dourado usado como acento, não como cor universal de CTA;
-10. ícones complementam rótulos; não substituem texto em ações críticas;
-11. o Design System define as telas; uma tela isolada não redefine o Design System.
+2. formulário/tarefa como protagonista;
+3. menos estrutura permanente, mais área útil;
+4. foco de teclado sempre visível;
+5. estado nunca depende apenas de cor;
+6. responsividade reorganiza, não apenas reduz;
+7. componentes adaptam-se preferencialmente ao container disponível;
+8. movimento é funcional e dispensável;
+9. dado inexistente não vira valor ilustrativo;
+10. ícone complementa significado e nunca é a única fonte semântica.
 
-## 3. Tipografia
+## 3. Política oficial de dimensionamento
 
 ```text
-Primary: Manrope
-Fallback: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif
-Mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace
+DIMENSIONING_POLICY=FROZEN
+
+rem            → unidade-base do Design System
+fr/minmax      → distribuição e grids
+clamp          → crescimento fluido com limites
+vw/dvh         → viewport quando necessário e preferencialmente limitado
+container query→ adaptação ao espaço real do componente
+cqi            → dimensão relativa ao container quando útil
+ch             → limite de legibilidade textual
+%              → relações locais
+px             → exceções técnicas, como borda de 1px
 ```
 
-| Token | Tamanho | Line-height | Peso sugerido | Uso |
-|---|---:|---:|---:|---|
-| `text-xs` | 12 px | 16 px | 500 | metadado curto |
-| `text-sm` | 14 px | 20 px | 400/500 | suporte e labels secundários |
-| `text-md` | 16 px | 24 px | 400/500 | corpo e inputs |
-| `text-lg` | 18 px | 28 px | 600 | subtítulo/card |
-| `text-xl` | 20 px | 28 px | 600/700 | seção |
-| `text-2xl` | 24 px | 32 px | 700 | título de tela |
-| `text-3xl` | 32 px | 40 px | 700/800 | destaque de painel |
-| `text-4xl` | 40 px | 48 px | 800 | uso excepcional em ponto/kiosk |
-
-Corpo padrão nunca abaixo de 16 px no fluxo de Registrar Ponto.
-
-## 4. Cores institucionais
-
-| Token | Valor | Uso permitido |
-|---|---|---|
-| `brand-900` | `#143D2B` | header/ênfase escura |
-| `brand-800` | `#1B4D37` | botão primário institucional |
-| `brand-700` | `#236647` | links/ênfase quando contraste permitir |
-| `brand-600` | `#2E7D57` | decoração, ícone não textual, gráficos de marca |
-| `brand-100` | `#E8F2EC` | fundo institucional suave |
-| `premium-700` | `#7A5C00` | texto/acento dourado acessível |
-| `premium-500` | `#C7A33D` | borda/decorativo, nunca texto pequeno em branco |
-| `premium-100` | `#F8F1D9` | fundo suave |
-
-## 5. Neutros e superfícies
-
-| Token | Valor | Uso |
-|---|---|---|
-| `surface-canvas` | `#F6F8F6` | fundo da aplicação |
-| `surface-default` | `#FFFFFF` | cards, formulários |
-| `surface-subtle` | `#F1F4F2` | cabeçalhos de tabela/áreas secundárias |
-| `text-primary` | `#1F2933` | texto principal/dados |
-| `text-secondary` | `#5F6B66` | texto secundário |
-| `text-disabled` | `#7D8883` | somente elemento realmente desabilitado |
-| `border-default` | `#DCE3DE` | divisores/bordas |
-| `border-strong` | `#AAB7B0` | controle/ênfase |
-
-## 6. Cores semânticas independentes
-
-| Semântica | Texto/ícone forte | Fundo suave | Uso |
-|---|---|---|---|
-| success | `#1B5E20` | `#EAF6EC` | ação confirmada |
-| warning | `#7A4B00` | `#FFF4DB` | atenção/risco |
-| error | `#B42318` | `#FDECEC` | falha |
-| info | `#175CD3` | `#EEF4FF` | informação neutra |
-| offline | `#475467` | `#F2F4F7` | conectividade offline |
-| unknown/telemetry | `#475467` | `#F2F4F7` | estado não conclusivo |
-
-`DEGRADED` usa warning com texto explícito. `TELEMETRY_UNAVAILABLE` usa neutro/unknown, nunca success.
-
-## 7. Contraste de referência
-
-| Par | Contraste aproximado | Resultado |
-|---|---:|---|
-| branco / `brand-800` | 9.71:1 | AAA texto normal |
-| branco / `brand-700` | 6.86:1 | AA texto normal |
-| `text-primary` / branco | 14.76:1 | AAA |
-| `text-secondary` / branco | 5.55:1 | AA |
-| `premium-700` / branco | 6.25:1 | AA |
-| success / branco | 7.87:1 | AAA |
-| warning / branco | 7.41:1 | AAA |
-| error / branco | 6.57:1 | AA |
-| info / branco | 5.99:1 | AA |
-| offline / branco | 7.69:1 | AAA |
-
-## 8. Foco
+Os alvos `360 / 768 / 1024 / 1440` são pontos mínimos de teste, não quatro interfaces rígidas.
 
 ```text
-focus.color = #7A5C00
-focus.width = 3px
-focus.offset = 2px
-focus.style = solid
+RESPONSIVO != DIMINUIR_TUDO
+RESPONSIVO = REORGANIZAR + REDISTRIBUIR + LIMITAR + EXPANDIR + COLAPSAR
 ```
 
-## 9. Espaçamento
-
-Base: 4 px.
-
-| Token | px |
-|---|---:|
-| `space-0` | 0 |
-| `space-1` | 4 |
-| `space-2` | 8 |
-| `space-3` | 12 |
-| `space-4` | 16 |
-| `space-6` | 24 |
-| `space-8` | 32 |
-| `space-10` | 40 |
-| `space-12` | 48 |
-| `space-16` | 64 |
-
-## 10. Grid e largura
-
-### Shell administrativo
-
-- 4 colunas em mobile;
-- 8 colunas em tablet;
-- 12 colunas em desktop;
-- gutter: 16 px mobile, 24 px tablet, 32 px desktop;
-- conteúdo principal: `max-width: 1440px` para dados;
-- formulários de edição limitados a largura legível;
-- sidebar não conta como coluna de conteúdo.
-
-### Registrar Ponto
-
-- composição central;
-- câmera ocupa largura útil disponível;
-- limite de leitura: aproximadamente 640–720 px em desktop;
-- ação primária permanece imediatamente relacionada à câmera e ao resultado.
-
-## 11. Microtokens congelados pela RC-01
-
-Estes valores completam a fundação necessária para mockups consistentes e poderão ser revisados somente se a auditoria visual demonstrar problema concreto.
-
-### Shell
+## 4. Tipografia
 
 ```text
-sidebar.expanded.width = 248px
-sidebar.collapsed.width = 72px
-topbar.height = 64px
-content.desktop.max = 1440px
-content.page.padding.mobile = 16px
-content.page.padding.tablet = 24px
-content.page.padding.desktop = 32px
+font-family: Manrope
+fallback: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif
+mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace
 ```
 
-### Controles
+Tokens de referência:
 
 ```text
-control.height.sm = 40px
-control.height.md = 44px
-control.height.lg = 48px
-button.primary.height = 44px
-button.kiosk.height = 56px
-input.default.height = 44px
-touch.target.min = 44px
+text-small      = 0.875rem
+text-body       = 1rem
+text-large      = 1.125rem
+heading-sm      = 1.25rem
+heading-md      = 1.5rem
+heading-lg      = clamp(1.75rem, valor fluido, 2.25rem)
 ```
 
-### Tabelas
+Textos longos devem possuir limite de leitura, preferencialmente em `ch` quando aplicável.
+
+## 5. Cores institucionais de referência
 
 ```text
-table.row.default = 56px
-table.row.compact = 48px
-table.header = 44px
-table.cell.padding.x = 16px
-table.cell.padding.y = 12px
+verde-profundo      #0B3D2B
+verde-base          #1B3D2A
+verde-suave         #E8F0EB
+dourado             #D4AF37
+grafite             #2B2B2B
+fundo                #F6F8F5
+texto-secundario     #68736D
+borda                #DDE4DF
 ```
 
-### Ícones
+Estados semânticos são independentes da marca:
 
 ```text
-icon.sm = 16px
-icon.md = 20px
-icon.lg = 24px
-icon.navigation = 20px
-icon.stroke = 1.75–2px
+SUCCESS
+WARNING
+DEGRADED
+ERROR
+INFO
+OFFLINE
+NO_PERMISSION
+TELEMETRY_UNAVAILABLE
 ```
 
-Direção visual: família outline consistente. A biblioteca de implementação permanece decisão da NF-02; o mockup da NF-01 deve usar uma única família coerente.
+Os contrastes reais serão validados sobre combinações finais; a especificação não declara conformidade apenas por intenção.
 
-### Frame de auditoria
+## 6. Espaçamento
 
 ```text
-desktop.reference = 1440x1024
-mobile.reference = 360px width
-export.audit.desktop = 2x quando aplicável
+space-1 = 0.25rem
+space-2 = 0.5rem
+space-3 = 0.75rem
+space-4 = 1rem
+space-6 = 1.5rem
+space-8 = 2rem
 ```
 
-## 12. Raios
+Não congelar medidas de layout em `px` como política geral.
 
-| Token | Valor | Uso |
-|---|---:|---|
-| `radius-sm` | 6 px | input/tag |
-| `radius-md` | 10 px | botão/card pequeno |
-| `radius-lg` | 14 px | card/painel |
-| `radius-full` | 999 px | badge/avatar |
-
-## 13. Bordas
+## 7. Raios
 
 ```text
-border.default = 1px solid #DCE3DE
-border.strong = 1px solid #AAB7B0
-border.error = 1px solid #B42318
+radius-sm   = 0.5rem
+radius-md   = 0.75rem
+radius-lg   = 1rem
+radius-pill = pill/full
 ```
 
-## 14. Sombras
+## 8. Bordas
+
+Bordas podem usar `1px` como exceção técnica quando necessário. Sua função é separar superfícies e estados, não substituir hierarquia.
+
+## 9. Sombras
 
 ```text
-shadow-sm = 0 1px 2px rgba(31,41,51,.08)
-shadow-md = 0 6px 18px rgba(31,41,51,.10)
-shadow-overlay = 0 16px 40px rgba(31,41,51,.16)
+shadow-sm → cards/elevação mínima
+shadow-md → popovers/menus
+shadow-lg → drawers/modais
 ```
 
-Sombras são auxiliares, nunca a única separação entre regiões.
+Sombras devem ser discretas e nunca a única forma de separação.
 
-## 15. Estados de interação dos controles
-
-Todo controle interativo deverá ter especificação visual para:
+## 10. Foco
 
 ```text
-DEFAULT
-HOVER
-FOCUS_VISIBLE
-PRESSED
-DISABLED
-LOADING quando aplicável
-ERROR quando aplicável
+FOCUS_RING
+→ claramente visível
+→ contraste independente da superfície
+→ nunca removido sem substituição
+→ coerente em mouse e teclado
+```
+
+## 11. Iconografia
+
+```text
+ICON_SYSTEM=FROZEN
+FAMILY=LUCIDE
+STYLE=SVG_MONOLINE
+SIZE_UNIT=rem
+COLOR=currentColor/token
+EMOJI_PRODUCTION=NO
+MIX_ICON_FAMILIES=NO
 ```
 
 Regras:
-- hover não substitui foco;
-- pressed deve ser visualmente distinto de hover;
-- disabled não usa apenas redução extrema de opacidade que comprometa legibilidade;
-- loading preserva largura e rótulo contextual (`Salvando…`, `Registrando…`).
 
-## 16. Motion
+- ícone decorativo → `aria-hidden`;
+- ação por ícone → nome acessível (`aria-label`) e tooltip quando necessário;
+- informação/estado → texto acessível + ícone;
+- emojis são permitidos somente em wireframe explicativo, nunca como linguagem final do produto.
 
-| Token | Duração | Uso |
-|---|---:|---|
-| `motion-fast` | 120 ms | hover/foco visual |
-| `motion-base` | 180 ms | expansão curta |
-| `motion-slow` | 250 ms | drawer/modal |
+## 12. Shell
 
-Curva sugerida: `cubic-bezier(.2,0,0,1)`.
+### Sidebar
 
-`prefers-reduced-motion: reduce` remove animações não essenciais.
+- expandida: largura fluida limitada, conceitualmente em torno de `clamp(14rem, 17vw, 16rem)` até validação visual;
+- compacta: largura funcional aproximadamente `4.5rem`;
+- main workspace: `1fr`;
+- largura liberada pela sidebar pertence imediatamente ao conteúdo.
 
-## 17. Breakpoints
+### ContextDrawer
 
-| Token | Largura | Intenção |
-|---|---:|---|
-| `xs` | 360 px | telefone mínimo de aceite |
-| `md` | 768 px | tablet/telefone amplo |
-| `lg` | 1024 px | notebook/tablet landscape |
-| `2xl` | 1440 px | desktop de dados |
+- largura fluida limitada;
+- desktop: drawer lateral sob demanda;
+- tablet/mobile: overlay;
+- não consumir largura permanentemente.
 
-## 18. Densidade e touch targets
+### Formulários
 
-- alvo mínimo: 44×44 px;
-- CTA principal do ponto: 56 px;
-- distância mínima entre ação destrutiva e primária: 8 px;
-- admin pode usar tabela compacta somente a partir de 1024 px;
-- mobile prioriza uma coluna e ações essenciais.
+- `fr`/`minmax()`;
+- container queries quando o componente puder aparecer em superfícies distintas;
+- formulários de edição possuem limite confortável de leitura, mesmo em monitores muito largos.
 
-## 19. Gráficos e dados
-
-- cor de marca não representa automaticamente “bom”;
-- tooltip não pode ser único meio de acesso ao valor;
-- tabelas continuam sendo fonte textual acessível quando gráfico existir;
-- valores sem fonte são omitidos ou declarados indisponíveis, nunca preenchidos com zero ilustrativo.
-
-## 20. Tokens de z-index
+## 13. Motion
 
 ```text
-base = 0
-sticky = 20
-dropdown = 40
-drawer = 60
-modal = 80
-toast = 100
+motion-fast   = 120ms
+motion-normal = 180ms
+motion-slow   = 240ms
 ```
 
-## 21. Decisão RC-01
+Permitido:
+
+- sidebar expandir/recolher;
+- drawer/modal/popover;
+- accordion;
+- mudança discreta de estado.
+
+Proibido:
+
+- animação decorativa contínua;
+- pulsação sem necessidade;
+- bouncing;
+- movimento que atrasa a tarefa.
+
+`prefers-reduced-motion: reduce` remove deslocamentos/animações não essenciais sem remover informação.
+
+## 14. Ordem semântica
 
 ```text
-DESIGN_TOKENS=COMPLETE_WITH_MICROTOKENS
-MANROPE=PRESERVED_FOR_VISUAL_AUDIT
-SHELL_DIMENSIONS=FROZEN_FOR_MOCKUP
-CONTROL_DIMENSIONS=FROZEN_FOR_MOCKUP
-TABLE_DENSITY=FROZEN_FOR_MOCKUP
-ICON_SCALE=FROZEN_FOR_MOCKUP
-INTERACTION_STATES=REQUIRED
+READING_ORDER = FOCUS_ORDER = TASK_LOGIC
+```
+
+Grid pode reorganizar de 3→2→1 colunas, mas CSS não pode reordenar semanticamente o fluxo só para fins visuais.
+
+## 15. Touch targets
+
+Alvos interativos devem manter área confortável equivalente ao padrão de aproximadamente 44 CSS px quando aplicável, mas o Design System expressa controles preferencialmente em `rem`.
+
+## 16. Estados globais de UI
+
+```text
+LOADING
+EMPTY
+READY
+SUCCESS
+WARNING
+DEGRADED
+ERROR
+OFFLINE
+NO_PERMISSION
+TELEMETRY_UNAVAILABLE
+```
+
+`EMPTY` significa consulta válida vazia. `ERROR` significa falha de execução. Não são intercambiáveis.
+
+## 17. Política de toast
+
+```text
+TOAST             → feedback secundario/transitorio
+BANNER/ERRORSTATE → problema persistente/importante
+MODAL             → decisao que exige confirmacao
+```
+
+Conflito, permissão removida, sessão, sistema offline ou resultado de submit desconhecido não podem depender apenas de toast.
+
+## 18. Breakpoints / alvos de validação
+
+```text
+360  → telefone mínimo de teste
+768  → tablet/telefone amplo
+1024 → notebook/tablet landscape
+1440 → desktop de dados
+```
+
+Esses valores não congelam a estrutura do componente; container queries e comportamento guiado pelo conteúdo permanecem preferidos quando adequados.
+
+## 19. Decisão canônica
+
+```text
+DESIGN_SYSTEM=FROZEN_FOR_NF01
+DIMENSIONING_POLICY=FROZEN
+MANROPE=FROZEN
+LUCIDE=FROZEN
+MOTION_SYSTEM=FROZEN
+SEMANTIC_DOM_ORDER=FROZEN
+TOAST_POLICY=FROZEN
 BRAND_GREEN_IS_NOT_HEALTH=ENFORCED
-BREAKPOINTS=FROZEN
+RESPONSIVE_MEANS_REORGANIZE=ENFORCED
 ```
