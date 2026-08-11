@@ -4,12 +4,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
-  <title>Dashboard Desktop V2 — NF-01 Design Lab</title>
+  <title>Dashboard Desktop V3 — NF-01 Design Lab</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../assets/design-tokens.css">
   <link rel="stylesheet" href="../assets/components.css">
+  <link rel="stylesheet" href="../assets/dashboard-v3.css">
 </head>
 <body>
   <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
@@ -80,12 +81,6 @@
           </div>
         </div>
       </nav>
-
-      <div class="sidebar__context">
-        <small>Contexto atual</small>
-        <strong>Potiguar Locações</strong>
-        <span>Galpão principal</span>
-      </div>
     </aside>
 
     <div class="app-main">
@@ -101,7 +96,7 @@
         </div>
 
         <div class="topbar__end">
-          <span class="audit-badge">MOCKUP NF-01 · V2</span>
+          <span class="audit-badge">MOCKUP NF-01 · V3</span>
           <button class="icon-button" type="button" aria-label="Notificações" data-demo-action="Notificações"><svg class="icon"><use href="#i-bell"/></svg></button>
           <button class="profile-button" type="button" data-demo-action="Perfil">
             <span class="avatar">LC</span>
@@ -162,7 +157,7 @@
         </section>
 
         <div class="dashboard-grid">
-          <section class="panel" id="atividade" aria-labelledby="atividade-titulo">
+          <section class="panel panel--primary" id="atividade" aria-labelledby="atividade-titulo">
             <header class="panel__header">
               <div><h2 class="panel__title" id="atividade-titulo">Atividade recente</h2><p class="panel__subtitle">Últimas marcações do contexto atual</p></div>
               <button class="text-action" type="button" data-demo-action="Ver registros">Ver registros <svg class="icon icon--sm"><use href="#i-chevron"/></svg></button>
@@ -213,7 +208,7 @@
           </section>
 
           <aside class="side-stack" aria-label="Ações e atenções">
-            <section class="panel" aria-labelledby="atencao-titulo">
+            <section class="panel panel--secondary" aria-labelledby="atencao-titulo">
               <header class="panel__header"><div><h2 class="panel__title" id="atencao-titulo">Atenção necessária</h2><p class="panel__subtitle">Itens que podem exigir ação</p></div></header>
               <div class="attention-list">
                 <button class="attention-item attention-item--warning" type="button" data-demo-action="Revisar funcionários">
@@ -222,15 +217,14 @@
                   <svg class="icon icon--sm attention-chevron"><use href="#i-chevron"/></svg>
                 </button>
 
-                <div class="attention-item attention-item--neutral">
-                  <span class="attention-icon"><svg class="icon"><use href="#i-check"/></svg></span>
-                  <span class="attention-copy"><strong>Nenhuma outra atenção</strong><p>Sem outros itens operacionais que exijam ação neste mockup.</p><span class="attention-link">Sem novas pendências</span></span>
-                  <span></span>
+                <div class="attention-summary" role="status">
+                  <svg class="icon icon--sm" aria-hidden="true"><use href="#i-check"/></svg>
+                  <span><strong>Sem outras pendências.</strong> Nenhuma outra ação operacional indicada neste mockup.</span>
                 </div>
               </div>
             </section>
 
-            <section class="panel quick-actions" id="quick-actions" aria-labelledby="atalhos-titulo">
+            <section class="panel panel--secondary quick-actions" id="quick-actions" aria-labelledby="atalhos-titulo">
               <header class="panel__header"><div><h2 class="panel__title" id="atalhos-titulo">Atalhos</h2><p class="panel__subtitle">Ações frequentes</p></div></header>
               <div class="quick-actions__list">
                 <button class="quick-action" type="button" data-demo-action="Cadastrar funcionário"><span class="quick-action__icon"><svg class="icon"><use href="#i-plus"/></svg></span><span class="quick-action__label">Cadastrar funcionário</span><svg class="icon icon--sm quick-action__chevron"><use href="#i-chevron"/></svg></button>
@@ -241,7 +235,7 @@
           </aside>
         </div>
 
-        <p class="page-footnote">NF-01 · Design Lab HTML-first · Dashboard V2 · Design System aprovado provisoriamente · sem backend de produção.</p>
+        <p class="page-footnote">NF-01 · Design Lab HTML-first · Dashboard V3 · Design System aprovado provisoriamente · sem backend de produção.</p>
       </main>
     </div>
   </div>
