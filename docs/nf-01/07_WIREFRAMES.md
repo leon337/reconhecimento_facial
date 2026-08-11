@@ -1,52 +1,53 @@
-# NF-01 — Wireframes Conceituais
+# NF-01 — Wireframes Conceituais — RC-01
 
 **Natureza:** estrutura e hierarquia, não UI final.  
-**Regra:** itens `Planejado` não simulam funcionalidade viva.
+**Regra:** itens futuros não simulam funcionalidade viva.  
+**RC-01:** simplifica navegação, separa gestão de diagnóstico técnico, corrige pós-cadastro por permissão e torna a ação de ponto explícita.
 
-## 1. Dashboard administrativo
+## 1. Dashboard administrativo refinado
 
 ```text
 ┌──────────────────────────────────────────────────────────────────────┐
-│ Controle de Ponto     Empresa: Potiguar   Unidade: Galpão     [Usu] │
+│ Controle de Ponto          Potiguar • Galpão                  [Usu] │
 ├───────────────┬──────────────────────────────────────────────────────┤
 │ Dashboard     │ Dashboard                                            │
-│ Operação      │ Visão do seu escopo                                  │
-│ Pessoas       │                                                      │
-│ Organização   │ ┌────────────┐ ┌────────────┐ ┌───────────────────┐ │
-│ Jornada       │ │ Funcionár. │ │ Registros  │ │ Atenções          │ │
-│ Relatórios    │ │     24     │ │ hoje: 37   │ │ 2 itens           │ │
-│ Inteligência  │ └────────────┘ └────────────┘ └───────────────────┘ │
-│ Sistema       │                                                      │
-│ Configurações │ ┌──────────────────────────────────────────────────┐ │
-│               │ │ Atividade recente                               │ │
-│               │ │ 08:02 Entrada — João — Unidade A                │ │
-│               │ │ 08:05 Entrada — Maria — Unidade A               │ │
+│               │ Visão geral da operação                              │
+│ OPERAÇÃO      │                                                      │
+│ Registros     │ OPERAÇÃO                                             │
+│ Registrar ↗   │ ┌────────────┐ ┌────────────┐ ┌───────────────────┐ │
+│               │ │Funcionários│ │Registros   │ │Biometria          │ │
+│ GESTÃO        │ │ valor real │ │ hoje       │ │ pendências        │ │
+│ Funcionários  │ └────────────┘ └────────────┘ └───────────────────┘ │
+│ Empresas/Obras│                                                      │
+│               │ ATIVIDADE RECENTE                    [Ver registros] │
+│ SISTEMA       │ ┌──────────────────────────────────────────────────┐ │
+│ Saúde         │ │ 08:02 Entrada — João — Galpão                  │ │
+│ Eventos/Logs  │ │ 08:05 Entrada — Maria — Galpão                 │ │
 │               │ └──────────────────────────────────────────────────┘ │
-│               │                                                      │
-│               │ ┌──────────────────────────────────────────────────┐ │
-│               │ │ Saúde operacional                               │ │
-│               │ │ API [Disponível] DB [Disponível]                │ │
-│               │ │ Estações [Telemetria indisponível]              │ │
-│               │ └──────────────────────────────────────────────────┘ │
+│ Configurações │                                                      │
+│               │ ATENÇÃO NECESSÁRIA                                  │
+│               │ somente itens derivados de fonte real               │
 └───────────────┴──────────────────────────────────────────────────────┘
 ```
 
-Notas:
-- métricas somente quando consulta real existir;
-- card de estação não pode ficar verde sem heartbeat;
-- dashboard deve funcionar sem IA.
+Regras:
+- números aparecem somente quando consulta real e escopada existir;
+- dado inexistente não vira `0` ilustrativo;
+- saúde técnica não compete com a operação da equipe no corpo principal;
+- acesso a Saúde permanece no grupo `Sistema`;
+- Dashboard deve funcionar sem IA;
+- PREDIX não ocupa card principal enquanto não existir capacidade real.
 
 ## 2. Funcionários
 
 ```text
 ┌──────────────────────────────────────────────────────────────────────┐
-│ Pessoas > Funcionários                              [+ Funcionário]  │
+│ Gestão > Funcionários                               [+ Funcionário]  │
 │ [Buscar por nome/matrícula________________] [Filtros]                │
 ├──────────────────────────────────────────────────────────────────────┤
 │ Nome            Matrícula     Função       Biometria      Ações     │
 │ Maria Silva     00123         Operadora    Ativa          [•••]     │
 │ João Souza      00124         Ajudante     Não cadastrada [Cadastrar]│
-│ ...                                                                  │
 ├──────────────────────────────────────────────────────────────────────┤
 │ 1–20 de 24                                  [Anterior] 1 2 [Próxima]│
 └──────────────────────────────────────────────────────────────────────┘
@@ -59,39 +60,64 @@ Nenhum funcionário cadastrado.
 [ Cadastrar primeiro funcionário ]   ← somente se users:create
 ```
 
-## 3. Cadastro de funcionário
+## 3. Cadastro de funcionário — grupos refinados
 
 ```text
-┌─────────────────────────────────────────────────────┐
-│ Pessoas > Funcionários > Novo                       │
-│ Cadastrar funcionário                               │
-│                                                     │
-│ Nome completo                                       │
-│ [_______________________________________________]   │
-│ Matrícula                    Função                  │
-│ [____________________]       [___________________]   │
-│ Usuário                      Senha                   │
-│ [____________________]       [___________________]   │
-│ Horário                                              │
-│ [_______________________________________________]   │
-│ Endereço                                             │
-│ [_______________________________________________]   │
-│ Tipo de passagem                                     │
-│ [_______________________________________________]   │
-│                                                     │
-│ [Cancelar]                              [Salvar]     │
-│                                                     │
-│ Próxima etapa após salvar: cadastro biométrico.     │
-└─────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│ Gestão > Funcionários > Novo                                │
+│ Cadastrar funcionário                                       │
+│                                                              │
+│ DADOS PESSOAIS                                               │
+│ Nome completo                                                │
+│ [________________________________________________________]   │
+│ Endereço                                                     │
+│ [________________________________________________________]   │
+│                                                              │
+│ VÍNCULO OPERACIONAL                                          │
+│ Matrícula                    Função                           │
+│ [____________________]       [____________________________]  │
+│ Horário                      Tipo de passagem                 │
+│ [____________________]       [____________________________]  │
+│                                                              │
+│ ACESSO                                                       │
+│ Usuário                      Senha                            │
+│ [____________________]       [____________________________]  │
+│                                                              │
+│ [Cancelar]                                   [Salvar]        │
+└──────────────────────────────────────────────────────────────┘
 ```
 
-Labels permanecem visíveis; placeholder não é label.
+Regras:
+- labels permanecem visíveis;
+- placeholder nunca substitui label;
+- se houver múltiplos erros, mostrar resumo + erro associado ao campo;
+- campos e valores são preservados quando seguro após falha.
+
+### Pós-cadastro — usuário com `biometrics:manage`
+
+```text
+✓ Funcionário cadastrado
+Maria Silva foi adicionada com sucesso.
+
+[ Voltar para funcionários ]   [ Cadastrar biometria agora ]
+```
+
+### Pós-cadastro — usuário sem `biometrics:manage`
+
+```text
+✓ Funcionário cadastrado
+Maria Silva foi adicionada com sucesso.
+
+[ Voltar para funcionários ]
+```
+
+A UI não mostra botão de biometria desabilitado para quem não possui a permissão.
 
 ## 4. Cadastro biométrico
 
 ```text
 ┌─────────────────────────────────────────────────────┐
-│ Pessoas > Funcionários > Maria Silva > Biometria    │
+│ Gestão > Funcionários > Maria Silva > Biometria     │
 │ Cadastro biométrico facial                          │
 │                                                     │
 │ ┌─────────────────────────────────────────────────┐ │
@@ -105,7 +131,7 @@ Labels permanecem visíveis; placeholder não é label.
 │                                                     │
 │ [ Capturar dados faciais e cadastrar ]              │
 │                                                     │
-│ Etapa: Leitura facial 3/8                            │
+│ Etapa: leitura facial 3/8                            │
 │                                                     │
 │ Segurança: fotos da galeria não são aceitas.        │
 └─────────────────────────────────────────────────────┘
@@ -119,17 +145,17 @@ Melhore a iluminação, mantenha o rosto parado e tente novamente.
 [ Tentar novamente ]
 ```
 
-## 5. Empresas / Obras / Unidades
+## 5. Empresas / Obras
 
-**Status:** domínio real; tela futura.
+**Status:** domínio real; tela dedicada futura.
 
 ```text
 ┌──────────────────────────────────────────────────────────────────────┐
-│ Organização > Empresas e Unidades                                   │
+│ Gestão > Empresas / Obras                                           │
 │                                                                      │
-│ Empresa atual                                                        │
+│ Contexto atual                                                       │
 │ ┌──────────────────────────────────────────────────────────────────┐ │
-│ │ Potiguar Locações                         Estado: Ativa          │ │
+│ │ Potiguar Locações • Galpão principal                           │ │
 │ └──────────────────────────────────────────────────────────────────┘ │
 │                                                                      │
 │ Obras / Unidades                                                     │
@@ -141,7 +167,7 @@ Melhore a iluminação, mantenha o rosto parado e tente novamente.
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
-Não haverá ação “Nova empresa/unidade” até existir permissão e fluxo backend aprovados.
+Não haverá ação de criar/editar empresa ou unidade até existir permissão e fluxo backend aprovados.
 
 ## 6. Registros recentes
 
@@ -155,7 +181,6 @@ Não haverá ação “Nova empresa/unidade” até existir permissão e fluxo b
 │ Hora    Funcionário      Tipo       Unidade       Detalhe            │
 │ 08:02   João Souza       Entrada    Galpão        [Abrir]            │
 │ 08:05   Maria Silva      Entrada    Galpão        [Abrir]            │
-│ 12:01   ...              ...        ...           ...                │
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -171,31 +196,31 @@ Origem: biométrica (somente se comprovada)
 ID do registro: ...
 ```
 
-Não exibir conclusão legal ou status de jornada inferido sem regra definida.
-
-## 7. Saúde operacional
+## 7. Saúde operacional — recência por sinal
 
 ```text
 ┌──────────────────────────────────────────────────────────────────────┐
-│ Sistema > Saúde operacional                    Atualizado 10:32:14   │
+│ Sistema > Saúde operacional                                         │
 │                                                                      │
-│ ┌──────────────┐ ┌──────────────┐ ┌───────────────────────────────┐ │
-│ │ API          │ │ Banco        │ │ Estações                      │ │
-│ │ Disponível   │ │ Disponível   │ │ Telemetria indisponível       │ │
-│ │ /health      │ │ SELECT 1     │ │ Sem heartbeat implementado    │ │
-│ └──────────────┘ └──────────────┘ └───────────────────────────────┘ │
+│ ┌────────────────────┐ ┌────────────────────┐ ┌────────────────────┐│
+│ │ API                │ │ Banco              │ │ Estações           ││
+│ │ Disponível         │ │ Disponível         │ │ Telemetria indispon.││
+│ │ Fonte: /health     │ │ Fonte: SELECT 1    │ │ Sem heartbeat      ││
+│ │ Atualizado: 10:32  │ │ Atualizado: 10:32  │ │ Atualização: —     ││
+│ └────────────────────┘ └────────────────────┘ └────────────────────┘│
 │                                                                      │
-│ ┌──────────────────────────────────────────────────────────────────┐ │
-│ │ Métricas                                                       │ │
-│ │ Fonte: processo atual; não duráveis                            │ │
-│ │ Requisições: ...   Falhas: ...   Punch processing: por request │ │
-│ └──────────────────────────────────────────────────────────────────┘ │
+│ Métricas                                                             │
+│ Fonte: processo atual; não duráveis                                  │
+│ [dados somente quando disponíveis]                                   │
 │                                                                      │
 │ [Abrir eventos/logs]                                                 │
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
-A tela deve declarar limitações de cada sinal.
+Regras:
+- cada `HealthCard` declara sua própria fonte e recência;
+- sem sinal técnico suficiente, usar `Telemetria indisponível`;
+- horário global não substitui recência específica do sinal.
 
 ## 8. Eventos / Logs
 
@@ -206,28 +231,17 @@ A tela deve declarar limitações de cada sinal.
 ├──────────────────────────────────────────────────────────────────────┤
 │ 10:31:44  http_request   201  /punch        824ms      [Detalhe]    │
 │ 10:31:12  admin.login    ok   admin          —         [Detalhe]    │
-│ 10:30:58  ...                                                        │
 └──────────────────────────────────────────────────────────────────────┘
-```
-
-Detalhe de suporte:
-
-```text
-Request ID: abc123 [Copiar]
-Evento: http_request
-Status: 201
-Duração: 824 ms
-Caminho: /punch
-Dados sensíveis: não exibidos
 ```
 
 A NF-01 não implementa armazenamento/consulta nova de logs.
 
-## 9. Registrar Ponto — shell separado
+## 9. Registrar Ponto — ação explícita
 
 ```text
 ┌──────────────────────────────────────────────┐
-│              REGISTRAR PONTO                 │
+│            CONTROLE DE PONTO                 │
+│ Potiguar • Galpão                     08:02  │
 │                                              │
 │ ┌──────────────────────────────────────────┐ │
 │ │                                          │ │
@@ -235,23 +249,31 @@ A NF-01 não implementa armazenamento/consulta nova de logs.
 │ │                                          │ │
 │ └──────────────────────────────────────────┘ │
 │                                              │
-│ Tipo                                         │
-│ [ Entrada ] [ Saída ]                        │
+│ O que deseja registrar?                      │
+│ [   ENTRADA   ]       [    SAÍDA    ]        │
 │                                              │
 │ Status: Câmera pronta                        │
 │                                              │
-│ [ IDENTIFICAR E REGISTRAR ]                  │
+│ [          REGISTRAR ENTRADA           ]     │
 │                                              │
-│ Orientação: olhe para a câmera.               │
+│ Olhe para a câmera e mantenha o rosto        │
+│ centralizado.                                │
 └──────────────────────────────────────────────┘
 ```
+
+Regras:
+- antes da seleção, CTA final não afirma um tipo incorreto;
+- após selecionar `Entrada`, CTA = `Registrar entrada`;
+- após selecionar `Saída`, CTA = `Registrar saída`;
+- escolha permanece visualmente evidente durante processamento;
+- captura continua protegida contra duplo envio.
 
 Durante captura:
 
 ```text
 Mantenha o rosto centralizado.
 Capturando 4/6
-[ processamento em andamento — ação bloqueada ]
+Registrando entrada…
 ```
 
 Success:
@@ -292,9 +314,8 @@ Aguarde 42 s antes de tentar uma nova marcação.
 │                                              │
 │ [ Entrar ]                                   │
 │                                              │
-│ Mensagens de erro aparecem aqui, associadas  │
-│ ao formulário, sem revelar qual credencial   │
-│ estava correta.                              │
+│ Erro de credencial é genérico e associado   │
+│ ao formulário.                               │
 └──────────────────────────────────────────────┘
 ```
 
@@ -320,36 +341,39 @@ Aguarde 42 s antes de tentar uma nova marcação.
 
 Tabela pode virar lista estruturada/detalhe; não comprimir cinco colunas até ficarem ilegíveis.
 
-## 12. Fluxo visual principal
+## 12. Fluxo visual principal refinado
 
 ```mermaid
 flowchart LR
     L[Login admin] --> D[Dashboard]
     D --> F[Funcionários]
     F --> N[Novo funcionário]
-    N --> B[Biometria]
+    N --> P{biometrics:manage?}
+    P -->|sim| B[Oferecer cadastro biométrico]
+    P -->|não| F
     B --> F
     D --> R[Registros]
-    D --> S[Saúde]
+    D --> S[Sistema / Saúde]
     S --> E[Eventos / Logs]
 
-    P[Registrar Ponto] --> C[Câmera]
-    C --> V[Challenge + captura]
+    PUN[Registrar Ponto] --> T[Selecionar Entrada/Saída]
+    T --> C[Câmera + captura]
+    C --> V[Challenge + reconhecimento]
     V --> X{Resultado}
     X -->|sucesso| OK[PunchResult]
     X -->|erro recuperável| C
 ```
 
-## 13. Decisão
+## 13. Decisão RC-01
 
 ```text
-WIREFRAMES=COMPLETE
-ADMIN_DASHBOARD=SPECIFIED
-EMPLOYEES=SPECIFIED
-BIOMETRICS=SPECIFIED
-COMPANY_WORKSITE=SPECIFIED_AS_FUTURE_UI
-RECENT_PUNCHES=SPECIFIED_AS_FUTURE_UI
-HEALTH=SPECIFIED_WITH_TRUTH_RULE
-EVENTS_LOGS=SPECIFIED
-PUNCH=SPECIFIED_AND_SEPARATE
+WIREFRAMES=REFINED_AFTER_RC01
+VISIBLE_NAVIGATION=SIMPLIFIED
+DASHBOARD=OPERATION_FIRST
+HEALTH=SEPARATED_FROM_PRIMARY_OPERATION
+EMPLOYEE_FORM=GROUPED
+POST_CREATE_BIOMETRIC_FLOW=PERMISSION_AWARE
+HEALTH_RECENCY=PER_SIGNAL
+PUNCH_CTA=TYPE_EXPLICIT
+PUNCH_SHELL=SEPARATE
 ```
