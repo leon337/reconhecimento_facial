@@ -2,8 +2,6 @@
 
 ## 1. Direção visual
 
-A direção visual segue as decisões congeladas:
-
 ```text
 BASE=VERDE_INSTITUCIONAL
 SUPERFICIES=NEUTROS_CLAROS
@@ -11,8 +9,6 @@ ACENTO_PREMIUM=DOURADO_MODERADO
 DADOS=GRAFITE
 STATUS=CORES_SEMANTICAS_INDEPENDENTES_DA_MARCA
 ```
-
-Regra crítica:
 
 > O verde institucional é marca. Ele **não** significa automaticamente sistema saudável.
 
@@ -27,21 +23,16 @@ Regra crítica:
 7. motion curto e dispensável;
 8. superfícies claras; dados e texto em grafite;
 9. dourado usado como acento, não como cor universal de CTA;
-10. ícones complementam rótulos; não substituem texto em ações críticas.
+10. ícones complementam rótulos; não substituem texto em ações críticas;
+11. o Design System define as telas; uma tela isolada não redefine o Design System.
 
 ## 3. Tipografia
-
-### Família
 
 ```text
 Primary: Manrope
 Fallback: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif
 Mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace
 ```
-
-A implementação da NF-02 deve escolher carregamento que não torne a UI dependente de uma CDN para funcionar.
-
-### Escala
 
 | Token | Tamanho | Line-height | Peso sugerido | Uso |
 |---|---:|---:|---:|---|
@@ -93,11 +84,9 @@ Corpo padrão nunca abaixo de 16 px no fluxo de Registrar Ponto.
 | offline | `#475467` | `#F2F4F7` | conectividade offline |
 | unknown/telemetry | `#475467` | `#F2F4F7` | estado não conclusivo |
 
-`DEGRADED` usa semântica de warning com texto explícito `Degradado`. `TELEMETRY_UNAVAILABLE` usa neutro/unknown, nunca success.
+`DEGRADED` usa warning com texto explícito. `TELEMETRY_UNAVAILABLE` usa neutro/unknown, nunca success.
 
-## 7. Contraste validado dos pares principais
-
-Cálculo WCAG relativo realizado na NF-01:
+## 7. Contraste de referência
 
 | Par | Contraste aproximado | Resultado |
 |---|---:|---|
@@ -112,8 +101,6 @@ Cálculo WCAG relativo realizado na NF-01:
 | info / branco | 5.99:1 | AA |
 | offline / branco | 7.69:1 | AAA |
 
-A NF-02 deve repetir a checagem quando combinar tokens em superfícies diferentes.
-
 ## 8. Foco
 
 ```text
@@ -122,12 +109,6 @@ focus.width = 3px
 focus.offset = 2px
 focus.style = solid
 ```
-
-Regras:
-- não remover outline sem substituto equivalente;
-- foco deve ser visível em branco, canvas e brand surfaces;
-- foco e hover são estados distintos;
-- componente desabilitado não recebe foco se não for interativo.
 
 ## 9. Espaçamento
 
@@ -154,7 +135,8 @@ Base: 4 px.
 - 8 colunas em tablet;
 - 12 colunas em desktop;
 - gutter: 16 px mobile, 24 px tablet, 32 px desktop;
-- conteúdo principal: `max-width: 1440px` para dados; formulários de edição limitados a largura legível;
+- conteúdo principal: `max-width: 1440px` para dados;
+- formulários de edição limitados a largura legível;
 - sidebar não conta como coluna de conteúdo.
 
 ### Registrar Ponto
@@ -162,9 +144,67 @@ Base: 4 px.
 - composição central;
 - câmera ocupa largura útil disponível;
 - limite de leitura: aproximadamente 640–720 px em desktop;
-- ação primária nunca afastada da câmera/resultado por colunas laterais.
+- ação primária permanece imediatamente relacionada à câmera e ao resultado.
 
-## 11. Raios
+## 11. Microtokens congelados pela RC-01
+
+Estes valores completam a fundação necessária para mockups consistentes e poderão ser revisados somente se a auditoria visual demonstrar problema concreto.
+
+### Shell
+
+```text
+sidebar.expanded.width = 248px
+sidebar.collapsed.width = 72px
+topbar.height = 64px
+content.desktop.max = 1440px
+content.page.padding.mobile = 16px
+content.page.padding.tablet = 24px
+content.page.padding.desktop = 32px
+```
+
+### Controles
+
+```text
+control.height.sm = 40px
+control.height.md = 44px
+control.height.lg = 48px
+button.primary.height = 44px
+button.kiosk.height = 56px
+input.default.height = 44px
+touch.target.min = 44px
+```
+
+### Tabelas
+
+```text
+table.row.default = 56px
+table.row.compact = 48px
+table.header = 44px
+table.cell.padding.x = 16px
+table.cell.padding.y = 12px
+```
+
+### Ícones
+
+```text
+icon.sm = 16px
+icon.md = 20px
+icon.lg = 24px
+icon.navigation = 20px
+icon.stroke = 1.75–2px
+```
+
+Direção visual: família outline consistente. A biblioteca de implementação permanece decisão da NF-02; o mockup da NF-01 deve usar uma única família coerente.
+
+### Frame de auditoria
+
+```text
+desktop.reference = 1440x1024
+mobile.reference = 360px width
+export.audit.desktop = 2x quando aplicável
+```
+
+## 12. Raios
 
 | Token | Valor | Uso |
 |---|---:|---|
@@ -173,9 +213,7 @@ Base: 4 px.
 | `radius-lg` | 14 px | card/painel |
 | `radius-full` | 999 px | badge/avatar |
 
-Evitar excesso de cápsulas em controles comuns.
-
-## 12. Bordas
+## 13. Bordas
 
 ```text
 border.default = 1px solid #DCE3DE
@@ -183,11 +221,7 @@ border.strong = 1px solid #AAB7B0
 border.error = 1px solid #B42318
 ```
 
-Inputs em erro também exibem mensagem e ícone/label, não apenas borda vermelha.
-
-## 13. Sombras
-
-Sombras são auxiliares, nunca únicas para separar regiões.
+## 14. Sombras
 
 ```text
 shadow-sm = 0 1px 2px rgba(31,41,51,.08)
@@ -195,9 +229,29 @@ shadow-md = 0 6px 18px rgba(31,41,51,.10)
 shadow-overlay = 0 16px 40px rgba(31,41,51,.16)
 ```
 
-Borda continua obrigatória em overlays quando necessária para contraste.
+Sombras são auxiliares, nunca a única separação entre regiões.
 
-## 14. Motion
+## 15. Estados de interação dos controles
+
+Todo controle interativo deverá ter especificação visual para:
+
+```text
+DEFAULT
+HOVER
+FOCUS_VISIBLE
+PRESSED
+DISABLED
+LOADING quando aplicável
+ERROR quando aplicável
+```
+
+Regras:
+- hover não substitui foco;
+- pressed deve ser visualmente distinto de hover;
+- disabled não usa apenas redução extrema de opacidade que comprometa legibilidade;
+- loading preserva largura e rótulo contextual (`Salvando…`, `Registrando…`).
+
+## 16. Motion
 
 | Token | Duração | Uso |
 |---|---:|---|
@@ -207,12 +261,9 @@ Borda continua obrigatória em overlays quando necessária para contraste.
 
 Curva sugerida: `cubic-bezier(.2,0,0,1)`.
 
-`prefers-reduced-motion: reduce`:
-- remover animações não essenciais;
-- evitar movimento de câmera/UI;
-- preservar apenas mudança instantânea de estado.
+`prefers-reduced-motion: reduce` remove animações não essenciais.
 
-## 15. Breakpoints
+## 17. Breakpoints
 
 | Token | Largura | Intenção |
 |---|---:|---|
@@ -221,37 +272,22 @@ Curva sugerida: `cubic-bezier(.2,0,0,1)`.
 | `lg` | 1024 px | notebook/tablet landscape |
 | `2xl` | 1440 px | desktop de dados |
 
-Implementação pode incluir pontos intermediários, mas não pode deixar de validar exatamente essas quatro larguras.
-
-## 16. Densidade e touch targets
+## 18. Densidade e touch targets
 
 - alvo mínimo: 44×44 px;
-- ação primária da câmera/ponto: mínimo 48 px de altura; preferível 52 px;
-- distância mínima entre ações destrutiva e primária: `space-2` ou maior;
-- admin pode usar densidade compacta em tabela somente a partir de 1024 px;
+- CTA principal do ponto: 56 px;
+- distância mínima entre ação destrutiva e primária: 8 px;
+- admin pode usar tabela compacta somente a partir de 1024 px;
 - mobile prioriza uma coluna e ações essenciais.
 
-## 17. Ícones
-
-Direção:
-- SVG outline consistente, caixa 20×20 ou 24×24;
-- stroke coerente;
-- `aria-hidden="true"` quando decorativo;
-- `aria-label`/texto visível em IconButton;
-- não usar ícone isolado para ação destrutiva crítica;
-- não usar check verde para estado técnico sem fonte.
-
-A biblioteca concreta será decisão de implementação da NF-02; a NF-01 não adiciona dependência.
-
-## 18. Gráficos e dados
+## 19. Gráficos e dados
 
 - cor de marca não representa automaticamente “bom”;
-- série de dados usa escala separada da semântica de status;
 - tooltip não pode ser único meio de acesso ao valor;
-- tabelas são fonte textual acessível quando gráfico existir;
-- valores sem fonte devem ser omitidos, não preenchidos com zero.
+- tabelas continuam sendo fonte textual acessível quando gráfico existir;
+- valores sem fonte são omitidos ou declarados indisponíveis, nunca preenchidos com zero ilustrativo.
 
-## 19. Tokens de z-index
+## 20. Tokens de z-index
 
 ```text
 base = 0
@@ -262,15 +298,16 @@ modal = 80
 toast = 100
 ```
 
-Evitar números arbitrários por tela.
-
-## 20. Decisão
+## 21. Decisão RC-01
 
 ```text
-DESIGN_TOKENS=COMPLETE
+DESIGN_TOKENS=COMPLETE_WITH_MICROTOKENS
+MANROPE=PRESERVED_FOR_VISUAL_AUDIT
+SHELL_DIMENSIONS=FROZEN_FOR_MOCKUP
+CONTROL_DIMENSIONS=FROZEN_FOR_MOCKUP
+TABLE_DENSITY=FROZEN_FOR_MOCKUP
+ICON_SCALE=FROZEN_FOR_MOCKUP
+INTERACTION_STATES=REQUIRED
 BRAND_GREEN_IS_NOT_HEALTH=ENFORCED
-CONTRAST_BASELINE=CHECKED
 BREAKPOINTS=FROZEN
-FOCUS_CONTRACT=FROZEN
-MOTION_REDUCED=SUPPORTED_BY_SPEC
 ```
