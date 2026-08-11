@@ -39,6 +39,7 @@
   let maxReached = 0;
   let saveTimer = null;
   let biometricMockState = 'PENDENTE';
+  let completedSteps = new Set();
 
   const showToast = (message) => {
     if (!toast) return;
@@ -54,15 +55,27 @@
     window.setTimeout(() => { liveRegion.textContent = message; }, 20);
   };
 
+  const namedFields = (name) => [...form.elements].filter((el) => el.name === name);
+
+  const rawValue = (name) => {
+    const fields = namedFields(name);
+    if (!fields.length) return '';
+    const first = fields[0];
+    if (first.type === 'radio') return fields.find((el) => el.checked)?.value || '';
+    if (first.type === 'checkbox') return first.checked ? 'Sim' : '';
+    return String(first.value || '').trim();
+  };
+
   const fieldValue = (name, fallback = '—') => {
-    const fields = [...form.elements].filter((el) => el.name === name);
+    const fields = namedFields(name);
     if (!fields.length) return fallback;
     const first = fields[0];
-    if (first.type === 'radio') {
-      return fields.find((el) => el.checked)?.value || fallback;
-    }
+    if (first.type === 'radio') return fields.find((el) => el.checked)?.value || fallback;
     if (first.type === 'checkbox') return first.checked ? 'Sim' : 'Não';
-    if (first.tagName === 'SELECT') return first.selectedOptions[0]?.text || fallback;
+    if (first.tagName === 'SELECT') {
+      if (!first.value) return fallback;
+      return first.selectedOptions[0]?.text || first.value || fallback;
+    }
     return first.value.trim() || fallback;
   };
 
@@ -84,6 +97,7 @@
       version: 2,
       currentStep,
       maxReached,
+      completedSteps: [...completedSteps],
       biometricMockState,
       updatedAt: new Date().toISOString(),
       data
@@ -126,7 +140,7 @@
     if (!draft?.data) return;
 
     Object.entries(draft.data).forEach(([name, value]) => {
-      const fields = [...form.elements].filter((el) => el.name === name);
+      const fields = namedFields(name);
       fields.forEach((field) => {
         if (field.type === 'radio') field.checked = field.value === value;
         else if (field.type === 'checkbox') field.checked = Boolean(value);
@@ -136,6 +150,7 @@
 
     currentStep = Number.isInteger(draft.currentStep) ? Math.min(Math.max(draft.currentStep, 0), 7) : 0;
     maxReached = Number.isInteger(draft.maxReached) ? Math.min(Math.max(draft.maxReached, currentStep), 7) : currentStep;
+    completedSteps = new Set(Array.isArray(draft.completedSteps) ? draft.completedSteps.filter((item) => Number.isInteger(item) && item >= 0 && item <= 7) : []);
     biometricMockState = draft.biometricMockState || 'PENDENTE';
     if (saveState) {
       saveState.classList.add('is-saved');
@@ -161,16 +176,25 @@
     if (error && message) error.textContent = message;
   };
 
-  const validateRadioGroup = (name, panel) => {
-    const radios = [...panel.querySelectorAll(`input[type="radio"][name="${name}"]`)];
-    if (!radios.length) return true;
-    return radios.some((radio) => radio.checked);
+  const requireNamed = (name, message, firstInvalidRef) => {
+    const fields = namedFields(name).filter((field) => !field.disabled && !field.closest('[hidden]'));
+    if (!fields.length) return true;
+    const first = fields[0];
+    let valid;
+    if (first.type === 'radio') valid = fields.some((field) => field.checked);
+    else if (first.type === 'checkbox') valid = first.checked;
+    else valid = Boolean(first.value.trim());
+
+    if (!valid) {
+      setFieldError(first, message);
+      if (!firstInvalidRef.value) firstInvalidRef.value = first;
+      return false;
+    }
+    fields.forEach(clearFieldError);
+    return true;
   };
 
-  const validateStep = (index) => {
-    const panel = panels[index];
-    if (!panel) return true;
-    let firstInvalid = null;
+  const validateGenericRequired = (panel, firstInvalidRef) => {
     const required = [...panel.querySelectorAll('[data-required]')].filter((field) => !field.disabled && !field.closest('[hidden]'));
     const radioNames = new Set();
 
@@ -182,47 +206,135 @@
       const valid = field.type === 'checkbox' ? field.checked : Boolean(field.value.trim());
       if (!valid) {
         setFieldError(field, 'Preencha este campo para continuar.');
-        firstInvalid ||= field;
+        if (!firstInvalidRef.value) firstInvalidRef.value = field;
       } else clearFieldError(field);
     });
 
-    radioNames.forEach((name) => {
-      if (!validateRadioGroup(name, panel)) {
-        const field = panel.querySelector(`input[type="radio"][name="${name}"]`);
-        firstInvalid ||= field;
-      }
-    });
+    radioNames.forEach((name) => requireNamed(name, 'Selecione uma opção para continuar.', firstInvalidRef));
+  };
+
+  const validateStep = (index) => {
+    const panel = panels[index];
+    if (!panel) return true;
+    const firstInvalidRef = { value: null };
+    validateGenericRequired(panel, firstInvalidRef);
+
+    if (index === 0 && rawValue('relation_type') === 'Outros') {
+      requireNamed('other_relation', 'Selecione uma categoria cadastrada.', firstInvalidRef);
+    }
 
     if (index === 1) {
       const cpf = panel.querySelector('[name="cpf"]');
       if (cpf && cpf.value && cpf.value.replace(/\D/g, '').length !== 11) {
         setFieldError(cpf, 'Use 11 dígitos para esta demonstração de CPF.');
-        firstInvalid ||= cpf;
+        if (!firstInvalidRef.value) firstInvalidRef.value = cpf;
       }
     }
 
-    if (firstInvalid) {
-      firstInvalid.focus();
+    if (index === 2) {
+      const country = rawValue('country');
+      if (country === 'Brasil') {
+        const type = rawValue('address_type') || 'Urbano';
+        if (type === 'Urbano') {
+          requireNamed('cep', 'Informe o CEP.', firstInvalidRef);
+          requireNamed('street', 'Informe o logradouro.', firstInvalidRef);
+          const noNumber = namedFields('no_number')[0]?.checked;
+          if (!noNumber) requireNamed('address_number', 'Informe o número ou marque “Sem número”.', firstInvalidRef);
+          requireNamed('district', 'Informe o bairro.', firstInvalidRef);
+          requireNamed('city', 'Informe a cidade.', firstInvalidRef);
+          requireNamed('state', 'Selecione a UF.', firstInvalidRef);
+        } else {
+          requireNamed('rural_locality', 'Informe a localidade/comunidade.', firstInvalidRef);
+          requireNamed('rural_city', 'Informe o município.', firstInvalidRef);
+          requireNamed('rural_state', 'Selecione a UF.', firstInvalidRef);
+        }
+      } else {
+        requireNamed('foreign_street', 'Informe o endereço/logradouro.', firstInvalidRef);
+        requireNamed('foreign_city', 'Informe a cidade/localidade.', firstInvalidRef);
+        requireNamed('foreign_region', 'Informe a região/estado/província.', firstInvalidRef);
+      }
+    }
+
+    if (index === 3) {
+      const relation = rawValue('relation_type');
+      if (relation === 'CLT comum') {
+        requireNamed('admission_date', 'Informe a data de admissão.', firstInvalidRef);
+        requireNamed('salary', 'Informe a remuneração contratual.', firstInvalidRef);
+      }
+      if (relation === 'CLT intermitente') {
+        requireNamed('intermittent_date', 'Informe a data de admissão.', firstInvalidRef);
+        requireNamed('hour_value', 'Informe o valor contratual por hora.', firstInvalidRef);
+      }
+      if (relation === 'Sem vínculo empregatício') {
+        requireNamed('non_employee_type', 'Selecione a natureza da relação.', firstInvalidRef);
+        requireNamed('relation_start', 'Informe a data de início da relação.', firstInvalidRef);
+      }
+    }
+
+    if (index === 4) {
+      const payment = rawValue('payment_method') || 'Conta bancária';
+      if (payment === 'Conta bancária') {
+        requireNamed('bank', 'Selecione o banco.', firstInvalidRef);
+        requireNamed('agency', 'Informe a agência.', firstInvalidRef);
+        requireNamed('account', 'Informe a conta.', firstInvalidRef);
+      }
+      if (payment === 'Conta-salário') {
+        requireNamed('salary_bank', 'Selecione o banco.', firstInvalidRef);
+        requireNamed('salary_account', 'Informe a conta-salário.', firstInvalidRef);
+      }
+      if (payment === 'PIX') requireNamed('pix_key', 'Informe a chave PIX.', firstInvalidRef);
+      if (payment === 'Outra') requireNamed('other_payment', 'Selecione uma forma autorizada.', firstInvalidRef);
+
+      if (namedFields('third_party_holder')[0]?.checked) {
+        requireNamed('third_party_name', 'Informe o titular.', firstInvalidRef);
+        requireNamed('third_party_cpf', 'Informe o CPF do titular.', firstInvalidRef);
+        requireNamed('third_party_reason', 'Justifique a exceção.', firstInvalidRef);
+      }
+    }
+
+    if (index === 5 && namedFields('has_system_access')[0]?.checked) {
+      requireNamed('access_role', 'Selecione o perfil RBAC.', firstInvalidRef);
+      requireNamed('access_login', 'Informe o login/e-mail.', firstInvalidRef);
+      requireNamed('access_scope', 'Selecione o escopo de acesso.', firstInvalidRef);
+    }
+
+    if (index === 6 && rawValue('biometric_timing') === 'Agora') {
+      const notice = namedFields('biometric_notice_ack')[0];
+      if (!notice?.checked) {
+        setFieldError(notice, 'Confirme que as informações de transparência foram apresentadas.');
+        if (!firstInvalidRef.value) firstInvalidRef.value = notice;
+      }
+      if (biometricMockState !== 'ATIVA') {
+        if (!firstInvalidRef.value) firstInvalidRef.value = root.querySelector('[data-capture-biometric]');
+        showToast('Simule uma captura válida ou escolha “Configurar depois”.');
+      }
+    }
+
+    if (firstInvalidRef.value) {
+      firstInvalidRef.value.focus?.();
+      completedSteps.delete(index);
       stepStateBadge?.classList.remove('is-valid');
       if (stepStateBadge) stepStateBadge.textContent = 'Revisar campos';
       announce(`Há campos que precisam de revisão na etapa ${index + 1}.`);
+      updateStepButtons();
       return false;
     }
 
-    stepButtons[index]?.classList.add('is-complete');
+    completedSteps.add(index);
     stepStateBadge?.classList.add('is-valid');
     if (stepStateBadge) stepStateBadge.textContent = 'Etapa revisada';
+    updateStepButtons();
     return true;
   };
 
   const updateStepButtons = () => {
     stepButtons.forEach((button, index) => {
-      const isCurrent = index === currentStep;
-      if (isCurrent) button.setAttribute('aria-current', 'step');
+      button.classList.toggle('is-complete', completedSteps.has(index));
+      if (index === currentStep) button.setAttribute('aria-current', 'step');
       else button.removeAttribute('aria-current');
       button.disabled = index > maxReached;
       const stateIcon = button.querySelector('[data-step-check]');
-      if (stateIcon) stateIcon.hidden = !button.classList.contains('is-complete');
+      if (stateIcon) stateIcon.hidden = !completedSteps.has(index);
     });
   };
 
@@ -235,8 +347,9 @@
     if (mobileLabel) mobileLabel.textContent = step.label;
     if (progressBar) progressBar.style.width = `${((currentStep + 1) / 8) * 100}%`;
     if (stepStateBadge) {
-      stepStateBadge.classList.toggle('is-valid', stepButtons[currentStep]?.classList.contains('is-complete'));
-      stepStateBadge.textContent = stepButtons[currentStep]?.classList.contains('is-complete') ? 'Etapa revisada' : 'Em preenchimento';
+      const valid = completedSteps.has(currentStep);
+      stepStateBadge.classList.toggle('is-valid', valid);
+      stepStateBadge.textContent = valid ? 'Etapa revisada' : 'Em preenchimento';
     }
   };
 
@@ -270,47 +383,47 @@
   };
 
   const updateDynamicUI = () => {
-    const relation = fieldValue('relation_type', '');
+    const relation = rawValue('relation_type');
     root.querySelectorAll('[data-show-relation]').forEach((box) => {
       const accepted = box.dataset.showRelation.split(',');
       box.hidden = !accepted.includes(relation);
     });
 
-    const country = fieldValue('country', 'Brasil');
+    const country = rawValue('country') || 'Brasil';
     root.querySelectorAll('[data-address-country]').forEach((box) => {
       box.hidden = box.dataset.addressCountry !== (country === 'Brasil' ? 'BR' : 'FOREIGN');
     });
 
-    const addressType = fieldValue('address_type', 'Urbano');
+    const addressType = rawValue('address_type') || 'Urbano';
     root.querySelectorAll('[data-address-type]').forEach((box) => {
       box.hidden = box.dataset.addressType !== addressType;
     });
 
-    const payment = fieldValue('payment_method', 'Conta bancária');
+    const payment = rawValue('payment_method') || 'Conta bancária';
     root.querySelectorAll('[data-payment-type]').forEach((box) => {
       box.hidden = box.dataset.paymentType !== payment;
     });
 
-    const thirdParty = root.querySelector('[name="third_party_holder"]')?.checked;
+    const thirdParty = namedFields('third_party_holder')[0]?.checked;
     root.querySelectorAll('[data-third-party]').forEach((box) => { box.hidden = !thirdParty; });
 
-    const access = root.querySelector('[name="has_system_access"]')?.checked;
+    const access = namedFields('has_system_access')[0]?.checked;
     root.querySelectorAll('[data-access-details]').forEach((box) => { box.hidden = !access; });
 
-    const biometricNow = fieldValue('biometric_timing', 'Depois');
+    const biometricNow = rawValue('biometric_timing') || 'Depois';
     root.querySelectorAll('[data-biometric-now]').forEach((box) => { box.hidden = biometricNow !== 'Agora'; });
 
-    const sameEmergency = root.querySelector('[name="same_emergency_contact"]')?.checked;
+    const sameEmergency = namedFields('same_emergency_contact')[0]?.checked;
     root.querySelectorAll('[data-emergency-extra]').forEach((box) => { box.hidden = Boolean(sameEmergency); });
 
-    const hasDependents = fieldValue('has_dependents', 'Não');
+    const hasDependents = rawValue('has_dependents') || 'Não';
     root.querySelectorAll('[data-dependents]').forEach((box) => { box.hidden = hasDependents !== 'Sim'; });
 
-    const pcd = fieldValue('pcd_record', 'Não');
+    const pcd = rawValue('pcd_record') || 'Não';
     root.querySelectorAll('[data-pcd]').forEach((box) => { box.hidden = pcd !== 'Sim'; });
 
-    const noNumber = root.querySelector('[name="no_number"]')?.checked;
-    const numberField = root.querySelector('[name="address_number"]');
+    const noNumber = namedFields('no_number')[0]?.checked;
+    const numberField = namedFields('address_number')[0];
     if (numberField) {
       numberField.disabled = Boolean(noNumber);
       if (noNumber) numberField.value = '';
@@ -339,10 +452,18 @@
     return `***.***.***-${digits.slice(-2)}`;
   };
 
+  const paymentReference = () => {
+    const payment = rawValue('payment_method') || 'Conta bancária';
+    if (payment === 'PIX') return fieldValue('pix_key', 'Não informado');
+    if (payment === 'Conta-salário') return fieldValue('salary_bank', 'Não informado');
+    if (payment === 'Outra') return fieldValue('other_payment', 'Não informado');
+    return fieldValue('bank', 'Não informado');
+  };
+
   const buildReview = () => {
     const review = root.querySelector('[data-review-list]');
     if (!review) return;
-    const access = root.querySelector('[name="has_system_access"]')?.checked;
+    const access = namedFields('has_system_access')[0]?.checked;
     const biometricTiming = fieldValue('biometric_timing', 'Depois');
     const biometricStatus = biometricMockState === 'ATIVA' ? 'Ativa (demonstração)' : (biometricTiming === 'Agora' ? 'Pendente de captura' : 'Pendente — configurar depois');
 
@@ -355,12 +476,12 @@
       {
         step: 1,
         title: 'Dados pessoais',
-        values: [['Nome', fieldValue('full_name')], ['CPF', maskCpf(fieldValue('cpf', ''))], ['Nascimento', fieldValue('birth_date')], ['Telefone', fieldValue('phone')]]
+        values: [['Nome', fieldValue('full_name')], ['CPF', maskCpf(rawValue('cpf'))], ['Nascimento', fieldValue('birth_date')], ['Telefone', fieldValue('phone')]]
       },
       {
         step: 2,
         title: 'Endereço',
-        values: [['País', fieldValue('country')], ['Tipo', fieldValue('address_type')], ['Localidade', fieldValue('city', fieldValue('rural_city'))], ['UF/Região', fieldValue('state', fieldValue('foreign_region'))]]
+        values: [['País', fieldValue('country')], ['Tipo', fieldValue('address_type', 'Exterior')], ['Localidade', fieldValue('city', fieldValue('rural_city', fieldValue('foreign_city')))], ['UF/Região', fieldValue('state', fieldValue('rural_state', fieldValue('foreign_region')))]]
       },
       {
         step: 3,
@@ -370,7 +491,7 @@
       {
         step: 4,
         title: 'Pagamento',
-        values: [['Forma', fieldValue('payment_method')], ['Banco / Chave', fieldValue('bank', fieldValue('pix_key'))], ['Titularidade', root.querySelector('[name="third_party_holder"]')?.checked ? 'Terceiro — requer revisão' : 'Próprio funcionário'], ['Status', 'Pendente de validação']]
+        values: [['Forma', fieldValue('payment_method')], ['Banco / Chave', paymentReference()], ['Titularidade', namedFields('third_party_holder')[0]?.checked ? 'Terceiro — requer revisão' : 'Próprio funcionário'], ['Status', 'Pendente de validação']]
       },
       {
         step: 5,
@@ -402,12 +523,10 @@
 
     const pending = root.querySelector('[data-review-pending]');
     const pendingItems = [];
-    if (!fieldValue('manager', '').replace('—', '')) pendingItems.push('Gestor responsável não definido');
+    if (!rawValue('manager')) pendingItems.push('Gestor responsável não definido');
     pendingItems.push('Dados de pagamento aguardam validação');
     if (biometricMockState !== 'ATIVA') pendingItems.push('Biometria pendente');
-    if (pending) {
-      pending.innerHTML = pendingItems.map((item) => `<span class="review-pending">${item}</span>`).join('');
-    }
+    if (pending) pending.innerHTML = pendingItems.map((item) => `<span class="review-pending">${item}</span>`).join('');
   };
 
   const demonstrateBiometricCapture = () => {
@@ -415,6 +534,12 @@
     const status = root.querySelector('[data-biometric-status]');
     const checks = [...root.querySelectorAll('[data-capture-check]')];
     if (!button || !status) return;
+    if (!namedFields('biometric_notice_ack')[0]?.checked) {
+      showToast('Primeiro confirme que as informações de transparência foram apresentadas.');
+      namedFields('biometric_notice_ack')[0]?.focus();
+      return;
+    }
+
     button.disabled = true;
     button.textContent = 'Validando captura…';
     status.textContent = 'Processando sequência multiquadro desta demonstração.';
@@ -438,7 +563,10 @@
   form.addEventListener('input', (event) => {
     if (event.target.matches('input, textarea, select')) {
       clearFieldError(event.target);
+      completedSteps.delete(currentStep);
       updateDynamicUI();
+      updateStepButtons();
+      updateHeader();
       schedulePersist();
     }
   });
@@ -446,7 +574,10 @@
   form.addEventListener('change', (event) => {
     if (event.target.matches('input, select')) {
       clearFieldError(event.target);
+      completedSteps.delete(currentStep);
       updateDynamicUI();
+      updateStepButtons();
+      updateHeader();
       schedulePersist();
     }
   });
@@ -477,7 +608,7 @@
     currentStep = 0;
     maxReached = 0;
     biometricMockState = 'PENDENTE';
-    stepButtons.forEach((button) => button.classList.remove('is-complete'));
+    completedSteps = new Set();
     renderPanels();
     updateDynamicUI();
     showToast('Rascunho local descartado.');
