@@ -14,11 +14,16 @@ CURRENT_PHASE=FASE_12_LEA_133_CLOSED
 MISSION=CPP-COMMERCIAL-REDESIGN-AI-OBS-001
 PR_30=MERGED
 LEA_133=Done
+DECISION_FREEZE=ACTIVE
+DECISION_FREEZE_DOC=DECISOES_CONGELADAS.md
+NF_01=READY_FOR_NEW_CHAT_NOT_STARTED
 ```
 
 ## Estado executivo
 
 A FASE 12 foi concluída e integrada. As oito ressalvas do gate `APPROVED_WITH_RESERVATIONS` foram resolvidas no nível correto de baseline, governança e arquitetura. O resultado passou por testes, Production Validation, auditoria independente e gate delegado do Léo.
+
+Após o fechamento, Leandro aprovou explicitamente o **Decision Freeze** antes da NF-01. A sequência NF-01 → NF-08 e a regra de uma NF por chat passam a ser decisões estratégicas oficiais, consolidadas em `DECISOES_CONGELADAS.md`.
 
 ```text
 EIGHT_RESERVATIONS=RESOLVED_AT_BASELINE_GOVERNANCE_ARCHITECTURE_LEVEL
@@ -26,7 +31,10 @@ CI_RUN_215=PASS
 PRODUCTION_VALIDATION_RUN_75=PASS
 INDEPENDENT_AUDIT=APPROVE_WITH_WARNINGS_FOR_BASELINE_MERGE
 LEO_GATE=APPROVE_WITH_WARNINGS_FOR_BASELINE_MERGE
-NEXT_FUNCTIONAL_PHASE=REQUIRES_NEW_HUMAN_GATE
+DECISION_FREEZE_GATE=APPROVED_BY_LEANDRO
+NF_SEQUENCE=APPROVED
+ONE_NF_PER_CHAT=MANDATORY
+NF_01_IMPLEMENTATION_STARTED=NO
 PRODUCTION_HOMOLOGATION=BLOCKED
 LEGAL_CONFORMITY_DECLARED=NO
 ```
@@ -68,7 +76,7 @@ ATTENDANCE_EVENT_CONVERGENCE_PLAN=COMPLETE
 MIGRATION_IMPLEMENTED=NO
 ```
 
-A próxima migração, se autorizada, deve preservar `User.employee_id`, empresa, obra, timestamp, idempotência, reconciliação, rollback e histórico.
+A próxima migração, se autorizada em gate próprio, deve preservar `User.employee_id`, empresa, obra, timestamp, idempotência, reconciliação, rollback e histórico.
 
 ## Observabilidade
 
@@ -158,12 +166,29 @@ LEA_85=In_Progress
 PRODUCTION_HOMOLOGATION=BLOCKED
 ```
 
+## Roadmap NF congelado
+
+```text
+NF_01=PRODUTO_E_DESIGN_SYSTEM
+NF_02=REDESIGN_COMERCIAL
+NF_03=EXPERIENCIA_OPERACIONAL
+NF_04=OBSERVABILIDADE
+NF_05=ARQUITETURA_E_PRIMEIRO_MODULO_IA
+NF_06=IDENTIDADE_E_DISPOSITIVOS
+NF_07=REAVALIACAO_DO_ROADMAP
+NF_08=VALIDACOES_TECNICAS_REMANESCENTES
+```
+
+As FASES 13 a 21 permanecem como histórico/proposta e serão reconciliadas na NF-07; não possuem autorização automática.
+
 ## Continuidade
 
 ```text
 FASE_12=COMPLETE
-NEXT_FUNCTIONAL_PHASE=NOT_STARTED
-NEXT_HUMAN_GATE=LEANDRO
+DECISION_FREEZE=ACTIVE
+NF_01=READY_FOR_NEW_CHAT_NOT_STARTED
+NEXT_WORK_CHAT=NF_01_ONLY
+NF_01_PRODUCTION_CODE=NO
 ```
 
-Nenhum redesign, IA operacional, migração `Ponto -> AttendanceEvent`, deploy ou homologação foi autorizado automaticamente pelo fechamento da FASE 12.
+A NF-01 começa somente em novo chat. Cada NF será executada e encerrada separadamente; uma NF não inicia automaticamente a seguinte.
