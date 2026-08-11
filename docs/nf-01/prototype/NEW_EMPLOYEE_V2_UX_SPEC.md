@@ -1,10 +1,12 @@
-# Novo Funcionário — Desktop V2
+# Novo Funcionário — UX Specification Canônica da NF-01
 
 ## Estado
 
 ```text
-PHASE=NF01_UX_UI_NEW_EMPLOYEE_V2
+PHASE=NF01_UX_UI_NEW_EMPLOYEE
 FUNCTIONAL_CONTRACT=FROZEN
+STRUCTURAL_CONTRACT=FROZEN
+RC_TRANSVERSAL=COMPLETE
 IMPLEMENTATION_SCOPE=PROTOTYPE_ONLY
 PRODUCTION_CODE_CHANGED=NO
 BACKEND_CHANGED=NO
@@ -13,11 +15,15 @@ MERGE_AUTHORIZED=NO
 HUMAN_VISUAL_AUDIT=PENDING
 ```
 
-Este documento transforma o contrato funcional aprovado do onboarding em uma especificação de UX/UI para o Design Lab da NF-01.
+> **Fonte canônica integral:** `../12_NF01_CANONICAL_DECISIONS_2026-08-11.md`.
+>
+> Este arquivo especifica como o Design Lab deve materializar o onboarding. Se houver conflito com uma versão antiga deste documento/protótipo, prevalece o registro canônico.
 
-## Princípio do fluxo
+---
 
-O cadastro funciona como uma linha de montagem. Cada etapa trata um domínio, preserva o que já foi preenchido e só entrega o vínculo efetivo depois da revisão final.
+# 1. Princípio do fluxo
+
+O cadastro funciona como uma linha de montagem:
 
 ```text
 0 Tipo de relação
@@ -37,392 +43,600 @@ O cadastro funciona como uma linha de montagem. Cada etapa trata um domínio, pr
 7 Revisão e conclusão
 ```
 
-## Regras globais do wizard
+Uma ação executada não significa automaticamente conclusão válida. Cada etapa possui validação, estado e dependências.
 
-- uma etapa visível por vez;
-- navegação anterior/próxima sem perda de dados;
-- rascunho persistente no protótipo via `localStorage`;
-- ação explícita `Salvar e sair`;
-- validação antes de avançar quando houver campos obrigatórios da etapa;
-- etapas concluídas podem ser revisitadas;
-- etapas futuras não podem ser puladas por clique;
-- em telas estreitas, exibir `Etapa X de 8` e barra de progresso;
-- CTA `Concluir cadastro` somente na revisão;
-- matrícula somente é representada como “será gerada na conclusão”;
-- o protótipo não envia dados para backend;
-- dados de exemplo nunca devem ser apresentados como dados reais.
+---
 
-## Estados do onboarding
+# 2. Shell canônico
+
+A direção antiga com stepper vertical e painel contextual fixo está substituída.
 
 ```text
-INITIAL
-DRAFT
-STEP_VALID
-STEP_ERROR
+┌───────┬──────────────────────────────────────────────────────────────┐
+│ SIDE  │ TOP HEADER                                                   │
+│ BAR ↔ ├──────────────────────────────────────────────────────────────┤
+│       │ Breadcrumb / PageHeader                       [ℹ Resumo]    │
+│       │                                                             │
+│       │ ○  ●  ○  ○  ○  ○  ○  ○        Etapa X de 8 [Ver etapas]  │
+│       │                                                             │
+│       │ TÍTULO DA ETAPA                                             │
+│       │ descrição curta                                             │
+│       │                                                             │
+│       │                   FORMULÁRIO                                │
+│       │                                                             │
+│       ├─────────────────────────────────────────────────────────────┤
+│       │ Descartar | Salvar e sair | Voltar | Continuar             │
+└───────┴──────────────────────────────────────────────────────────────┘
+```
+
+Componentes:
+
+```text
+AppShell
+CollapsibleSidebar
+TopHeader
+Breadcrumb
+PageHeader
+HorizontalStepper
+ResponsiveFormGrid
+FormSection
+FieldGroup
+EntityPicker
+Date/Time components
+ContextDrawer
+StickyFormActions
+```
+
+---
+
+# 3. Regras globais do wizard
+
+- uma etapa principal por vez;
+- avançar/voltar sem perda de dados;
+- etapas concluídas revisitam;
+- futuras não pulam pré-requisitos;
+- `Etapa X de 8` sempre disponível;
+- `Ver etapas` oferece versão textual sob demanda;
+- `Concluir cadastro` só é renderizado na Etapa 7;
+- matrícula só é gerada/reservada na conclusão futura;
+- rascunho persistente;
+- `Salvar e sair`;
+- autosave verificável;
+- draft != funcionário ativo;
+- mudança estrutural pode marcar etapas posteriores `NEEDS_REVIEW`;
+- app context do header != empresa contratante do vínculo;
+- permissão pode ser revalidada durante o fluxo;
+- erro crítico não depende somente de toast;
+- Design Lab não envia dados ao backend.
+
+---
+
+# 4. Estado global
+
+Estados do wizard:
+
+```text
+EDITING
+LOCAL_CHANGES
+SAVING
+SAVED
+SAVE_ERROR
+CONFLICT
+VALIDATING_STEP
 REVIEW
 SUBMITTING
+OUTCOME_UNKNOWN
 SUCCESS
-ERROR
-UNSAVED_CHANGES
 ```
 
-## Etapa 0 — Tipo de relação
+Estados por etapa:
 
-Opções aprovadas:
+```text
+FUTURE
+CURRENT
+VALID
+ERROR
+NEEDS_REVIEW
+```
 
-- CLT comum;
-- CLT intermitente;
-- Sem vínculo empregatício;
-- Outros, vindo de cadastro mestre do RH.
+Autosave:
 
-A escolha dirige campos condicionais nas etapas posteriores. A classificação do software não equivale a conclusão jurídica sobre a relação real.
+```text
+Salvando...
+Salvo
+Alterações ainda não salvas
+Falha ao salvar
+Sem conexão — alterações ainda não confirmadas no servidor
+```
 
-## Etapa 1 — Dados pessoais
+O protótipo pode simular esses estados, mas deve marcar claramente que não existe persistência real de produção.
 
-### Identificação
+---
+
+# 5. HorizontalStepper
+
+```text
+HORIZONTAL_STEPPER=FROZEN
+```
+
+Visualmente:
+
+- icon-first;
+- sem nomes permanentes dentro da barra;
+- nomes completos em tooltip/lista textual e heading da etapa;
+- ícones finais da família Lucide;
+- emojis somente como anotação de wireframe.
+
+Semântica:
+
+- `aria-label`;
+- texto visualmente oculto;
+- `aria-current="step"`;
+- completed/current/future/error/needs-review diferenciados sem depender apenas de cor.
+
+Mobile:
+
+- não comprimir oito ícones até ficarem inutilizáveis;
+- progresso simplificado;
+- `Ver etapas` abre sheet/drawer textual.
+
+---
+
+# 6. ContextDrawer
+
+```text
+CONTEXT_DRAWER=FROZEN
+```
+
+Conteúdo permitido:
+
+- nome/rascunho;
+- tipo de relação;
+- etapa atual;
+- empresa/unidade/setor quando definidos;
+- pendências;
+- resumo de permissões quando relevante;
+- ajuda curta;
+- links `Ir para ...`.
+
+Conteúdo proibido:
+
+- campos obrigatórios editáveis;
+- ação primária do onboarding;
+- conteúdo que reduza permanentemente a área útil.
+
+Comportamento:
+
+- fechado por padrão;
+- desktop lateral sob demanda;
+- tablet/mobile overlay;
+- Escape fecha;
+- foco retorna ao trigger;
+- abrir/fechar preserva formulário.
+
+---
+
+# 7. StickyFormActions
+
+```text
+STICKY_FORM_ACTIONS=FROZEN
+```
+
+Etapas 0–6:
+
+```text
+Descartar | Salvar e sair | Voltar | Continuar
+```
+
+Etapa 7:
+
+```text
+Descartar | Salvar e sair | Voltar | Concluir cadastro
+```
+
+Regras:
+
+- uma única ação primária;
+- Voltar ausente na etapa inicial quando não houver destino;
+- Descartar separado + confirmação;
+- loading bloqueia duplo clique;
+- validação inválida mantém etapa e leva ao primeiro erro;
+- mobile reorganiza;
+- teclado virtual não pode cobrir campo/ação; barra pode deixar de ser sticky temporariamente.
+
+---
+
+# 8. Form layout
+
+## ResponsiveFormGrid
+
+```text
+RESPONSIVE_FORM_GRID=FROZEN
+```
+
+- `fr`/`minmax()`;
+- container queries;
+- 1–3 colunas conforme espaço;
+- largura semântica;
+- limite confortável de edição;
+- sem larguras rígidas por campo;
+- ordem DOM lógica.
+
+## FormSection
+
+```text
+FORM_SECTION_PROGRESSIVE_DISCLOSURE=FROZEN
+```
+
+- principal sempre visível;
+- secundário recolhível;
+- condicional por resposta;
+- recolher não apaga;
+- erro em seção fechada fica sinalizado.
+
+## FieldGroup
+
+```text
+FIELD_GROUP=FROZEN
+```
+
+- label permanente;
+- placeholder somente exemplo;
+- help text curto;
+- ajuda avançada sob demanda;
+- estados normal/focus/filled/validating/valid/warning/error/disabled/readonly;
+- local validation != remote validation;
+- erro explica correção;
+- máscara tolerante + normalização;
+- input mode/autocomplete;
+- `aria-describedby`;
+- opcional marcado `(opcional)`.
+
+---
+
+# 9. EntityPicker
+
+```text
+ENTITY_PICKER=FROZEN
+```
+
+Usado em:
+
+- empresa;
+- unidade;
+- setor;
+- cargo/função;
+- gestor;
+- jornada;
+- escala quando aplicável;
+- banco;
+- subtipos/cadastros mestres.
+
+Regras:
+
+- salvar ID;
+- busca tolerante;
+- contexto em nomes ambíguos;
+- RBAC na consulta;
+- ativo/inativo;
+- draft detecta entidade inativada;
+- dependências entre pickers;
+- loading/empty/error separados;
+- debounce;
+- resposta antiga não substitui nova;
+- não autoselecionar resultado único;
+- sem criação improvisada inline;
+- teclado/ARIA.
+
+---
+
+# 10. Date / Time / Period
+
+```text
+DATE_TIME_PERIOD_PICKER=FROZEN
+```
+
+Variantes:
+
+```text
+DateField
+TimeField
+DateTimeField
+DateRange
+```
+
+- digitação + seletor;
+- data civil sem timezone arbitrário;
+- timestamp real com timezone quando aplicável;
+- início/fim relacionados;
+- período aberto quando permitido;
+- sem data fictícia de término;
+- passado/futuro contextual;
+- Hoje não preenche silenciosamente;
+- acessível/mobile.
+
+---
+
+# 11. Etapa 0 — Tipo de relação
+
+```text
+( ) CLT comum
+( ) CLT intermitente
+( ) Sem vínculo empregatício
+( ) Outros [cadastro mestre]
+```
+
+- sem texto livre improvisado para categoria mestre;
+- decisão muda campos posteriores;
+- alterar depois pode exigir `NEEDS_REVIEW`;
+- classificação do software não é conclusão jurídica.
+
+---
+
+# 12. Etapa 1 — Dados pessoais
+
+## Identificação
 
 - Nome completo — obrigatório;
-- CPF — obrigatório e identificador primário;
+- CPF — obrigatório;
 - Data de nascimento — obrigatória;
 - RG — opcional;
-- foto administrativa — opcional e separada da biometria.
+- foto administrativa — opcional/separada da biometria.
 
-### Dados civis
+## Dados civis
 
-- Sexo — obrigatório;
-- Raça/cor (autodeclaração) — obrigatório;
-- Grau de instrução — obrigatório;
-- Nacionalidade — obrigatória;
-- País de nascimento — obrigatório;
-- Estado civil — opcional;
-- Naturalidade — opcional;
-- Nome social — condicional/opcional.
+- sexo;
+- raça/cor autodeclarada;
+- instrução;
+- nacionalidade;
+- país de nascimento;
+- estado civil opcional;
+- naturalidade opcional;
+- nome social opcional/condicional.
 
-### Contato
+## Contatos
 
-- Telefone principal — obrigatório operacionalmente;
-- WhatsApp — opcional;
-- E-mail pessoal — opcional;
-- contato para recados/emergência — pelo menos um obrigatório.
+- telefone principal obrigatório operacionalmente;
+- WhatsApp opcional;
+- e-mail opcional;
+- contato de recados/emergência obrigatório em pelo menos uma função.
 
-### Complementares
+## Complementares
 
-- dependentes — bloco condicional;
-- PcD/reabilitação — bloco condicional e restrito;
-- trabalhador estrangeiro — campos condicionais;
-- anexos — opcionais e com finalidade definida.
+- dependentes condicionais;
+- PcD/reabilitação restrito/condicional;
+- estrangeiro abre campos específicos;
+- anexos opcionais.
 
-### Integridade
+## Integridade
 
-- CPF duplicado bloqueia criação de outra pessoa;
-- nome + nascimento semelhante gera aviso, não bloqueio;
-- readmissão deve reutilizar a pessoa e criar novo vínculo.
+- CPF duplicado bloqueia nova pessoa;
+- nome+nascimento semelhante apenas alerta;
+- readmissão reutiliza pessoa + novo vínculo.
 
-## Etapa 2 — Endereço
+---
 
-### Regras
+# 13. Etapa 2 — Endereço
 
-- país primeiro, padrão Brasil;
-- endereço brasileiro e estrangeiro suportados;
-- Brasil: CEP com busca automática, edição manual e fallback;
-- urbano e rural/localidade possuem formulários diferentes;
+- país primeiro, Brasil padrão;
+- Brasil/exterior;
+- urbano/rural;
+- CEP urbano + lookup/fallback/manual edit;
+- rural pode não ter CEP;
 - um endereço residencial vigente por padrão;
-- histórico e data de vigência preservados.
+- histórico/vigência/auditoria preservados.
 
-### Brasil urbano
+---
 
-- CEP — obrigatório;
-- logradouro — obrigatório;
-- número ou Sem número — obrigatório;
-- complemento — opcional;
-- bairro — obrigatório;
-- cidade — obrigatória;
-- UF — obrigatória;
-- ponto de referência — opcional.
+# 14. Etapa 3 — Vínculo
 
-### Brasil rural/localidade
+- empresa contratante;
+- matrícula automática na conclusão;
+- unidade base;
+- setor/departamento;
+- cargo/função;
+- gestor;
+- jornada/horário;
+- jornada != escala;
+- remuneração contratual nesta etapa;
+- benefícios habituais nesta etapa;
+- CLT comum com subtipos;
+- CLT intermitente com fluxo próprio;
+- sem vínculo com natureza via cadastro mestre;
+- lifecycle: RASCUNHO/PENDENTE/PROGRAMADO/ATIVO/AFASTADO/ENCERRADO.
 
-- CEP — opcional quando inexistente;
-- localidade/comunidade — obrigatória;
-- estrada/rodovia — opcional;
-- km — opcional;
-- sítio/fazenda/lote — opcional;
-- município — obrigatório;
-- UF — obrigatória;
-- referência — recomendada;
-- descrição de acesso — opcional.
+---
 
-## Etapa 3 — Vínculo
+# 15. Etapa 4 — Pagamento
 
-### Estrutura
+- forma configurável;
+- conta/conta-salário/PIX etc.;
+- titularidade própria padrão;
+- terceiro excepcional com justificativa/revisão;
+- PIX estruturado;
+- estados INCOMPLETO/PENDENTE_DE_VALIDACAO/VERIFICADO/INCONSISTENTE/INATIVO;
+- comprovante opcional/restrito.
 
-- empresa contratante — cadastro mestre;
-- matrícula — automática, somente na confirmação;
-- unidade base — cadastro mestre;
-- setor/departamento — cadastro mestre;
-- cargo/função — cadastro mestre;
-- gestor responsável — pode gerar pendência;
-- jornada/horário — cadastro mestre com vigência;
-- jornada e escala permanecem conceitos separados;
-- remuneração contratual fica no vínculo;
-- dados bancários ficam na etapa 4;
-- benefícios/vale-transporte habitual ficam no vínculo;
-- transporte de obra/evento fica fora do onboarding.
+---
 
-### CLT comum
-
-- prazo indeterminado;
-- experiência;
-- prazo determinado.
-
-### CLT intermitente
-
-- fluxo próprio;
-- data de admissão;
-- valor/hora;
-- jornada/regra própria.
-
-### Sem vínculo
-
-- natureza da relação via cadastro mestre;
-- formulário condicional por categoria;
-- vigência/histórico;
-- linguagem adequada ao tipo de relação.
-
-### Status do vínculo
+# 16. Etapa 5 — Acesso
 
 ```text
-RASCUNHO
-PENDENTE
-PROGRAMADO
-ATIVO
-AFASTADO
-ENCERRADO
+DEFAULT_ACCOUNT=NAO_CRIADA
+FUNCIONARIO != USUARIO_ADMINISTRATIVO
 ```
 
-O status é derivado do ciclo de vida, não um simples seletor ativo/inativo.
-
-## Etapa 4 — Pagamento
-
-### Forma principal
-
-- conta bancária;
-- conta-salário;
-- PIX;
-- outra forma configurada pela empresa.
-
-### Conta bancária
-
-- banco via lista pesquisável;
-- tipo de conta;
-- agência;
-- conta;
-- dígito.
-
-### Titularidade
-
-- próprio funcionário;
-- terceiro, excepcional, com justificativa e revisão do RH.
-
-### PIX
-
-- CPF;
-- CNPJ;
-- e-mail;
-- telefone;
-- chave aleatória.
-
-Estados:
-
-```text
-INCOMPLETO
-PENDENTE_DE_VALIDACAO
-VERIFICADO
-INCONSISTENTE
-INATIVO
-```
-
-Comprovante bancário é opcional, restrito e auxiliar.
-
-## Etapa 5 — Acesso ao sistema
-
-Regra padrão:
-
-```text
-ESTE_FUNCIONARIO_TEM_ACESSO=NO
-```
-
-Se houver acesso:
-
-- conta inicia como convite pendente;
-- usuário ativa a própria conta;
+- convite pendente;
+- usuário ativa credencial;
 - RH não define senha permanente;
-- perfil RBAC é escolhido entre os papéis canônicos existentes;
-- permissões são exibidas como resumo;
-- perfil e escopo são conceitos diferentes;
-- escopo pode ser empresa/unidade/equipe;
-- mudanças de escopo/perfil devem ser auditáveis.
+- perfis canônicos: super_admin/admin/manager/operator/auditor;
+- resumo de permissões;
+- perfil != escopo;
+- sem checkboxes individuais de permissão no onboarding.
 
-Perfis canônicos:
+---
 
-```text
-super_admin
-admin
-manager
-operator
-auditor
-```
+# 17. Etapa 6 — Biometria
 
-## Etapa 6 — Biometria
-
-- pode ser cadastrada agora ou depois;
-- quem não possui `biometrics:manage` não recebe CTA proibido;
-- foto administrativa e biometria são conceitos separados;
-- captura normal usa câmera ao vivo;
+- agora ou depois;
+- RBAC `biometrics:manage`;
+- câmera ao vivo;
 - multiquadro;
-- validação de qualidade;
-- upload/galeria fora do fluxo normal;
-- frames temporários são descartados após processamento;
-- template protegido e versionado;
-- aviso de transparência obrigatório antes da captura;
-- conflito de unicidade bloqueia conclusão automática;
-- conflito biométrico não significa fraude confirmada;
-- desligamento inativa o uso, e retenção/eliminação seguem política especializada.
+- qualidade;
+- sem upload/galeria/foto administrativa;
+- frames temporários descartados;
+- template protegido/versionado;
+- aviso de transparência antes da câmera;
+- não rotular automaticamente como consentimento;
+- conflito biométrico bloqueia ativação automática, não significa fraude;
+- desligamento inativa uso;
+- readmissão não reativa automaticamente.
 
-Estados propostos:
+---
 
-```text
-NAO_CADASTRADA
-PENDENTE
-EM_CADASTRO
-ATIVA
-COM_PROBLEMA
-INATIVA
-RETIDA
-ELIMINADA
-```
+# 18. Etapa 7 — Revisão
 
-## Etapa 7 — Revisão e conclusão
+- todos os blocos resumidos com `Editar`;
+- erro bloqueante vs pendência administrativa vs opcional ausente;
+- `Concluir cadastro` somente aqui;
+- conclusão futura transacional/idempotente;
+- matrícula na confirmação;
+- success mostra status/pendências/próximas ações.
 
-A revisão é obrigatória e contém blocos resumidos com `Editar`.
+---
 
-Classificação de problemas:
+# 19. Dependency Invalidation
 
-```text
-ERRO_BLOQUEANTE
-PENDENCIA_ADMINISTRATIVA
-INFORMACAO_OPCIONAL_AUSENTE
-```
-
-Somente aqui existe:
+Quando uma decisão estrutural muda:
 
 ```text
-[ Concluir cadastro ]
+calcular impacto
+→ informar usuário
+→ confirmar
+→ preservar compatível
+→ remover incompatível do estado ativo
+→ NEEDS_REVIEW nas etapas afetadas
 ```
 
-A conclusão futura deverá ser transacional e protegida contra duplo envio. No protótipo, a ação apenas demonstra o estado de sucesso.
+Nada é apagado silenciosamente.
 
-## Rascunho
+---
 
-O rascunho:
-
-- não gera matrícula;
-- não cria vínculo ativo;
-- não cria convite de acesso;
-- não ativa biometria;
-- não aparece como funcionário ativo;
-- pode ser retomado;
-- pode ser descartado com confirmação.
-
-## Estrutura visual Desktop V2
+# 20. Conditional Data Lifecycle
 
 ```text
-┌─────────────────────────────────────────────────────────────┐
-│ Header / contexto                                           │
-├──────────────┬──────────────────────────────────────────────┤
-│ Etapas       │ Título da etapa                             │
-│ 0 Relação    │ Ajuda contextual                            │
-│ 1 Pessoais   │                                              │
-│ 2 Endereço   │ Formulário da etapa                         │
-│ 3 Vínculo    │                                              │
-│ 4 Pagamento  │                                              │
-│ 5 Acesso     │                                              │
-│ 6 Biometria  │                                              │
-│ 7 Revisão    │                                              │
-│              │                                              │
-│ Rascunho     │ [Salvar e sair] [Voltar] [Continuar]        │
-└──────────────┴──────────────────────────────────────────────┘
+VISIBLE_ACTIVE
+HIDDEN_RETAINED
+CLEARED
 ```
 
-A navegação do produto continua no shell administrativo. O stepper pertence apenas ao fluxo de onboarding.
+Campo oculto pode ser preservado temporariamente no draft, mas não entra automaticamente no payload ativo.
 
-## Responsividade
+---
 
-### 1440
+# 21. Draft / Conflict
 
-- sidebar administrativa + stepper lateral + conteúdo amplo.
+- draft_id/revision/last_saved_at conceituais;
+- duas abas/dois usuários não sobrescrevem silenciosamente;
+- conflito pausa autosave e bloqueia conclusão;
+- dados locais preservados temporariamente;
+- sessão expirada → login → revalidar identidade/permissão/revision.
 
-### 1024
+---
 
-- sidebar administrativa preservada quando houver espaço;
-- stepper pode ficar compacto;
-- formulário em uma ou duas colunas conforme o grupo.
+# 22. Submit reconciliation
 
-### 768
+- chave idempotente da tentativa lógica;
+- duplo clique não duplica;
+- timeout pode gerar `OUTCOME_UNKNOWN`;
+- verificar resultado antes de novo submit;
+- success somente após confirmação.
 
-- stepper horizontal/compacto;
-- formulário prioritariamente em uma coluna;
-- CTA inferior continua acessível.
+---
 
-### 360
-
-- `Etapa X de 8`;
-- barra de progresso;
-- nomes completos das etapas não ficam todos visíveis;
-- ações ocupam largura disponível;
-- nenhuma dependência de hover.
-
-## Acessibilidade
-
-- labels sempre visíveis;
-- `fieldset`/`legend` para escolhas exclusivas;
-- erros associados por `aria-describedby`;
-- foco movido para o primeiro erro ao tentar avançar;
-- stepper informa `aria-current="step"`;
-- estados dinâmicos anunciados em região `aria-live`;
-- navegação completa por teclado;
-- alvos mínimos de 44 px;
-- contraste preservado;
-- `prefers-reduced-motion` respeitado.
-
-## Estratégia de testes futura
+# 23. Responsividade
 
 ```text
-UNITÁRIO
-- transições do wizard
-- validações por etapa
-- serialização/restauração do rascunho
-- regras condicionais
-
-INTEGRAÇÃO
-- avançar/voltar sem perder dados
-- editar seção a partir da revisão
-- autosave/retomada
-- relação escolhida alterando campos posteriores
-- acesso Sim/Não
-- biometria agora/depois
-
-VISUAL
-- 360 / 768 / 1024 / 1440
-
-ACESSIBILIDADE
-- Tab / Shift+Tab
-- foco em erro
-- ordem de leitura
-- `aria-current`
-- contraste
+360 / 768 / 1024 / 1440 = targets de teste
 ```
 
-## Gate
+- não layouts rígidos;
+- usar rem/fr/minmax/clamp/container queries;
+- mobile 1 coluna;
+- stepper simplificado;
+- ContextDrawer overlay;
+- StickyFormActions keyboard-safe;
+- zoom 200%;
+- larguras intermediárias.
 
-O V2 somente poderá ser classificado como aprovado após auditoria visual humana explícita.
+---
+
+# 24. Acessibilidade
+
+- labels persistentes;
+- `fieldset/legend` onde aplicável;
+- erros por `aria-describedby`;
+- foco no heading após mudança de etapa;
+- ErrorSummary + primeiro erro;
+- `aria-current="step"`;
+- estados dinâmicos anunciados sem spam;
+- teclado completo;
+- foco visível;
+- contraste real;
+- target adequado;
+- reduced motion;
+- ícone nunca único significado;
+- tooltip não contém informação obrigatória.
+
+---
+
+# 25. Estratégia de testes
+
+Unitário:
+
+- componentes;
+- transições;
+- validações;
+- dependency invalidation;
+- conditional lifecycle;
+- version conflict;
+- submit reconciliation;
+- runtime permission revalidation.
+
+Integração:
+
+- avançar/voltar;
+- autosave/retomar;
+- browser nav;
+- duas abas/dois admins;
+- sessão expirada;
+- rede;
+- permissão alterada;
+- drawer→etapa;
+- biometria agora/depois;
+- submit idempotente.
+
+Responsivo/a11y:
+
+- 360/768/1024/1440 + intermediários;
+- zoom 200%;
+- teclado;
+- screen reader;
+- reduced motion;
+- mobile keyboard safe.
+
+---
+
+# 26. Gate
+
+```text
+FUNCTIONAL_CONTRACT=FROZEN
+STRUCTURAL_CONTRACT=FROZEN
+RC_CRITICAL_OPEN=0
+RC_HIGH_OPEN=0
+RC_MEDIUM_OPEN=0
+DESIGN_LAB_RECONCILIATION=PENDING
+FINAL_HUMAN_GATE=NOT_READY
+PR_32_MERGE=BLOCKED
+NF02=NOT_STARTED
+```
