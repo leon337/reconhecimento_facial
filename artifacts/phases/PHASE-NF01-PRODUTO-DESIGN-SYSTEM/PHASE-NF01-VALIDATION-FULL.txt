@@ -1,0 +1,128 @@
+NF-01 VALIDATION FULL
+
+1. SOURCE RECONCILIATION
+PASS - GitHub main consulted before current-state claims.
+PASS - DECISOES_CONGELADAS.md treated as strategic authority.
+PASS - ROADMAP_CURRENT.md / PROJECT_STATE.md / CHECKPOINT.md inspected.
+PASS - PRF prior mission and LEA-133 artifacts inspected.
+PASS - LEA-125 deliverables inspected.
+PASS - current templates/routes/JS/RBAC/observability inspected.
+PASS - MCF protocol 1.1 recovered from official repository.
+
+2. CURRENT UI INVENTORY
+PASS - active admin templates documented.
+PASS - active punch template documented.
+PASS - legacy form/result separated from registered app.
+PASS - no global AppShell falsely claimed.
+PASS - no Dashboard/Company/Worksite/Health/Logs UI falsely claimed.
+
+3. PRODUCT / INFORMATION ARCHITECTURE
+PASS - three experiences remain separate.
+PASS - punch remains independent from administrative shell.
+PASS - future items are labeled as future/not implemented.
+PASS - navigation tree specifies user/objective/data/action/permission/state/dependency/status.
+
+4. RBAC / STATES
+PASS - roles copied from app/rbac.py.
+PASS - permissions copied from app/rbac.py.
+PASS - visual permission rules do not replace backend authorization.
+PASS - required state model documented.
+PASS - TELEMETRY_UNAVAILABLE != HEALTHY.
+PASS - NOT_IMPLEMENTED != ERROR.
+PASS - OFFLINE != ERROR.
+PASS - DEGRADED != DOWN.
+
+5. DESIGN SYSTEM
+PASS - typography.
+PASS - type scale.
+PASS - spacing.
+PASS - grid.
+PASS - radius.
+PASS - shadows.
+PASS - borders.
+PASS - surfaces.
+PASS - institutional colors.
+PASS - semantic colors independent from brand.
+PASS - focus.
+PASS - motion + reduced motion.
+PASS - breakpoints.
+PASS - icon policy.
+PASS - contrast calculation recorded for primary text pairs.
+
+6. COMPONENTS
+PASS - AppShell
+PASS - Sidebar
+PASS - Header
+PASS - Breadcrumb
+PASS - StatusBadge
+PASS - HealthCard
+PASS - MetricCard
+PASS - DataTable
+PASS - Search
+PASS - FilterBar
+PASS - EmptyState
+PASS - ErrorState
+PASS - Skeleton
+PASS - DegradationBanner
+PASS - EventTimeline
+PASS - DetailDrawer
+PASS - ConfirmationModal
+PASS - Toast
+PASS - Pagination
+PASS - LastUpdated
+PASS - FormField
+PASS - Button
+PASS - IconButton
+PASS - Tabs
+PASS - CameraPanel
+PASS - PunchResult
+
+7. WIREFRAMES
+PASS - Dashboard
+PASS - Funcionários
+PASS - Cadastro biométrico
+PASS - Empresas/Obras
+PASS - Registros recentes
+PASS - Saúde operacional
+PASS - Eventos/Logs
+PASS - Registrar Ponto
+
+8. RESPONSIVE / ACCESSIBILITY
+PASS - 360 px
+PASS - 768 px
+PASS - 1024 px
+PASS - 1440 px
+PASS - contrast contract
+PASS - visible focus contract
+PASS - keyboard contract
+PASS - labels
+PASS - touch targets
+PASS - non-color-only status
+PASS - aria-live
+PASS - reduced motion
+PASS - error reading
+PASS - camera flow
+PASS - low-literacy language
+
+9. NF-02 TEST CONTRACT
+PASS - unit test cases specified.
+PASS - integration cases specified.
+PASS - contract cases specified.
+PASS - regression cases specified.
+PASS - responsive cases specified.
+PASS - accessibility cases specified.
+PASS - security cases specified.
+PASS - observability UI truth cases specified.
+
+10. NEGATIVE SCOPE
+PASS - no design HTML/CSS implementation in NF-01 artifacts.
+PASS - no AttendanceEvent migration specified as NF-01 implementation.
+PASS - no AI operational implementation.
+PASS - no observability backend implementation.
+PASS - no deploy/homologation.
+
+11. FINAL CHECKS
+PENDING - PR changed-files audit.
+PENDING - GitHub Actions state for candidate HEAD.
+PENDING - independent review on final candidate HEAD.
+PENDING - human closeout gate by LEANDRO.
