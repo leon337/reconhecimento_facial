@@ -1,308 +1,397 @@
-# NF-01 — Responsividade e Acessibilidade
+# NF-01 — Responsividade e Acessibilidade Canônicas
 
-## 1. Matriz de responsividade
+> **Fonte canônica complementar:** `12_NF01_CANONICAL_DECISIONS_2026-08-11.md`.
 
-### 360 px — telefone mínimo
+## 1. Princípio responsivo
 
-**Navegação**
-- admin: header compacto + botão de menu; sidebar vira drawer;
-- breadcrumb mostra pai imediato + página atual;
-- Registrar Ponto permanece sem menu admin.
+```text
+RESPONSIVO != DIMINUIR_TUDO
+RESPONSIVO = REORGANIZAR + REDISTRIBUIR + LIMITAR + EXPANDIR + COLAPSAR
+```
 
-**Cards**
-- uma coluna;
-- sem métricas lado a lado se o rótulo perder leitura;
-- prioridade ao estado e ação.
+Unidades e mecanismos oficiais seguem `05_DESIGN_SYSTEM.md`:
 
-**Tabelas**
-- não comprimir colunas até ilegibilidade;
-- converter visão principal em cards/linhas resumidas quando necessário;
-- detalhes secundários em `DetailDrawer` full-screen;
-- manter acesso a cabeçalhos/semântica tabular quando tabela horizontal for usada.
+```text
+rem
+fr/minmax
+clamp
+vw/dvh quando necessário
+container queries / cqi
+ch
+%
+px apenas como exceção técnica
+```
 
-**Formulários**
-- uma coluna;
-- campos 100%;
-- labels acima do controle;
-- ação primária 100% quando melhora alcance.
+`360 / 768 / 1024 / 1440` são **alvos mínimos de teste**, não quatro layouts rígidos.
 
-**Câmera**
-- preview ocupa largura disponível;
-- controles logo abaixo;
-- instruções curtas;
-- resultado deve permanecer no viewport sem exigir procurar a mensagem.
+Também testar larguras intermediárias e containers independentes do viewport.
 
-**Modais/drawers**
-- drawer de detalhe pode ocupar tela inteira;
-- confirmation modal com margens mínimas e ações empilhadas quando necessário.
+---
 
-### 768 px — tablet
+# 2. Shell por faixa de espaço
 
-- navegação pode permanecer em drawer ou sidebar compacta conforme espaço real;
-- cards em duas colunas quando comparáveis;
-- formulários permitem duas colunas somente para campos curtos relacionados;
-- tabelas preservam colunas essenciais e scroll horizontal controlado;
-- câmera continua central, sem painéis laterais concorrentes;
-- drawers usam 70–85% da largura.
+## Desktop largo
 
-### 1024 px — notebook/tablet landscape
+- sidebar expandida ou compacta, escolha do usuário;
+- conteúdo recupera imediatamente a largura liberada;
+- ContextDrawer abre sob demanda;
+- formulário não cresce indefinidamente; mantém limite confortável de edição;
+- Dashboard e DataTable usam espaço adicional para contexto útil, não para decoração.
 
-- sidebar persistente permitida;
-- header mostra empresa/unidade/usuário sem ocultar título;
-- cards em 2–4 colunas;
-- DataTable usa densidade padrão/compacta;
-- filtros podem ser inline;
-- formulários usam grid de duas colunas com leitura linear coerente;
-- DetailDrawer lateral de aproximadamente 420–520 px.
+## Aproximadamente 1024
 
-### 1440 px — desktop de dados
+- sidebar compacta por padrão/preferência;
+- grid reduz colunas quando necessário;
+- ContextDrawer pode virar overlay;
+- tabela preserva campos essenciais e ações.
 
-- sidebar persistente;
-- conteúdo limitado por max-width, sem esticar texto indefinidamente;
-- dashboard pode usar 12 colunas;
-- tabelas ganham colunas secundárias, mas ações permanecem agrupadas;
-- health cards e eventos podem coexistir em regiões lado a lado;
-- Registrar Ponto continua centralizado e não usa espaço extra para adicionar complexidade.
+## Aproximadamente 768
 
-## 2. Prioridade de informação por breakpoint
+- sidebar compacta e expansão overlay;
+- stepper reduzido;
+- formulário 1–2 colunas conforme container real;
+- drawers/modais overlay;
+- nenhuma dependência de hover.
 
-| Recurso | 360 | 768 | 1024 | 1440 |
-|---|---|---|---|---|
-| Funcionário | nome, matrícula, biometria | + função | + unidade | + metadados autorizados |
-| Registro | hora, pessoa, tipo | + unidade | + origem/status | + IDs/detalhes curtos |
-| Health | estado + componente | + recência | + fonte | + tendência quando existir |
-| Camera | preview + ação | igual | igual | igual, largura limitada |
+## Aproximadamente 360
 
-Aumento de viewport aumenta contexto, não adiciona recursos inexistentes.
+- sidebar não ocupa coluna permanente; vira menu overlay;
+- wizard mostra `Etapa X de 8`, progresso simplificado e `Ver etapas` sob demanda;
+- formulário em uma coluna;
+- ação primária pode ocupar largura inteira;
+- ContextDrawer full/near-full overlay;
+- StickyFormActions entra em modo seguro para teclado virtual;
+- sem overflow horizontal indevido.
 
-## 3. Acessibilidade — requisitos obrigatórios
+---
 
-### Contraste
+# 3. Container-first
 
-- texto normal: mínimo WCAG AA 4.5:1;
-- texto grande: mínimo 3:1;
-- componentes/foco essenciais: mínimo 3:1 contra adjacentes;
-- combinações principais dos tokens já foram verificadas em `05_DESIGN_SYSTEM.md`;
-- NF-02 deve checar estados hover/disabled/focus e combinações reais.
+Componentes reutilizáveis devem responder ao espaço que realmente recebem quando isso for mais correto do que olhar apenas para o viewport.
 
-### Foco visível
+Exemplo conceitual:
 
-- ring de 3 px + offset 2 px;
-- nunca depender do browser default após removê-lo;
-- modal/drawer captura foco e devolve ao disparador;
-- skip link visível ao foco no AppShell;
-- câmera e ações seguem ordem lógica.
+```text
+mesmo componente
+  ↓
+Dashboard: container largo → 3 colunas
+Drawer: container médio → 2 colunas
+Mobile: container estreito → 1 coluna
+```
 
-### Teclado
+Breakpoints estruturais devem nascer da perda de legibilidade/funcionalidade, não do nome do aparelho.
 
-Todas as ações administrativas devem ser operáveis sem mouse:
-- menu;
+---
+
+# 4. Ordem semântica
+
+```text
+READING_ORDER = FOCUS_ORDER = TASK_LOGIC
+```
+
+Grid/Flex podem redistribuir espaço, mas CSS não pode produzir uma ordem visual diferente da ordem de leitura/foco.
+
+Exemplo correto:
+
+```text
+Desktop
+Nome       CPF
+Telefone   E-mail
+
+Mobile
+Nome
+CPF
+Telefone
+E-mail
+```
+
+---
+
+# 5. Acessibilidade obrigatória
+
+## Foco
+
+- foco visível;
+- não remover outline sem substituição;
+- modal/drawer gerenciam foco e devolvem ao trigger;
+- step change move foco para o heading da nova etapa;
+- erro múltiplo anuncia resumo e direciona ao primeiro erro quando apropriado.
+
+## Teclado
+
+Todas as ações administrativas relevantes devem funcionar sem mouse:
+
+- sidebar;
+- stepper;
+- `Ver etapas`;
 - filtros;
-- tabela/menus de linha;
+- tabelas/menus;
+- combobox/entity picker;
 - tabs;
 - modal;
 - drawer;
 - paginação;
-- cadastro;
-- remoção biométrica.
+- wizard;
+- câmera/ações de captura quando tecnicamente disponíveis.
 
-A câmera pode depender de hardware, mas seus controles devem ser acionáveis por teclado.
-
-### Labels
-
-- todo input possui label persistente;
-- placeholder é exemplo/ajuda, nunca substituto de label;
-- ajuda e erro conectados por `aria-describedby`;
-- campos obrigatórios indicados por texto/semântica, não somente asterisco/cor.
-
-### Áreas clicáveis
-
-- mínimo 44×44 px;
-- IconButton com nome acessível;
-- linhas de tabela não se tornam “clicáveis invisíveis” sem foco e sem semântica;
-- links mantêm affordance de link.
-
-### Estado não dependente apenas de cor
-
-Cada estado usa:
+Combobox:
 
 ```text
-texto explícito
-+ ícone opcional
-+ cor semântica complementar
+Tab      entra/sai
+↑ ↓      percorre
+Enter    seleciona
+Esc      fecha
+texto    pesquisa
 ```
 
-Exemplos:
-- `Ativa` + ícone + cor;
-- `Telemetria indisponível` + ícone neutro + texto;
-- `Degradado` + descrição do impacto.
+## Labels
 
-### Live regions
+- label persistente;
+- placeholder somente como exemplo;
+- ajuda/erro associados por `aria-describedby`;
+- obrigatório por semântica/contrato;
+- opcional marcado `(opcional)`;
+- condicional explicado por texto.
 
-- `PunchResult`: `aria-live="polite"` para progresso e resultado esperado; `assertive` apenas para falha crítica que exija atenção imediata;
-- captura biométrica: progresso anunciado sem repetir a cada 100 ms;
-- toasts não duplicam anúncio crítico;
-- erros de formulário recebem foco/resumo quando submissão falhar.
+## Estado
 
-### Reduced motion
+Todo estado relevante usa texto explícito + semântica; ícone/cor são complementares.
 
-Ao detectar `prefers-reduced-motion: reduce`:
-- remover shimmer animado;
-- reduzir/zerar transições de drawer/modal;
-- nenhum movimento decorativo;
-- não alterar tempo operacional de challenge/captura que seja tecnicamente necessário, mas não representar esse tempo com animação intensa.
+## Targets
 
-## 4. Leitura de erros
+Alvo interativo confortável equivalente ao padrão aproximado de 44 CSS px quando aplicável, expresso preferencialmente em `rem` no Design System.
 
-### Formulário
+---
 
-Após submit inválido:
-1. mostrar resumo curto no topo quando houver múltiplos erros;
-2. mover foco para resumo ou primeiro campo inválido conforme padrão escolhido;
-3. associar mensagem ao campo;
-4. preservar valores não sensíveis;
-5. não apagar todo formulário.
+# 6. HorizontalStepper acessível
 
-### Erro técnico
+Visualmente icon-first, semanticamente completo.
 
-Admin/suporte:
+Cada etapa precisa de:
 
-```text
-Não foi possível carregar os registros.
-Tente novamente.
-ID de suporte: abc123 [Copiar]
-```
+- ícone oficial;
+- tooltip desktop;
+- `aria-label`;
+- texto acessível invisível;
+- `aria-current="step"` quando atual;
+- estado concluída/futura/erro/needs-review sem depender só de cor.
 
-Funcionário:
+`Ver etapas` oferece versão textual sob demanda.
 
-```text
-Não foi possível concluir a marcação.
-Tente novamente. Se continuar, chame o responsável.
-```
+Mobile não comprime oito ícones até ficarem ilegíveis.
 
-Detalhe técnico não deve vazar para o funcionário.
+---
 
-## 5. Fluxo acessível da câmera
+# 7. ContextDrawer e modais
 
-### Antes de abrir
+## Drawer
 
-- texto explica que a câmera será usada para identificação;
-- botão com nome claro;
-- em permissão negada, explicar como permitir sem culpar o usuário.
+- botão possui `aria-expanded`/`aria-controls`;
+- título associado;
+- Escape fecha;
+- overlay gerencia foco quando modal;
+- foco retorna ao trigger;
+- scroll interno não aprisiona usuário;
+- abrir/fechar preserva formulário.
 
-### Câmera pronta
-
-- preview com label acessível;
-- texto `Câmera pronta`;
-- instrução “mantenha uma pessoa no enquadramento”.
-
-### Captura
-
-- progresso textual (`Capturando 3 de 6`);
-- não exigir acompanhar animação;
-- controles bloqueados recebem estado disabled real.
-
-### Processamento
-
-- anunciar `Identificando e registrando…`;
-- impedir duplo envio;
-- manter foco previsível.
-
-### Resultado
-
-- sucesso/falha vira heading/status claro;
-- foco pode ser movido para resultado final quando isso melhorar leitura por tecnologia assistiva;
-- CTA de próxima ação vem imediatamente após a mensagem.
-
-## 6. Baixo letramento
-
-A interface deve favorecer:
-- verbos diretos: `Registrar ponto`, `Tentar novamente`, `Cadastrar funcionário`;
-- frases curtas;
-- evitar siglas como RBAC/P95/REP na experiência do funcionário;
-- ícone + texto em ações principais;
-- uma instrução por etapa na câmera;
-- números com unidade (`8,2 s`, `42 s`);
-- confirmação nominal para reduzir dúvida sobre quem foi identificado.
-
-Não utilizar voz como requisito do MVP visual; isso pertence a fase futura.
-
-## 7. Login
-
-- labels explícitas;
-- autocomplete apropriado;
-- erro genérico de credencial para não revelar conta existente;
-- estado de rate limit legível e com orientação temporal;
-- foco preservado após erro.
-
-## 8. Tabela acessível
-
-Quando DataTable permanecer como tabela:
-- `<table>` semântico;
-- `<caption>` ou título associado;
-- `<th scope>`;
-- ordenação com `aria-sort`;
-- botões de ação com nome incluindo contexto quando necessário;
-- paginação navegável por teclado;
-- scroll horizontal com indicação visual e sem aprisionar foco.
-
-## 9. Modal de remoção biométrica
+## ConfirmationModal
 
 - `role=dialog`/`aria-modal=true`;
-- título associado;
-- consequência textual;
-- foco inicial em `Cancelar`, salvo justificativa de padrão diferente;
-- Escape cancela;
-- Enter não deve acionar destruição por acidente quando foco não está no botão destrutivo;
-- ao fechar, foco retorna à ação originária.
+- título e consequência explícitos;
+- foco inicial seguro;
+- Enter não dispara destruição por acidente;
+- Escape cancela quando permitido;
+- foco retorna à origem.
 
-## 10. Critérios por largura para aceite da NF-02
+---
 
-### 360
-- sem overflow horizontal da página;
-- menu acessível;
-- botão primário e camera utilizáveis;
-- texto não sobreposto;
-- ações com 44 px.
+# 8. Erros
 
-### 768
-- sem colisão de filtros/títulos;
-- modal/drawer íntegros;
-- tabela ou lista mantém hierarquia.
-
-### 1024
-- sidebar e conteúdo não competem;
-- DataTable legível;
-- teclado percorre navegação na ordem visual.
-
-### 1440
-- conteúdo não fica excessivamente esticado;
-- densidade não sacrifica leitura;
-- cards e tabelas alinham ao grid.
-
-## 11. Checklist de revisão Marina
+Hierarquia:
 
 ```text
-[ ] contraste
-[ ] foco visível
-[ ] teclado
-[ ] labels persistentes
-[ ] alvos >= 44x44
-[ ] estados não dependem só de cor
-[ ] live regions
-[ ] reduced motion
-[ ] erros legíveis
-[ ] câmera acessível
-[ ] linguagem simples
-[ ] zoom/reflow sem perda funcional
+SISTEMA/WIZARD
+→ ETAPA
+→ SECAO
+→ CAMPO
 ```
 
-## 12. Decisão
+Após tentativa inválida:
+
+1. manter valores seguros;
+2. mostrar resumo quando houver múltiplos problemas;
+3. associar erro ao campo;
+4. abrir/indicar seção recolhida com erro;
+5. mover foco de forma previsível.
+
+Taxonomia:
 
 ```text
-RESPONSIVE_SPEC=COMPLETE
-ACCESSIBILITY_SPEC=COMPLETE
-WIDTHS=360_768_1024_1440
-LOW_LITERACY=ADDRESSED
-CAMERA_ACCESSIBILITY=DEFINED
+VALIDATION_ERROR
+BUSINESS_RULE_ERROR
+PERMISSION_ERROR
+CONFLICT_ERROR
+NETWORK_ERROR
+SYSTEM_ERROR
+SUBMIT_OUTCOME_UNKNOWN
+```
+
+Erro crítico não é somente toast.
+
+---
+
+# 9. Sessão, conflito e navegação
+
+## Browser
+
+- refresh restaura o mesmo draft e mesma etapa quando possível;
+- back/forward respeitam o histórico do wizard;
+- navigation guard só aparece com risco real de perda;
+- link direto para etapa futura respeita pré-requisitos.
+
+## Sessão expirada
+
+```text
+sessao expirou
+→ login
+→ revalidar identidade/permissao/revision
+→ retomar ou detectar conflito
+```
+
+Frames biométricos brutos não entram em recuperação local genérica.
+
+## Conflito
+
+- conflito é persistente;
+- autosave pausa;
+- dados locais são preservados temporariamente;
+- conclusão bloqueada até resolução.
+
+---
+
+# 10. Mobile keyboard safe
+
+StickyFormActions não é “fixa a qualquer custo”.
+
+Quando teclado virtual reduzir o viewport:
+
+- não cobrir campo focado;
+- usar `dvh`, safe-area, scroll-padding e scroll-to-field quando necessário;
+- reorganizar ações;
+- permitir que a barra volte ao fluxo normal temporariamente.
+
+Teste também orientação portrait/landscape quando relevante.
+
+---
+
+# 11. Reduced motion
+
+```text
+prefers-reduced-motion: reduce
+```
+
+- remover movimentos não essenciais;
+- remover shimmer quando aplicável;
+- reduzir transições de drawer/sidebar/modal;
+- manter mudança de estado perceptível imediatamente;
+- nunca remover informação junto com a animação.
+
+---
+
+# 12. Ícones
+
+Família oficial: **Lucide**.
+
+Regras:
+
+```text
+decorativo → aria-hidden
+acao       → aria-label + tooltip quando necessário
+estado     → texto acessível + icone
+```
+
+Emoji não é iconografia de produção.
+
+---
+
+# 13. CameraPanel
+
+Estados acessíveis:
+
+```text
+AGUARDANDO_PERMISSAO
+CAMERA_INDISPONIVEL
+PRONTA
+CAPTURANDO
+VALIDANDO_QUALIDADE
+PROCESSANDO
+SUCESSO
+FALHA
+```
+
+- preview com nome/descrição acessível apropriada;
+- progresso textual;
+- live region sem spam;
+- câmera negada/indisponível com orientação acionável;
+- upload/galeria não pertence ao onboarding biométrico normal.
+
+---
+
+# 14. PunchResult
+
+Funcionário precisa compreender:
+
+```text
+Funcionou?
+Por que nao funcionou?
+O que fazer agora?
+```
+
+- success/failure como heading/status claro;
+- foco pode ir ao resultado final quando melhorar leitura;
+- CTA vem logo após a mensagem;
+- detalhes técnicos/request ID ficam fora da superfície principal do funcionário.
+
+---
+
+# 15. Zoom e reflow
+
+Obrigatório validar:
+
+- zoom 200%;
+- sem perda funcional;
+- sem clipping de texto;
+- sem sobreposição de StickyFormActions;
+- sidebar/drawer/stepper adaptam-se;
+- textos com `ch`/limites de leitura não quebram o fluxo.
+
+---
+
+# 16. Matriz mínima de validação
+
+| Cenário | Deve validar |
+|---|---|
+| 360 | overlay menu, wizard simplificado, 1 coluna, keyboard safe, sem overflow |
+| 768 | sidebar compacta/overlay, drawer íntegro, grid coerente |
+| 1024 | sidebar compacta, tabela/form legíveis, foco coerente |
+| 1440 | conteúdo útil sem esticar excessivamente, shell expandido/compacto |
+| 200% zoom | reflow sem perda funcional |
+| keyboard-only | fluxo completo das ações permitidas |
+| reduced motion | sem animação não essencial |
+| screen reader | headings, stepper, erros, drawer/modal, camera e resultado |
+
+---
+
+# 17. Decisão
+
+```text
+RESPONSIVE_SPEC=CANONICALIZED
+ACCESSIBILITY_SPEC=CANONICALIZED
+TARGET_WIDTHS=360_768_1024_1440_PLUS_INTERMEDIATE
+CONTAINER_QUERIES=ADOPTED_WHEN_APPROPRIATE
+SEMANTIC_DOM_ORDER=FROZEN
+MOBILE_KEYBOARD_SAFE=FROZEN
+STEP_FOCUS_MANAGEMENT=FROZEN
+STEPPER_DISCOVERABILITY=FROZEN
+REDUCED_MOTION=FROZEN
 ```
