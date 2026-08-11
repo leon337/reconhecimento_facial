@@ -16,7 +16,7 @@ NF02_STARTED=NO
 
 O objetivo é reduzir a distância entre especificação e implementação sem alterar a aplicação viva.
 
-## Estrutura
+## Estrutura atual
 
 ```text
 prototype/
@@ -26,11 +26,17 @@ prototype/
 │   ├── design-tokens.css
 │   ├── components.css
 │   ├── dashboard-v3.css
+│   ├── employees-v1.css
+│   ├── employees-v1.js
+│   ├── new-employee-v1.css
+│   ├── new-employee-v1.js
 │   └── interactions.js
 ├── components/
 │   └── catalog.html
 └── screens/
-    └── 02.01-dashboard.html
+    ├── 02.01-dashboard.html
+    ├── 03.01-funcionarios.html
+    └── 03.03-novo-funcionario.html
 ```
 
 ## Como abrir localmente
@@ -47,10 +53,20 @@ Depois abra:
 http://localhost:4173/
 ```
 
-Dashboard V3:
+Telas atuais:
 
 ```text
 http://localhost:4173/screens/02.01-dashboard.html
+http://localhost:4173/screens/03.01-funcionarios.html
+http://localhost:4173/screens/03.03-novo-funcionario.html
+```
+
+## Estado visual
+
+```text
+Dashboard Desktop V3........... padrão visual congelado provisoriamente
+Funcionários Desktop V1........ aprovado em auditoria visual
+Novo Funcionário Desktop V1.... aguardando auditoria visual
 ```
 
 ## O que deve ser auditado
@@ -65,24 +81,46 @@ http://localhost:4173/screens/02.01-dashboard.html
 - ausência de dependência funcional do backend;
 - ausência de números ou estados apresentados como reais sem aviso de mockup.
 
-## Critério visual do Dashboard V3
+## Critério visual compartilhado
 
-A V3 preserva a estrutura aprovada da V2 e aplica a RC Visual seguinte:
+O padrão atual preserva:
 
-- remoção do contexto duplicado da sidebar;
-- correção do botão hambúrguer que aparecia indevidamente no desktop;
-- navegação lateral com melhor conforto tipográfico;
-- tratamento de scrollbar somente quando a altura realmente exigir rolagem;
-- KPIs alinhados no mesmo eixo visual;
+- navegação lateral com conforto tipográfico;
 - tipografia operacional ampliada;
-- hierarquia de elevação entre KPI, painel principal e painéis auxiliares;
-- painel de atenção simplificado para não transformar estado neutro em alerta;
-- atalhos com maior altura e legibilidade;
-- manutenção de hover, focus-visible e pressed reais;
+- hierarquia de elevação entre superfícies;
+- hover, focus-visible e pressed reais;
 - microinterações moderadas;
 - `prefers-reduced-motion` respeitado;
 - alvos interativos mínimos de 44 px;
 - design administrativo moderno, sem efeitos excessivos.
+
+## Novo Funcionário V1
+
+A tela preserva os campos existentes no formulário real atual e os reorganiza em:
+
+```text
+DADOS PESSOAIS
+→ Nome completo
+→ Endereço
+
+VÍNCULO OPERACIONAL
+→ Matrícula
+→ Função
+→ Horário
+→ Tipo de passagem
+
+ACESSO
+→ Usuário
+→ Senha
+```
+
+Regras da NF-01:
+
+- labels permanecem visíveis;
+- placeholder não substitui label;
+- o protótipo não envia dados ao backend;
+- campos obrigatórios refletem a interface real atual;
+- o fluxo pós-cadastro respeita `biometrics:manage` e não mostra CTA proibido para quem não possui essa permissão.
 
 ## Próximos testes
 
