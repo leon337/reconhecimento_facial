@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Novo Funcionário Desktop V2 — NF-01 Design Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/design-tokens.css">
+  <link rel="stylesheet" href="../assets/components.css">
+  <link rel="stylesheet" href="../assets/dashboard-v3.css">
+  <link rel="stylesheet" href="../assets/new-employee-v2.css">
+</head>
+<body>
+  <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+
+  <svg class="icon-sprite" aria-hidden="true">
+    <symbol id="i-grid" viewBox="0 0 24 24"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-scan" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="3.5" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 19c.6-3.2 2.4-5 5.5-5s4.9 1.8 5.5 5M15 6.5c2 .2 3.2 1.4 3.2 3.1S17 12.5 15 12.8M17 14.2c2 .6 3 2.1 3.5 4.3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-building" viewBox="0 0 24 24"><path d="M5 21V5l7-2v18M12 8h7v13M3 21h18M8 8h1M8 12h1M8 16h1M15 12h1M15 16h1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-pulse" viewBox="0 0 24 24"><path d="M3 12h4l2-5 3 10 2-6 2 3h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h11M8 12h11M8 18h11M4 6h.01M4 12h.01M4 18h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M19 13.5v-3l-2-.7-.7-1.7.9-1.9-2.1-2.1-1.9.9-1.7-.7L10.5 3h-3l-.7 2-1.7.7-1.9-.9-2.1 2.1.9 1.9-.7 1.7H.3v3l2 .7.7 1.7-.9 1.9 2.1 2.1 1.9-.9 1.7.7.7 2h3l.7-2 1.7-.7 1.9.9 2.1-2.1-.9-1.9.7-1.7z" transform="translate(2 0) scale(.83)" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-external" viewBox="0 0 24 24"><path d="M13 5h6v6M19 5l-8 8M18 13v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 10a6 6 0 0 1 12 0v4l2 3H4l2-3zM10 20h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4 10-10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 11v5M12 8h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-person" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5 20c.8-4.1 3.1-6.2 7-6.2s6.2 2.1 7 6.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="m3 11 9-7 9 7M5 10v10h14V10M9 20v-6h6v6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-briefcase" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9 7V5h6v2M3 12h18M10 12v2h4v-2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M4 6.5h14a2 2 0 0 1 2 2V18H5a2 2 0 0 1-2-2V7.5A2.5 2.5 0 0 1 5.5 5H17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M16 11h5v4h-5a2 2 0 0 1 0-4z" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 10V7a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6zM14 3v5h5M9 13h6M9 17h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-save" viewBox="0 0 24 24"><path d="M5 4h12l2 2v14H5zM8 4v5h8V4M8 20v-7h8v7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+    <symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="m14 6-6 6 6 6M8 12h11" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="m10 6 6 6-6 6M5 12h11" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 8h4l1.5-2h5L16 8h4v11H4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.5" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+  </svg>
+
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Navegação principal">
+      <div class="sidebar__brand">
+        <div class="brand-mark">CP</div>
+        <div class="brand-copy"><strong>Controle de Ponto</strong><span>POTIGUAR</span></div>
+      </div>
+      <nav class="sidebar__nav">
+        <div class="nav-section"><div class="nav-list"><a class="nav-item" href="02.01-dashboard.html"><svg class="icon"><use href="#i-grid"/></svg>Dashboard</a></div></div>
+        <div class="nav-section">
+          <div class="nav-label">Operação</div>
+          <div class="nav-list">
+            <a class="nav-item" href="#" data-demo-action="Abrir Registros"><svg class="icon"><use href="#i-clock"/></svg>Registros</a>
+            <a class="nav-item" href="#" data-demo-action="Abrir Registrar Ponto"><svg class="icon"><use href="#i-scan"/></svg>Registrar Ponto<svg class="icon icon--sm nav-item__external"><use href="#i-external"/></svg></a>
+          </div>
+        </div>
+        <div class="nav-section">
+          <div class="nav-label">Gestão</div>
+          <div class="nav-list">
+            <a class="nav-item" href="03.01-funcionarios.html" aria-current="page"><svg class="icon"><use href="#i-users"/></svg>Funcionários</a>
+            <a class="nav-item" href="#" data-demo-action="Abrir Empresas e Obras"><svg class="icon"><use href="#i-building"/></svg>Empresas / Obras</a>
+          </div>
+        </div>
+        <div class="nav-section">
+          <div class="nav-label">Sistema</div>
+          <div class="nav-list">
+            <a class="nav-item" href="#" data-demo-action="Abrir Saúde operacional"><svg class="icon"><use href="#i-pulse"/></svg>Saúde operacional</a>
+            <a class="nav-item" href="#" data-demo-action="Abrir Eventos e Logs"><svg class="icon"><use href="#i-list"/></svg>Eventos / Logs</a>
+          </div>
+        </div>
+        <div class="nav-section"><div class="nav-list"><a class="nav-item" href="#" data-demo-action="Abrir Configurações"><svg class="icon"><use href="#i-settings"/></svg>Configurações</a></div></div>
+      </nav>
+    </aside>
+
+    <div class="app-main">
+      <header class="topbar">
+        <div class="topbar__start">
+          <button class="icon-button mobile-menu-button" type="button" aria-label="Abrir menu" aria-expanded="false" data-nav-toggle><svg class="icon"><use href="#i-menu"/></svg></button>
+          <button class="context-button" type="button" data-demo-action="Trocar contexto">
+            <svg class="icon" aria-hidden="true"><use href="#i-building"/></svg>
+            <strong>Potiguar Locações</strong>
+            <span>• contexto administrativo</span>
+            <svg class="icon icon--sm chevron" aria-hidden="true"><use href="#i-chevron"/></svg>
+          </button>
+        </div>
+        <div class="topbar__end">
+          <span class="audit-badge">MOCKUP NF-01 · ONBOARDING V2</span>
+          <button class="icon-button" type="button" aria-label="Notificações" data-demo-action="Notificações"><svg class="icon"><use href="#i-bell"/></svg></button>
+          <button class="profile-button" type="button" data-demo-action="Perfil">
+            <span class="avatar">LC</span>
+            <span class="profile-copy"><strong>Leandro Carlos</strong><span>Administrador</span></span>
+            <svg class="icon icon--sm" aria-hidden="true"><use href="#i-chevron"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <main class="page onboarding-v2-page" id="conteudo" data-onboarding-v2>
+        <div class="onboarding-v2-header">
+          <div class="onboarding-v2-header__copy">
+            <nav class="breadcrumb" aria-label="Breadcrumb">
+              <a href="03.01-funcionarios.html">Gestão</a><span>›</span><a href="03.01-funcionarios.html">Funcionários</a><span>›</span><span class="breadcrumb__current" aria-current="page">Novo funcionário V2</span>
+            </nav>
+            <h1 class="page-title">Novo funcionário</h1>
+            <p class="page-subtitle">Onboarding estruturado em oito etapas. Este protótipo demonstra UX, estados e rascunho local; nenhum dado é enviado ao backend.</p>
+          </div>
+          <div class="onboarding-v2-meta" aria-label="Estado do rascunho">
+            <span class="draft-pill">RASCUNHO</span>
+            <span class="save-state" data-save-state>Não salvo ainda</span>
+          </div>
+        </div>
+
+        <div class="demo-notice" role="note">
+          <svg class="icon" aria-hidden="true"><use href="#i-info"/></svg>
+          <span><strong>Design Lab isolado.</strong> Matrícula, conta, biometria e vínculo exibidos aqui são apenas demonstrações da experiência. Produção e backend permanecem inalterados.</span>
+        </div>
+
+        <div data-standard-workspace>
+          <div class="mobile-progress" aria-label="Progresso do cadastro">
+            <div class="mobile-progress__top"><strong data-mobile-current>Etapa 1 de 8</strong><span data-mobile-label>Tipo de relação</span></div>
+            <div class="mobile-progress__track"><div class="mobile-progress__bar" data-progress-bar></div></div>
+          </div>
+
+          <div class="onboarding-v2-shell">
+            <aside class="wizard-rail" aria-label="Etapas do cadastro">
+              <div class="wizard-rail__head">
+                <p class="wizard-rail__eyebrow">Onboarding</p>
+                <h2>Cadastro guiado</h2>
+                <p>Uma etapa por domínio. Volte às etapas concluídas sem perder o rascunho.</p>
+              </div>
+              <div class="wizard-steps">
+                <button class="wizard-step" type="button" data-step-button><span class="wizard-step__number">0</span><span class="wizard-step__copy"><strong>Tipo de relação</strong><span>Natureza do cadastro</span></span><span class="wizard-step__state" data-step-check hidden><svg class="icon icon--sm"><use href="#i-check"/></svg></span></button>
+                <button class="wizard-step" type="button" data-step-button disabled><span class="wizard-step__number">1</span><span class="wizard-step__copy"><strong>Dados pessoais</strong><span>Identificação e contato</span></span><span class="wizard-step__state" data-step-check hidden><svg class="icon icon--sm"><use href="#i-check"/></svg></span></button>
+                <button class="wizard-step" type="button" data-step-button disabled><span class="wizard-step__number">2</span><span class="wizard-step__copy"><strong>Endereço</strong><span>Residência atual</span></span><span class="wizard-step__state" data-step-check hidden><svg class="icon icon--sm"><use href="#i-check"/></svg></span></button>
+                <button class="wizard-step" type="button" data-step-button disabled><span class="wizard-step__number">3</span><span class="wizard-step__copy"><strong>Vínculo</strong><span>Empresa e contrato</span></span><span class="wizard-step__state" data-step-check hidden><svg class="icon icon--sm"><use href="#i-check"/></svg></span></button>
+                <button class="wizard-step" type="button" data-step-button disabled><span class="wizard-step__number">4</span><span class="wizard-step__copy"><strong>Pagamento</strong><span>Conta e validação</span></span><span class="wizard-step__state" data-step-check hidden><svg class="icon icon--sm"><use href="#i-check"/></svg></span></button>
+                <button class="wizard-step" type="button" data-step-button disabled><span class="wizard-step__number">5</span><span class="wizard-step__copy"><strong>Acesso</strong><span>Conta, perfil e escopo</span></span><span class="wizard-step__state" data-step-check hidden><svg class="icon icon--sm"><use href="#i-check"/></svg></span></button>
+                <button class="wizard-step" type="button" data-step-button disabled><span class="wizard-step__number">6</span><span class="wizard-step__copy"><strong>Biometria</strong><span>Face e privacidade</span></span><span class="wizard-step__state" data-step-check hidden><svg class="icon icon--sm"><use href="#i-check"/></svg></span></button>
+                <button class="wizard-step" type="button" data-step-button disabled><span class="wizard-step__number">7</span><span class="wizard-step__copy"><strong>Revisão</strong><span>Conferir e concluir</span></span><span class="wizard-step__state" data-step-check hidden><svg class="icon icon--sm"><use href="#i-check"/></svg></span></button>
+              </div>
+              <div class="wizard-rail__footer">
+                <button class="button button--secondary" type="button" data-save-exit><svg class="icon icon--sm"><use href="#i-save"/></svg>Salvar e sair</button>
+              </div>
+            </aside>
+
+            <div class="wizard-workspace">
+              <form class="wizard-panel" data-wizard-form novalidate>
+                <header class="wizard-panel__top">
+                  <div>
+                    <p class="step-kicker" data-step-kicker>Etapa 1 de 8</p>
+                    <h2 data-step-title>Tipo de relação</h2>
+                    <p data-step-description>Defina a natureza operacional do cadastro. Essa escolha adapta as etapas seguintes.</p>
+                  </div>
+                  <span class="step-state-badge" data-step-state>Em preenchimento</span>
+                </header>
+
+                <div class="wizard-panel__body">
+                  <section class="wizard-step-panel" data-step-panel>
+                    <div class="section-block">
+                      <div class="section-block__header"><div><h3>Qual é a relação desta pessoa com a empresa?</h3><p>Escolha uma opção. A interface posterior será ajustada sem misturar regras de modalidades diferentes.</p></div><span class="section-tag">Obrigatório</span></div>
+                      <fieldset style="border:0;padding:0;margin:0">
+                        <legend class="sr-only">Tipo de relação</legend>
+                        <div class="choice-grid">
+                          <div class="choice-card"><input id="rel-clt" type="radio" name="relation_type" value="CLT comum" data-required><label for="rel-clt"><span class="choice-card__top"><span class="choice-card__icon"><svg class="icon"><use href="#i-briefcase"/></svg></span><span><strong>CLT comum</strong><p>Contrato CLT por prazo indeterminado, experiência ou prazo determinado.</p></span></span><span class="choice-card__foot">Fluxo empregatício</span></label></div>
+                          <div class="choice-card"><input id="rel-int" type="radio" name="relation_type" value="CLT intermitente" data-required><label for="rel-int"><span class="choice-card__top"><span class="choice-card__icon"><svg class="icon"><use href="#i-clock"/></svg></span><span><strong>CLT intermitente</strong><p>Modalidade CLT com regras próprias de remuneração e convocação.</p></span></span><span class="choice-card__foot">Fluxo específico</span></label></div>
+                          <div class="choice-card"><input id="rel-none" type="radio" name="relation_type" value="Sem vínculo empregatício" data-required><label for="rel-none"><span class="choice-card__top"><span class="choice-card__icon"><svg class="icon"><use href="#i-users"/></svg></span><span><strong>Sem vínculo empregatício</strong><p>Natureza operacional escolhida em cadastro mestre; não define por si só a realidade jurídica.</p></span></span><span class="choice-card__foot">Categoria controlada</span></label></div>
+                          <div class="choice-card"><input id="rel-other" type="radio" name="relation_type" value="Outros" data-required><label for="rel-other"><span class="choice-card__top"><span class="choice-card__icon"><svg class="icon"><use href="#i-file"/></svg></span><span><strong>Outros</strong><p>Categoria previamente configurada pelo RH, sem texto livre improvisado.</p></span></span><span class="choice-card__foot">Cadastro mestre</span></label></div>
+                        </div>
+                      </fieldset>
+                      <div class="conditional-box" data-show-relation="Outros" hidden>
+                        <div class="v2-field"><label for="other_relation">Categoria cadastrada <span class="required-mark">*</span></label><div class="v2-control"><select id="other_relation" name="other_relation"><option value="">Selecionar categoria</option><option>Estagiário</option><option>Aprendiz</option><option>Sócio / proprietário</option></select></div><p class="v2-field__help">Exemplo visual. As opções reais viriam do cadastro mestre.</p><p class="v2-field__error">Selecione uma categoria.</p></div>
+                      </div>
+                      <div class="info-banner" style="margin-top:16px"><svg class="icon icon--sm"><use href="#i-info"/></svg><span>A classificação escolhida organiza o produto. Questões trabalhistas e jurídicas permanecem sujeitas à validação especializada aplicável.</span></div>
+                    </div>
+                  </section>
+
+                  <section class="wizard-step-panel" data-step-panel hidden>
+                    <div class="section-block">
+                      <div class="section-block__header"><div><h3>Identificação</h3><p>Dados mínimos para identificar uma pessoa sem duplicar cadastros.</p></div><span class="section-tag">Pessoa</span></div>
+                      <div class="v2-grid">
+                        <div class="v2-field v2-field--wide"><label for="full_name">Nome completo <span class="required-mark">*</span></label><div class="v2-control"><svg class="icon icon--sm"><use href="#i-person"/></svg><input id="full_name" name="full_name" autocomplete="name" placeholder="Nome conforme documento" data-required></div><p class="v2-field__help">Usado nas telas administrativas e no vínculo.</p><p class="v2-field__error">Informe o nome completo.</p></div>
+                        <div class="v2-field"><label for="cpf">CPF <span class="required-mark">*</span></label><div class="v2-control"><input id="cpf" name="cpf" inputmode="numeric" autocomplete="off" placeholder="000.000.000-00" data-required></div><p class="v2-field__help">Identificador primário da pessoa no fluxo brasileiro.</p><p class="v2-field__error">Informe um CPF válido para a demonstração.</p></div>
+                        <div class="v2-field"><label for="birth_date">Data de nascimento <span class="required-mark">*</span></label><div class="v2-control"><input id="birth_date" name="birth_date" type="date" data-required></div><p class="v2-field__help">Também ajuda a sinalizar cadastros semelhantes.</p><p class="v2-field__error">Informe a data de nascimento.</p></div>
+                        <div class="v2-field"><label for="rg">RG <span class="optional-mark">opcional</span></label><div class="v2-control"><input id="rg" name="rg" placeholder="Documento de identidade"></div></div>
+                        <div class="v2-field"><span class="field-label">Foto administrativa <span class="optional-mark">opcional</span></span><div class="v2-control"><input name="profile_photo_label" value="Nenhuma foto selecionada" readonly></div><p class="v2-field__help">No produto final poderá haver câmera/upload administrativo. Esta foto não vira biometria.</p></div>
+                      </div>
+                    </div>
+
+                    <div class="section-block">
+                      <div class="section-block__header"><div><h3>Dados civis</h3><p>Listas controladas quando houver vocabulário oficial ou administrativo.</p></div><span class="section-tag">Estruturado</span></div>
+                      <div class="v2-grid v2-grid--three">
+                        <div class="v2-field"><label for="sex">Sexo <span class="required-mark">*</span></label><div class="v2-control"><select id="sex" name="sex" data-required><option value="">Selecionar</option><option>Masculino</option><option>Feminino</option><option>Outro / conforme cadastro</option></select></div><p class="v2-field__error">Selecione uma opção.</p></div>
+                        <div class="v2-field"><label for="race">Raça/cor (autodeclaração) <span class="required-mark">*</span></label><div class="v2-control"><select id="race" name="race" data-required><option value="">Selecionar</option><option>Branca</option><option>Preta</option><option>Parda</option><option>Amarela</option><option>Indígena</option></select></div><p class="v2-field__error">Selecione uma opção.</p></div>
+                        <div class="v2-field"><label for="education">Grau de instrução <span class="required-mark">*</span></label><div class="v2-control"><select id="education" name="education" data-required><option value="">Selecionar</option><option>Fundamental</option><option>Médio</option><option>Técnico</option><option>Superior</option><option>Pós-graduação</option></select></div><p class="v2-field__error">Selecione uma opção.</p></div>
+                        <div class="v2-field"><label for="nationality">Nacionalidade <span class="required-mark">*</span></label><div class="v2-control"><select id="nationality" name="nationality" data-required><option value="">Selecionar</option><option>Brasileira</option><option>Estrangeira</option></select></div><p class="v2-field__error">Selecione a nacionalidade.</p></div>
+                        <div class="v2-field"><label for="birth_country">País de nascimento <span class="required-mark">*</span></label><div class="v2-control"><select id="birth_country" name="birth_country" data-required><option value="">Selecionar país</option><option>Brasil</option><option>Argentina</option><option>Venezuela</option><option>Outro</option></select></div><p class="v2-field__error">Selecione o país de nascimento.</p></div>
+                        <div class="v2-field"><label for="civil_status">Estado civil <span class="optional-mark">opcional</span></label><div class="v2-control"><select id="civil_status" name="civil_status"><option value="">Não informado</option><option>Solteiro(a)</option><option>Casado(a)</option><option>Divorciado(a)</option><option>Viúvo(a)</option></select></div></div>
+                        <div class="v2-field"><label for="birth_place">Naturalidade <span class="optional-mark">opcional</span></label><div class="v2-control"><input id="birth_place" name="birth_place" placeholder="Cidade/UF"></div></div>
+                        <div class="v2-field"><label for="social_name">Nome social <span class="optional-mark">quando aplicável</span></label><div class="v2-control"><input id="social_name" name="social_name" placeholder="Nome social"></div></div>
+                      </div>
+                    </div>
+
+                    <div class="section-block">
+                      <div class="section-block__header"><div><h3>Contato</h3><p>Contato do trabalhador e uma referência para recados/emergência.</p></div></div>
+                      <div class="v2-grid">
+                        <div class="v2-field"><label for="phone">Telefone principal <span class="required-mark">*</span></label><div class="v2-control"><input id="phone" name="phone" inputmode="tel" autocomplete="tel" placeholder="(81) 90000-0000" data-required></div><p class="v2-field__error">Informe um telefone principal.</p></div>
+                        <div class="v2-field"><label for="whatsapp">WhatsApp <span class="optional-mark">opcional</span></label><div class="v2-control"><input id="whatsapp" name="whatsapp" inputmode="tel" placeholder="Se diferente do telefone"></div></div>
+                        <div class="v2-field v2-field--wide"><label for="personal_email">E-mail pessoal <span class="optional-mark">opcional</span></label><div class="v2-control"><input id="personal_email" name="personal_email" type="email" autocomplete="email" placeholder="nome@exemplo.com"></div></div>
+                        <div class="v2-field"><label for="message_contact_name">Contato para recados <span class="required-mark">*</span></label><div class="v2-control"><input id="message_contact_name" name="message_contact_name" placeholder="Nome da pessoa" data-required></div><p class="v2-field__error">Informe um contato.</p></div>
+                        <div class="v2-field"><label for="message_contact_phone">Telefone do contato <span class="required-mark">*</span></label><div class="v2-control"><input id="message_contact_phone" name="message_contact_phone" inputmode="tel" placeholder="(81) 90000-0000" data-required></div><p class="v2-field__error">Informe o telefone do contato.</p></div>
+                        <div class="v2-field"><label for="message_contact_relation">Relação <span class="required-mark">*</span></label><div class="v2-control"><select id="message_contact_relation" name="message_contact_relation" data-required><option value="">Selecionar</option><option>Familiar</option><option>Cônjuge</option><option>Responsável</option><option>Amigo(a)</option><option>Outro</option></select></div><p class="v2-field__error">Selecione a relação.</p></div>
+                        <div class="v2-field"><span class="field-label">Contato de emergência</span><div class="switch-row"><div class="switch-row__copy"><strong>Usar também como emergência</strong><span>Evita coletar dados de terceiro sem necessidade.</span></div><label class="v2-switch"><input type="checkbox" name="same_emergency_contact" checked><span></span></label></div></div>
+                      </div>
+                      <div class="conditional-box" data-emergency-extra hidden><div class="v2-grid"><div class="v2-field"><label for="emergency_name">Nome do contato de emergência</label><div class="v2-control"><input id="emergency_name" name="emergency_name"></div></div><div class="v2-field"><label for="emergency_phone">Telefone</label><div class="v2-control"><input id="emergency_phone" name="emergency_phone" inputmode="tel"></div></div></div></div>
+                    </div>
+
+                    <div class="section-block">
+                      <div class="section-block__header"><div><h3>Informações complementares</h3><p>Blocos condicionais reduzem exposição e deixam a tela comum mais leve.</p></div></div>
+                      <div class="v2-grid">
+                        <div class="v2-field"><span class="field-label">Dependentes</span><div class="inline-choice"><label><input type="radio" name="has_dependents" value="Não" checked><span>Não</span></label><label><input type="radio" name="has_dependents" value="Sim"><span>Sim</span></label><label><input type="radio" name="has_dependents" value="Preencher depois"><span>Preencher depois</span></label></div></div>
+                        <div class="v2-field"><span class="field-label">PcD / reabilitação a registrar?</span><div class="inline-choice"><label><input type="radio" name="pcd_record" value="Não" checked><span>Não</span></label><label><input type="radio" name="pcd_record" value="Sim"><span>Sim</span></label></div></div>
+                      </div>
+                      <div class="conditional-box" data-dependents hidden><div class="v2-grid"><div class="v2-field"><label for="dependent_name">Dependente</label><div class="v2-control"><input id="dependent_name" name="dependent_name" placeholder="Nome completo"></div></div><div class="v2-field"><label for="dependent_type">Tipo de dependência</label><div class="v2-control"><select id="dependent_type" name="dependent_type"><option value="">Selecionar</option><option>Filho(a)</option><option>Cônjuge</option><option>Outro</option></select></div></div></div><p class="v2-field__help">No produto final haverá ação “Adicionar dependente” para múltiplos registros.</p></div>
+                      <div class="conditional-box" data-pcd hidden><div class="warning-banner"><svg class="icon icon--sm"><use href="#i-lock"/></svg><span><strong>Dados sensíveis/restritos.</strong> O fluxo final deverá exibir apenas campos necessários e somente para usuários autorizados.</span></div><div class="v2-grid" style="margin-top:14px"><div class="v2-field"><label for="pcd_type">Tipo</label><div class="v2-control"><select id="pcd_type" name="pcd_type"><option value="">Selecionar</option><option>Física</option><option>Visual</option><option>Auditiva</option><option>Mental</option><option>Intelectual</option></select></div></div><div class="v2-field"><label for="rehabilitated">Reabilitado INSS</label><div class="v2-control"><select id="rehabilitated" name="rehabilitated"><option value="">Selecionar</option><option>Sim</option><option>Não</option></select></div></div></div></div>
+                    </div>
+                  </section>
+
+                  <section class="wizard-step-panel" data-step-panel hidden>
+                    <div class="section-block">
+                      <div class="section-block__header"><div><h3>Residência atual</h3><p>O país dirige o formato do endereço. Brasil permanece como padrão operacional.</p></div><span class="section-tag">Vigente</span></div>
+                      <div class="v2-grid">
+                        <div class="v2-field"><label for="country">País <span class="required-mark">*</span></label><div class="v2-control"><select id="country" name="country" data-required><option>Brasil</option><option>Argentina</option><option>Venezuela</option><option>Outro</option></select></div><p class="v2-field__error">Selecione o país.</p></div>
+                        <div class="v2-field" data-address-country="BR"><span class="field-label">Tipo de endereço</span><div class="inline-choice"><label><input type="radio" name="address_type" value="Urbano" checked><span>Urbano</span></label><label><input type="radio" name="address_type" value="Rural"><span>Rural / localidade</span></label></div></div>
+                      </div>
+
+                      <div data-address-country="BR">
+                        <div data-address-type="Urbano">
+                          <div class="v2-grid" style="margin-top:16px">
+                            <div class="v2-field"><label for="cep">CEP <span class="required-mark">*</span></label><div class="v2-control"><input id="cep" name="cep" inputmode="numeric" placeholder="00000-000" data-required></div><p class="v2-field__help">Busca automática no produto final, com correção e fallback manual.</p><p class="v2-field__error">Informe o CEP.</p></div>
+                            <div class="v2-field"><label for="street">Logradouro <span class="required-mark">*</span></label><div class="v2-control"><input id="street" name="street" placeholder="Rua, avenida, travessa..." data-required></div><p class="v2-field__error">Informe o logradouro.</p></div>
+                            <div class="v2-field"><label for="address_number">Número <span class="required-mark">*</span></label><div class="v2-control"><input id="address_number" name="address_number" placeholder="123"></div><p class="v2-field__help"><label><input type="checkbox" name="no_number"> Endereço sem número (S/N)</label></p></div>
+                            <div class="v2-field"><label for="complement">Complemento <span class="optional-mark">opcional</span></label><div class="v2-control"><input id="complement" name="complement" placeholder="Apto, bloco, casa..."></div></div>
+                            <div class="v2-field"><label for="district">Bairro <span class="required-mark">*</span></label><div class="v2-control"><input id="district" name="district" data-required></div><p class="v2-field__error">Informe o bairro.</p></div>
+                            <div class="v2-field"><label for="city">Cidade <span class="required-mark">*</span></label><div class="v2-control"><input id="city" name="city" data-required></div><p class="v2-field__error">Informe a cidade.</p></div>
+                            <div class="v2-field"><label for="state">UF <span class="required-mark">*</span></label><div class="v2-control"><select id="state" name="state" data-required><option value="">Selecionar</option><option>PE</option><option>AL</option><option>PB</option><option>RN</option><option>BA</option><option>Outro</option></select></div><p class="v2-field__error">Selecione a UF.</p></div>
+                            <div class="v2-field"><label for="reference">Ponto de referência <span class="optional-mark">opcional</span></label><div class="v2-control"><input id="reference" name="reference"></div></div>
+                          </div>
+                        </div>
+
+                        <div data-address-type="Rural" hidden>
+                          <div class="v2-grid" style="margin-top:16px">
+                            <div class="v2-field"><label for="rural_locality">Localidade / comunidade <span class="required-mark">*</span></label><div class="v2-control"><input id="rural_locality" name="rural_locality" placeholder="Ex.: Engenho São João"></div></div>
+                            <div class="v2-field"><label for="rural_road">Estrada / rodovia <span class="optional-mark">opcional</span></label><div class="v2-control"><input id="rural_road" name="rural_road" placeholder="PE-000"></div></div>
+                            <div class="v2-field"><label for="rural_km">Km <span class="optional-mark">opcional</span></label><div class="v2-control"><input id="rural_km" name="rural_km"></div></div>
+                            <div class="v2-field"><label for="rural_property">Sítio / fazenda / lote <span class="optional-mark">opcional</span></label><div class="v2-control"><input id="rural_property" name="rural_property"></div></div>
+                            <div class="v2-field"><label for="rural_city">Município <span class="required-mark">*</span></label><div class="v2-control"><input id="rural_city" name="rural_city"></div></div>
+                            <div class="v2-field"><label for="rural_state">UF <span class="required-mark">*</span></label><div class="v2-control"><select id="rural_state" name="rural_state"><option value="">Selecionar</option><option>PE</option><option>AL</option><option>PB</option><option>RN</option><option>BA</option></select></div></div>
+                            <div class="v2-field v2-field--wide"><label for="rural_reference">Ponto de referência <span class="optional-mark">recomendado</span></label><div class="v2-control"><input id="rural_reference" name="rural_reference" placeholder="Descrição útil para chegar ao local"></div></div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="conditional-box" data-address-country="FOREIGN" hidden>
+                        <div class="v2-grid">
+                          <div class="v2-field v2-field--wide"><label for="foreign_street">Endereço / logradouro</label><div class="v2-control"><input id="foreign_street" name="foreign_street"></div></div>
+                          <div class="v2-field"><label for="foreign_number">Número</label><div class="v2-control"><input id="foreign_number" name="foreign_number"></div></div>
+                          <div class="v2-field"><label for="foreign_postal">Código postal</label><div class="v2-control"><input id="foreign_postal" name="foreign_postal"></div></div>
+                          <div class="v2-field"><label for="foreign_city">Cidade / localidade</label><div class="v2-control"><input id="foreign_city" name="foreign_city"></div></div>
+                          <div class="v2-field"><label for="foreign_region">Estado / província / região</label><div class="v2-control"><input id="foreign_region" name="foreign_region"></div></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="section-block">
+                      <div class="section-block__header"><div><h3>Histórico</h3><p>Uma alteração futura cria nova vigência; o endereço anterior não é sobrescrito.</p></div></div>
+                      <div class="info-banner"><svg class="icon icon--sm"><use href="#i-home"/></svg><span>Este onboarding cria o <strong>endereço residencial atual</strong>. GPS/localização operacional permanece separado do endereço postal.</span></div>
+                    </div>
+                  </section>
+
+                  <section class="wizard-step-panel" data-step-panel hidden>
+                    <div class="section-block">
+                      <div class="section-block__header"><div><h3>Estrutura organizacional</h3><p>Empresa, unidade, setor, cargo e jornada vêm de cadastros mestres.</p></div><span class="section-tag">Cadastros mestres</span></div>
+                      <div class="v2-grid">
+                        <div class="v2-field"><label for="company">Empresa contratante <span class="required-mark">*</span></label><div class="v2-control"><select id="company" name="company" data-required><option value="">Selecionar empresa</option><option>Potiguar Locações</option><option>Empresa demonstração B</option></select></div><p class="v2-field__error">Selecione a empresa.</p></div>
+                        <div class="v2-field"><label for="unit">Unidade base <span class="required-mark">*</span></label><div class="v2-control"><select id="unit" name="unit" data-required><option value="">Pesquisar unidade</option><option>Galpão principal</option><option>Escritório administrativo</option><option>Depósito</option></select></div><p class="v2-field__error">Selecione a unidade.</p></div>
+                        <div class="v2-field"><label for="department">Setor / departamento <span class="required-mark">*</span></label><div class="v2-control"><select id="department" name="department" data-required><option value="">Pesquisar setor</option><option>Operações</option><option>Logística</option><option>Administrativo</option></select></div><p class="v2-field__error">Selecione o setor.</p></div>
+                        <div class="v2-field"><label for="job_role">Cargo / função <span class="required-mark">*</span></label><div class="v2-control"><select id="job_role" name="job_role" data-required><option value="">Pesquisar cargo</option><option>Serralheiro</option><option>Ajudante</option><option>Motorista</option><option>Supervisor</option><option>Administrativo</option></select></div><p class="v2-field__error">Selecione o cargo.</p></div>
+                        <div class="v2-field"><label for="manager">Gestor responsável <span class="optional-mark">pode ficar pendente</span></label><div class="v2-control"><select id="manager" name="manager"><option value="">Definir posteriormente</option><option>Gestor demonstração A</option><option>Gestor demonstração B</option></select></div><p class="v2-field__help">Ausência gera pendência administrativa sem bloquear a admissão.</p></div>
+                        <div class="v2-field"><label for="schedule">Jornada / horário <span class="required-mark">*</span></label><div class="v2-control"><select id="schedule" name="schedule" data-required><option value="">Pesquisar jornada</option><option>Administrativo 08h–17h</option><option>Operacional 07h–17h</option><option>12x36 diurna</option><option>12x36 noturna</option><option>Intermitente padrão</option></select></div><p class="v2-field__help">Jornada possui histórico de vigência; escala é conceito separado.</p><p class="v2-field__error">Selecione a jornada.</p></div>
+                      </div>
+                    </div>
+
+                    <div class="section-block" data-show-relation="CLT comum">
+                      <div class="section-block__header"><div><h3>Contrato CLT comum</h3><p>Subtipo do contrato e datas relevantes.</p></div></div>
+                      <div class="v2-grid">
+                        <div class="v2-field"><label for="admission_date">Data de admissão <span class="required-mark">*</span></label><div class="v2-control"><input id="admission_date" name="admission_date" type="date"></div></div>
+                        <div class="v2-field"><label for="contract_type">Tipo do contrato</label><div class="v2-control"><select id="contract_type" name="contract_type"><option>Prazo indeterminado</option><option>Contrato de experiência</option><option>Prazo determinado</option></select></div></div>
+                        <div class="v2-field"><label for="salary">Salário contratual</label><div class="v2-control"><input id="salary" name="salary" inputmode="decimal" placeholder="R$ 0,00"></div></div>
+                        <div class="v2-field"><label for="salary_unit">Unidade salarial</label><div class="v2-control"><select id="salary_unit" name="salary_unit"><option>Mensal</option><option>Diária</option><option>Hora</option></select></div></div>
+                      </div>
+                    </div>
+
+                    <div class="section-block" data-show-relation="CLT intermitente" hidden>
+                      <div class="section-block__header"><div><h3>CLT intermitente</h3><p>Campos próprios da modalidade, sem forçar jornada fixa tradicional.</p></div></div>
+                      <div class="v2-grid"><div class="v2-field"><label for="intermittent_date">Data de admissão</label><div class="v2-control"><input id="intermittent_date" name="intermittent_date" type="date"></div></div><div class="v2-field"><label for="hour_value">Valor contratual por hora</label><div class="v2-control"><input id="hour_value" name="hour_value" inputmode="decimal" placeholder="R$ 0,00"></div></div></div>
+                    </div>
+
+                    <div class="section-block" data-show-relation="Sem vínculo empregatício" hidden>
+                      <div class="section-block__header"><div><h3>Natureza da relação</h3><p>Categoria controlada pelo RH; a classificação do sistema não determina natureza jurídica.</p></div></div>
+                      <div class="v2-grid"><div class="v2-field"><label for="non_employee_type">Tipo de relação</label><div class="v2-control"><select id="non_employee_type" name="non_employee_type"><option value="">Selecionar</option><option>Prestador de serviço — pessoa física</option><option>Prestador de serviço — pessoa jurídica</option><option>Profissional autônomo</option><option>Terceirizado</option><option>Sócio / proprietário</option></select></div></div><div class="v2-field"><label for="relation_start">Data de início da relação</label><div class="v2-control"><input id="relation_start" name="relation_start" type="date"></div></div></div>
+                    </div>
+
+                    <div class="section-block">
+                      <div class="section-block__header"><div><h3>Benefícios e vale-transporte</h3><p>Benefícios habituais pertencem ao vínculo; transporte de obra/evento fica fora desta etapa.</p></div></div>
+                      <div class="v2-grid"><div class="v2-field"><span class="field-label">Utilizar vale-transporte?</span><div class="inline-choice"><label><input type="radio" name="transport_benefit" value="Não" checked><span>Não</span></label><label><input type="radio" name="transport_benefit" value="Sim"><span>Sim</span></label></div></div><div class="v2-field"><label for="benefit_policy">Política de benefícios</label><div class="v2-control"><select id="benefit_policy" name="benefit_policy"><option value="">Conforme política da empresa</option><option>Benefícios operacionais padrão</option><option>Benefícios administrativos padrão</option></select></div></div></div>
+                      <div class="info-banner" style="margin-top:14px"><svg class="icon icon--sm"><use href="#i-info"/></svg><span><strong>Matrícula:</strong> será gerada automaticamente somente na confirmação final. Nenhum número é reservado durante o rascunho.</span></div>
+                    </div>
+                  </section>
+
+                  <section class="wizard-step-panel" data-step-panel hidden>
+                    <div class="section-block">
+                      <div class="section-block__header"><div><h3>Forma principal de pagamento</h3><p>Define para onde e por qual meio o pagamento será direcionado. Remuneração contratual permanece no vínculo.</p></div></div>
+                      <fieldset style="border:0;padding:0;margin:0"><legend class="sr-only">Forma de pagamento</legend><div class="inline-choice"><label><input type="radio" name="payment_method" value="Conta bancária" checked><span>Conta bancária</span></label><label><input type="radio" name="payment_method" value="Conta-salário"><span>Conta-salário</span></label><label><input type="radio" name="payment_method" value="PIX"><span>PIX</span></label><label><input type="radio" name="payment_method" value="Outra"><span>Outra forma</span></label></div></fieldset>
+
+                      <div class="conditional-box" data-payment-type="Conta bancária">
+                        <div class="v2-grid"><div class="v2-field"><label for="bank">Banco</label><div class="v2-control"><select id="bank" name="bank"><option value="">Pesquisar banco</option><option>001 — Banco do Brasil</option><option>104 — Caixa Econômica Federal</option><option>237 — Bradesco</option><option>341 — Itaú</option><option>260 — Nu Pagamentos</option></select></div></div><div class="v2-field"><label for="account_type">Tipo de conta</label><div class="v2-control"><select id="account_type" name="account_type"><option>Corrente</option><option>Poupança</option></select></div></div><div class="v2-field"><label for="agency">Agência</label><div class="v2-control"><input id="agency" name="agency"></div></div><div class="v2-field"><label for="account">Conta / dígito</label><div class="v2-control"><input id="account" name="account"></div></div></div>
+                      </div>
+                      <div class="conditional-box" data-payment-type="Conta-salário" hidden><div class="v2-grid"><div class="v2-field"><label for="salary_bank">Banco</label><div class="v2-control"><select id="salary_bank" name="salary_bank"><option value="">Pesquisar banco</option><option>001 — Banco do Brasil</option><option>104 — Caixa Econômica Federal</option></select></div></div><div class="v2-field"><label for="salary_account">Conta-salário</label><div class="v2-control"><input id="salary_account" name="salary_account"></div></div></div></div>
+                      <div class="conditional-box" data-payment-type="PIX" hidden><div class="v2-grid"><div class="v2-field"><label for="pix_type">Tipo de chave</label><div class="v2-control"><select id="pix_type" name="pix_type"><option>CPF</option><option>CNPJ</option><option>E-mail</option><option>Telefone</option><option>Chave aleatória</option></select></div></div><div class="v2-field"><label for="pix_key">Chave PIX</label><div class="v2-control"><input id="pix_key" name="pix_key"></div></div></div><p class="v2-field__help">Formato pode ser validado localmente; “verificado” exige evidência real de conferência.</p></div>
+                      <div class="conditional-box" data-payment-type="Outra" hidden><div class="v2-field"><label for="other_payment">Forma configurada</label><div class="v2-control"><select id="other_payment" name="other_payment"><option value="">Selecionar forma autorizada</option><option>Forma administrativa demonstrativa</option></select></div></div></div>
+                    </div>
+
+                    <div class="section-block">
+                      <div class="section-block__header"><div><h3>Titularidade e validação</h3><p>Conta de terceiro é excepcional e nunca deve ser aceita silenciosamente.</p></div></div>
+                      <div class="switch-row"><div class="switch-row__copy"><strong>Conta/chave pertence a terceiro</strong><span>Ative somente quando houver justificativa e revisão do RH.</span></div><label class="v2-switch"><input type="checkbox" name="third_party_holder"><span></span></label></div>
+                      <div class="conditional-box" data-third-party hidden><div class="v2-grid"><div class="v2-field"><label for="third_party_name">Nome do titular</label><div class="v2-control"><input id="third_party_name" name="third_party_name"></div></div><div class="v2-field"><label for="third_party_cpf">CPF do titular</label><div class="v2-control"><input id="third_party_cpf" name="third_party_cpf"></div></div><div class="v2-field v2-field--wide"><label for="third_party_reason">Justificativa</label><div class="v2-control"><textarea id="third_party_reason" name="third_party_reason" placeholder="Motivo da exceção"></textarea></div></div></div></div>
+                      <div class="warning-banner" style="margin-top:14px"><svg class="icon icon--sm"><use href="#i-info"/></svg><span>Status inicial neste mockup: <strong>Pendente de validação</strong>. Uma alteração futura reabre a validação e preserva o histórico anterior.</span></div>
+                    </div>
+                  </section>
+
+                  <section class="wizard-step-panel" data-step-panel hidden>
+                    <div class="section-block">
+                      <div class="section-block__header"><div><h3>Acesso administrativo</h3><p>Funcionário não significa usuário do painel. A opção padrão é não criar conta.</p></div></div>
+                      <div class="switch-row"><div class="switch-row__copy"><strong>Este funcionário terá acesso ao sistema?</strong><span>Se não, nenhuma conta ou convite será criado na conclusão.</span></div><label class="v2-switch"><input type="checkbox" name="has_system_access"><span></span></label></div>
+
+                      <div class="conditional-box" data-access-details hidden>
+                        <div class="v2-grid">
+                          <div class="v2-field"><label for="access_role">Perfil RBAC</label><div class="v2-control"><select id="access_role" name="access_role"><option value="">Selecionar perfil</option><option>operator</option><option>manager</option><option>auditor</option><option>admin</option><option>super_admin</option></select></div><p class="v2-field__help">A admissão escolhe um perfil; permissões avulsas ficam fora deste fluxo.</p></div>
+                          <div class="v2-field"><label for="access_login">E-mail / login</label><div class="v2-control"><input id="access_login" name="access_login" autocomplete="off" placeholder="usuario@empresa.com"></div><p class="v2-field__help">A conta inicia como convite pendente; o RH não define senha permanente.</p></div>
+                          <div class="v2-field"><label for="access_scope">Escopo de acesso</label><div class="v2-control"><select id="access_scope" name="access_scope"><option value="">Selecionar escopo</option><option>Empresa atual</option><option>Unidade atual</option><option>Equipe atual</option></select></div><p class="v2-field__help">Perfil define o que pode fazer; escopo define onde.</p></div>
+                          <div class="v2-field"><span class="field-label">Estado inicial</span><div class="v2-control"><input value="CONVITE PENDENTE" readonly></div></div>
+                        </div>
+                        <div class="info-banner" style="margin-top:14px"><svg class="icon icon--sm"><use href="#i-lock"/></svg><span>Transferências, afastamentos e desligamentos revisam o ciclo de vida da conta sem apagar a trilha histórica.</span></div>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section class="wizard-step-panel" data-step-panel hidden>
+                    <div class="section-block">
+                      <div class="section-block__header"><div><h3>Quando cadastrar a biometria?</h3><p>O cadastro pode ser concluído com biometria pendente. A ação só existe para usuários com permissão apropriada.</p></div></div>
+                      <fieldset style="border:0;padding:0;margin:0"><legend class="sr-only">Momento da biometria</legend><div class="choice-grid"><div class="choice-card"><input id="bio-later" type="radio" name="biometric_timing" value="Depois" checked><label for="bio-later"><span class="choice-card__top"><span class="choice-card__icon"><svg class="icon"><use href="#i-clock"/></svg></span><span><strong>Configurar depois</strong><p>Conclui o onboarding e cria uma pendência administrativa visível.</p></span></span><span class="choice-card__foot">Não bloqueante</span></label></div><div class="choice-card"><input id="bio-now" type="radio" name="biometric_timing" value="Agora"><label for="bio-now"><span class="choice-card__top"><span class="choice-card__icon"><svg class="icon"><use href="#i-camera"/></svg></span><span><strong>Cadastrar agora</strong><p>Demonstra o fluxo de transparência, câmera ao vivo e captura multiquadro.</p></span></span><span class="choice-card__foot">Requer biometrics:manage</span></label></div></div></fieldset>
+                    </div>
+
+                    <div class="section-block" data-biometric-now hidden>
+                      <div class="section-block__header"><div><h3>Transparência e captura</h3><p>A ciência sobre o tratamento vem antes da câmera. A base legal final não é presumida por este protótipo.</p></div><span class="section-tag">Sensível</span></div>
+                      <div class="warning-banner"><svg class="icon icon--sm"><use href="#i-info"/></svg><span><strong>Uso demonstrado:</strong> identificação nos registros autorizados de ponto. O fluxo final deverá registrar a versão do aviso apresentado, data/hora e operador autorizado.</span></div>
+                      <div class="v2-field" style="margin-top:14px"><label><input type="checkbox" name="biometric_notice_ack"> Confirmo que as informações de transparência foram apresentadas nesta demonstração.</label></div>
+                      <div class="biometric-stage" style="margin-top:16px">
+                        <div class="camera-mock" aria-label="Prévia simulada de câmera"><div class="camera-mock__copy"><strong>Posicione o rosto dentro da área</strong><span>Câmera ao vivo · sem upload ou galeria</span></div></div>
+                        <div class="capture-checks">
+                          <div class="capture-check" data-capture-check><svg class="icon icon--sm"><use href="#i-check"/></svg><span>Um rosto na câmera</span></div>
+                          <div class="capture-check" data-capture-check><svg class="icon icon--sm"><use href="#i-check"/></svg><span>Enquadramento adequado</span></div>
+                          <div class="capture-check" data-capture-check><svg class="icon icon--sm"><use href="#i-check"/></svg><span>Iluminação suficiente</span></div>
+                          <div class="capture-check" data-capture-check><svg class="icon icon--sm"><use href="#i-check"/></svg><span>Sequência multiquadro válida</span></div>
+                          <button class="button button--primary" type="button" data-capture-biometric>Simular captura</button>
+                          <p class="v2-field__help" data-biometric-status>O mockup não acessa a câmera e não gera template real.</p>
+                        </div>
+                      </div>
+                      <div class="info-banner" style="margin-top:16px"><svg class="icon icon--sm"><use href="#i-lock"/></svg><span>Frames são conceitualmente temporários; template protegido, versionamento e unicidade pertencem ao contrato funcional. Conflito biométrico exige revisão e não significa fraude confirmada.</span></div>
+                    </div>
+                  </section>
+
+                  <section class="wizard-step-panel" data-step-panel hidden>
+                    <div class="section-block">
+                      <div class="section-block__header"><div><h3>Confira antes de concluir</h3><p>Erros bloqueantes impedem a conclusão. Pendências administrativas permanecem visíveis sem apagar o que já foi preenchido.</p></div><span class="section-tag">Revisão obrigatória</span></div>
+                      <div class="review-list" data-review-list></div>
+                      <div class="warning-banner" style="margin-top:16px"><svg class="icon icon--sm"><use href="#i-info"/></svg><div><strong>Pendências previstas nesta demonstração</strong><div data-review-pending></div></div></div>
+                      <div class="info-banner" style="margin-top:12px"><svg class="icon icon--sm"><use href="#i-info"/></svg><span><strong>Matrícula:</strong> será gerada somente na confirmação real do vínculo. Este protótipo não reserva ou grava qualquer número.</span></div>
+                    </div>
+                  </section>
+                </div>
+
+                <footer class="wizard-panel__actions">
+                  <div class="wizard-panel__actions-start"><button class="button button--ghost" type="button" data-discard-draft>Descartar rascunho</button></div>
+                  <div class="wizard-panel__actions-end">
+                    <button class="button button--secondary" type="button" data-back-step><svg class="icon icon--sm"><use href="#i-arrow-left"/></svg>Voltar</button>
+                    <button class="button button--primary" type="button" data-next-step>Continuar<svg class="icon icon--sm"><use href="#i-arrow-right"/></svg></button>
+                    <button class="button button--primary" type="button" data-complete-onboarding hidden><svg class="icon icon--sm"><use href="#i-check"/></svg>Concluir cadastro</button>
+                  </div>
+                </footer>
+              </form>
+
+              <aside class="wizard-side" aria-label="Contexto do cadastro">
+                <section class="wizard-sidecard">
+                  <p class="wizard-sidecard__eyebrow">Resumo do rascunho</p>
+                  <h3>Contexto que acompanha o fluxo</h3>
+                  <div class="side-summary">
+                    <div class="side-summary__item"><span>Relação</span><strong data-side-relation>Não definido</strong></div>
+                    <div class="side-summary__item"><span>Pessoa</span><strong data-side-name>Nome ainda não informado</strong></div>
+                    <div class="side-summary__item"><span>Empresa</span><strong data-side-company>Empresa não definida</strong></div>
+                    <div class="side-summary__item"><span>Unidade</span><strong data-side-unit>Unidade não definida</strong></div>
+                    <div class="side-summary__item"><span>Biometria</span><strong data-side-biometric>Depois</strong></div>
+                  </div>
+                </section>
+                <section class="wizard-sidecard">
+                  <p class="wizard-sidecard__eyebrow">Regras do V2</p>
+                  <h3>O rascunho ainda não é um vínculo</h3>
+                  <p>Enquanto este cadastro não for concluído, não há matrícula, conta ativa, biometria operacional ou funcionário ativo.</p>
+                </section>
+                <section class="wizard-sidecard">
+                  <p class="wizard-sidecard__eyebrow">Permissão simulada</p>
+                  <h3>Administrador</h3>
+                  <p>Este mockup demonstra o caminho com `biometrics:manage`. Para perfil sem permissão, a ação biométrica proibida deverá ser ocultada.</p>
+                </section>
+              </aside>
+            </div>
+          </div>
+        </div>
+
+        <section class="wizard-panel" data-success-panel hidden>
+          <div class="success-screen">
+            <div class="success-screen__icon"><svg class="icon icon--lg"><use href="#i-check"/></svg></div>
+            <h3>Demonstração concluída</h3>
+            <p>O comportamento visual da conclusão foi executado. Nenhum funcionário, matrícula, conta, dado bancário ou template biométrico foi enviado ao backend.</p>
+            <div class="success-summary">
+              <div><span>Vínculo</span><strong>Seria criado transacionalmente</strong></div>
+              <div><span>Matrícula</span><strong>Gerada somente na confirmação real</strong></div>
+              <div><span>Pagamento</span><strong>Pendente de validação</strong></div>
+              <div><span>Auditoria</span><strong>Prevista no contrato funcional</strong></div>
+            </div>
+            <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:22px"><button class="button button--secondary" type="button" data-success-back>Voltar a Funcionários</button><button class="button button--primary" type="button" data-success-new>Novo rascunho</button></div>
+          </div>
+        </section>
+
+        <div class="demo-toast-v2" data-toast-v2 role="status" aria-live="polite"></div>
+        <div class="sr-only" data-live-region aria-live="polite" aria-atomic="true"></div>
+      </main>
+    </div>
+  </div>
+
+  <script src="../assets/interactions.js"></script>
+  <script src="../assets/new-employee-v2.js"></script>
+</body>
+</html>
