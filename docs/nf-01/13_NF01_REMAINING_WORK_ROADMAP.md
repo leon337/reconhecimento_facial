@@ -84,6 +84,22 @@ A baseline define nomes, papéis, estados gerais e limites. A revisão individua
 [x] FieldGroup / InlineHelp / ValidationMessage
 [x] SearchableCombobox / EntityPicker
 [x] Date / Time / Period Picker
+[x] AppShell
+[x] TopHeader
+[x] Breadcrumb
+[x] PageHeader
+[x] Button
+```
+
+Os cinco últimos itens foram revisados e aprovados por LEANDRO em lote, por autorização humana explícita. O contrato detalhado está em:
+
+```text
+docs/nf-01/15_NF01_COMPONENT_REVIEW_BATCH_A1_A4_B1_2026-08-11.md
+```
+
+```text
+BATCH_REVIEW_EXCEPTION_APPROVED_BY_LEANDRO=YES
+APPROVAL_SCOPE=A1+A2+A3+A4+B1
 ```
 
 Políticas transversais já congeladas e que governam os componentes restantes:
@@ -115,7 +131,7 @@ Políticas transversais já congeladas e que governam os componentes restantes:
 
 # 3. Regra para revisão individual de cada componente restante
 
-Cada componente pendente deve passar, **um por vez**, pelo seguinte checklist antes de receber `FROZEN_INDIVIDUALLY`:
+Cada componente pendente deve passar pelo seguinte checklist antes de receber `FROZEN_INDIVIDUALLY`:
 
 ```text
 1. propósito e problema que resolve
@@ -137,6 +153,8 @@ Cada componente pendente deve passar, **um por vez**, pelo seguinte checklist an
 17. marcar como FROZEN_INDIVIDUALLY
 ```
 
+O padrão continua sendo revisão individual. O lote `A1+A2+A3+A4+B1` é uma exceção explicitamente autorizada por LEANDRO e não altera automaticamente o método dos componentes seguintes.
+
 Analogia operacional: cada componente é uma peça da linha de montagem. Estar listado no catálogo significa que a peça existe no projeto; passar pela revisão individual significa que ela foi inspecionada antes de entrar no conjunto final.
 
 ---
@@ -146,10 +164,10 @@ Analogia operacional: cada componente é uma peça da linha de montagem. Estar l
 **Objetivo:** fechar o esqueleto comum das páginas antes de desenhar telas finais.
 
 ```text
-[ ] A1 AppShell
-[ ] A2 TopHeader
-[ ] A3 Breadcrumb
-[ ] A4 PageHeader
+[x] A1 AppShell
+[x] A2 TopHeader
+[x] A3 Breadcrumb
+[x] A4 PageHeader
 ```
 
 ### Critério de saída da Fase A
@@ -161,14 +179,16 @@ BREADCRUMB=FROZEN_INDIVIDUALLY
 PAGE_HEADER=FROZEN_INDIVIDUALLY
 ```
 
-**Próxima ação oficial:** `A1 — revisar AppShell como componente`, sem ainda aplicar visualmente às telas.
+```text
+PHASE_A_COMPONENT_REVIEW=COMPLETE
+```
 
 ---
 
 # 5. Fase B — Ações, navegação local e ajuda
 
 ```text
-[ ] B1 Button
+[x] B1 Button
 [ ] B2 IconButton
 [ ] B3 Tooltip
 [ ] B4 Tabs
@@ -180,6 +200,8 @@ Observações:
 - `IconButton` precisa de nome acessível e contexto suficiente;
 - `Tabs` não substitui wizard nem navegação principal;
 - hierarquia `primary / secondary / tertiary / destructive` deve permanecer consistente com `StickyFormActions`.
+
+**Próxima ação oficial:** `B2 — revisar IconButton como componente`, sem ainda aplicar visualmente às telas.
 
 ---
 
@@ -559,14 +581,15 @@ Um novo chat deve começar lendo, nesta ordem:
 4. docs/nf-01/10_NF01_CLOSEOUT.md
 5. docs/nf-01/06_COMPONENT_CATALOG.md
 6. docs/nf-01/prototype/NEW_EMPLOYEE_V2_UX_SPEC.md
-7. PR #32 e HEAD atual da branch
+7. docs/nf-01/15_NF01_COMPONENT_REVIEW_BATCH_A1_A4_B1_2026-08-11.md
+8. PR #32 e HEAD atual da branch
 ```
 
 Depois deve continuar **pelo primeiro item não concluído deste roadmap**.
 
-No momento da criação deste documento:
+Estado atual após o gate humano do lote:
 
 ```text
-NEXT_OFFICIAL_ITEM=A1_APP_SHELL_COMPONENT_REVIEW
+NEXT_OFFICIAL_ITEM=B2_ICON_BUTTON_COMPONENT_REVIEW
 VISUAL_IMPLEMENTATION=NOT_YET
 ```
