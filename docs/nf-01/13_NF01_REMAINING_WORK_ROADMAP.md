@@ -45,6 +45,15 @@ PHASE_J_CLOSEOUT_BASIS=SOURCE_LEVEL
 UNRESOLVED_DASHBOARD_CANONICAL_GAPS=0
 J4_REQUIRED=NO
 
+PHASE_K_EMPLOYEES_RECONCILIATION=IN_PROGRESS
+K1_EMPLOYEES_CANONICAL_GAP_AUDIT=COMPLETE
+K1_AUDIT_RESULT=GAPS_FOUND
+K1_CRITICAL_GAPS=0
+K1_HIGH_GAP_THEMES=7
+K1_MEDIUM_GAP_THEMES=6
+K1_LOW_DEFERRED_OBSERVATIONS=2
+EMPLOYEES_VISUAL_CHANGE_IN_K1=NO
+
 CANONICAL_APPSHELL=ONE
 CURRENT_APPSHELL_OWNER=docs/nf-01/prototype/assets/app-shell.css+app-shell.js
 CURRENT_APPSHELL_VERSION=i8
@@ -190,6 +199,75 @@ DEFER=
   full a11y/responsive validation to Phase N
 ```
 
+## Fase K — Funcionários
+
+```text
+[x] K1 — auditoria Current × Canonical, sem mudança visual
+[ ] K2 — reconciliação canônica de Funcionários no Design Lab
+[ ] K3 — aceite pós-K2 e fechamento source-level da Fase K
+```
+
+### Resultado K1
+
+```text
+K1_OUTPUT=docs/nf-01/59_NF01_PHASE_K_K1_EMPLOYEES_CANONICAL_GAP_AUDIT_2026-08-17.md
+K1_IMPLEMENTATION=DOCUMENTAL_AUDIT_ONLY
+K1_EMPLOYEES_HTML_CHANGED=NO
+K1_EMPLOYEES_CSS_CHANGED=NO
+K1_EMPLOYEES_JS_CHANGED=NO
+
+K1_PRESERVE_ITEMS=7
+K1_RECONCILE_ITEMS=13
+K1_REMOVE_ITEMS=2
+K1_DEFER_ITEMS=4
+```
+
+### Gaps prioritários K1
+
+```text
+K1-H1 resumos sem contrato confiável de significado/origem
+K1-H2 hierarquia da tabela diverge de Unidade + Status canônicos
+K1-H3 CTA Novo funcionário sem users:create
+K1-H4 ações biométricas sem biometrics:manage
+K1-H5 estados da coleção incompletos e Empty conflado com filtro sem resultado
+K1-H6 paginação viva fictícia sobre seis fixtures locais
+K1-H7 RBAC de ações/menu por linha não materializado
+```
+
+### Direção proposta para K2
+
+```text
+PRESERVE=
+  shared AppShell
+  breadcrumb + PageHeader
+  directly accessible Search
+  frequent filters
+  textual biometric status
+  mobile table-to-card strategy
+  explicit demo-data notice
+
+RECONCILE=
+  source/state-aware summaries
+  dataset total != filtered visible count
+  table priority to include Unidade + Status
+  employee != account hierarchy
+  users:create-aware New employee CTA
+  biometrics:manage-aware biometric actions
+  permission-aware row menu
+  LOADING|EMPTY_DATASET|READY|FILTER_NO_RESULTS|ERROR|OFFLINE|NO_PERMISSION
+  local dimensioning/responsive behavior
+
+REMOVE=
+  summary pseudo-metric `Admin`
+  fake live pagination
+
+DEFER=
+  global px debt in components.css
+  DetailDrawer until needed
+  full a11y/responsive validation to Phase N
+  cross-screen coherence to Phase M
+```
+
 ### Guardrails I6
 
 ```text
@@ -261,6 +339,7 @@ J2_ACTIVITY_STATE_CONTRACT=PASS_SOURCE_LEVEL
 J2_FALSE_GREEN_PROTECTION=PASS_SOURCE_LEVEL
 J2_PERMISSION_METADATA=PASS_SOURCE_LEVEL
 J3_DASHBOARD_POST_RECONCILIATION_ACCEPTANCE=PASS_SOURCE_LEVEL
+K1_EMPLOYEES_AUDIT=PERSISTED
 ```
 
 Ainda não executado:
@@ -280,14 +359,14 @@ PRODUCTION_E2E=NO
 
 ```text
 J Dashboard................ COMPLETE_SOURCE_LEVEL
-K Funcionários............. NOT_STARTED
+K Funcionários............. IN_PROGRESS
 L Novo Funcionário V2...... NOT_STARTED
 M Coerência entre telas.... NOT_STARTED
 N Validação Design Lab..... NOT_STARTED
 O Evidências/fechamento.... NOT_STARTED
 ```
 
-I4/I5/I6 trocaram somente os cascos estruturais; I7 isolou o casco histórico; I8 auditou e endureceu apenas o contrato estrutural; I9 fechou a Fase I em base source-level. J1 auditou o Dashboard; J2 executou a reconciliação canônica; J3 confirmou o aceite pós-J2, corrigiu apenas metainformação do índice do Design Lab e fechou a Fase J em base source-level.
+I4/I5/I6 trocaram somente os cascos estruturais; I7 isolou o casco histórico; I8 auditou e endureceu apenas o contrato estrutural; I9 fechou a Fase I em base source-level. J1 auditou o Dashboard; J2 executou a reconciliação canônica; J3 confirmou o aceite pós-J2 e fechou a Fase J. K1 iniciou a Fase K com auditoria documental de Funcionários; nenhuma mudança visual de Funcionários ocorreu em K1.
 
 ## Continuidade canônica
 
@@ -323,6 +402,8 @@ DECISOES_CONGELADAS.md
 57_* J2
 ↓
 58_* J3
+↓
+59_* K1
 ```
 
 ## Guardrails permanentes
@@ -342,6 +423,6 @@ DO_NOT_EDIT_DECISOES_CONGELADAS_MD
 
 ```text
 NEXT_OFFICIAL_PHASE=K_EMPLOYEES_RECONCILIATION
-NEXT_OFFICIAL_ITEM=K1_DEFINITION_GATE
+NEXT_OFFICIAL_ITEM=K2_DEFINITION_GATE
 VISUAL_IMPLEMENTATION=DESIGN_LAB_ONLY
 ```
