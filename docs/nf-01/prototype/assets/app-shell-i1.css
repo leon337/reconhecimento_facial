@@ -206,8 +206,7 @@ body.i1-shell-compact .i1-nav__text,
 body.i1-shell-compact .i1-nav__external { width: 0; opacity: 0; overflow: hidden; }
 body.i1-shell-compact .i1-sidebar__toolbar { justify-content: center; }
 body.i1-shell-compact .i1-nav__item { justify-content: center; padding-inline: .5rem; }
-body.i1-shell-compact .i1-nav__item::after,
-@media (min-width: 48rem) and (max-width: 69.99rem) { .i1-nav__item::after } {
+body.i1-shell-compact .i1-nav__item::after {
   content: attr(data-label);
   position: absolute;
   z-index: 90;
