@@ -67,6 +67,7 @@ MEDIUM_GAPS_CLOSED=6/6
 [x] Pagination
 [x] EmptyState
 [x] ErrorState
+[x] Skeleton
 ```
 
 ## Fase A — Estrutura
@@ -180,12 +181,12 @@ PHASE_D_COMPONENT_REVIEW=COMPLETE
 ```text
 [x] E1 EmptyState
 [x] E2 ErrorState
-[ ] E3 Skeleton
+[x] E3 Skeleton
 [ ] E4 DegradationBanner
 [~] E5 Toast — revisão de integração/coerência
 ```
 
-Guardrails congelados para E1–E2:
+Guardrails congelados para E1–E3:
 
 ```text
 EMPTY_STATE != DATA_ENGINE
@@ -213,9 +214,28 @@ ERROR_STATE != TOAST
 ERROR_STATE != DEGRADATION_BANNER
 RBAC_SCOPE_BEFORE_ERROR_MESSAGE
 STALE_ERROR_RESPONSE_MUST_NOT_OVERRIDE_CURRENT_STATE
+SKELETON != DATA
+SKELETON != EMPTY_STATE
+SKELETON != ERROR_STATE
+SKELETON != PROGRESS_BAR
+LOADING => NO_FAKE_VALUE
+LOADING => NO_FAKE_STATUS
+LOADING => NO_FAKE_SUCCESS
+LOADING != HEALTHY
+SKELETON_LAYOUT_APPROX_FINAL_LAYOUT
+INITIAL_LOAD != BACKGROUND_REFRESH
+PARTIAL_LOADING => LOCALIZE_SKELETON
+SKELETON => INERT_AND_NOT_FOCUSABLE
+SKELETON_STRUCTURE => SAME_AUTHORIZED_SCOPE
+KNOWN_PROGRESS != SKELETON
+SKELETON != TIMEOUT_ENGINE
+REDUCED_MOTION => NO_REQUIRED_ANIMATION
+SKELETON_SHAPES_NOT_IN_A11Y_TREE
+USE_SKELETON_WHEN_FINAL_STRUCTURE_PREDICTABLE
+AVOID_SKELETON_FLASH
 ```
 
-**Próxima ação oficial:** `E3 — revisar Skeleton como componente`, sem aplicar visualmente às telas.
+**Próxima ação oficial:** `E4 — revisar DegradationBanner como componente`, sem aplicar visualmente às telas.
 
 ## Fase F — Overlays, confirmação e histórico
 
@@ -302,6 +322,6 @@ DO_NOT_EDIT_DECISOES_CONGELADAS_MD
 Ler decisões canônicas, este roadmap, closeout, catálogo, especificação Novo Funcionário V2, checkpoints individuais recentes e PR #32/HEAD atual; depois continuar pelo primeiro item não concluído.
 
 ```text
-NEXT_OFFICIAL_ITEM=E3_SKELETON_COMPONENT_REVIEW
+NEXT_OFFICIAL_ITEM=E4_DEGRADATION_BANNER_COMPONENT_REVIEW
 VISUAL_IMPLEMENTATION=NOT_YET
 ```
