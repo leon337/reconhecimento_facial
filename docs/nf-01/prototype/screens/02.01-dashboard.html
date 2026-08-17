@@ -10,237 +10,162 @@
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../assets/design-tokens.css">
   <link rel="stylesheet" href="../assets/components.css">
+  <link rel="stylesheet" href="../assets/app-shell.css">
   <link rel="stylesheet" href="../assets/dashboard-v3.css">
 </head>
-<body>
-  <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+<body
+  data-app-shell-active="dashboard"
+  data-app-shell-context-title="Potiguar Locações"
+  data-app-shell-context-subtitle="Galpão principal · contexto demonstrativo"
+  data-app-shell-profile-name="Administrador Demo"
+  data-app-shell-profile-role="Perfil fictício"
+  data-app-shell-profile-avatar="AD">
 
   <svg class="icon-sprite" aria-hidden="true">
-    <symbol id="i-grid" viewBox="0 0 24 24"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
     <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
     <symbol id="i-scan" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="3.5" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
     <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 19c.6-3.2 2.4-5 5.5-5s4.9 1.8 5.5 5M15 6.5c2 .2 3.2 1.4 3.2 3.1S17 12.5 15 12.8M17 14.2c2 .6 3 2.1 3.5 4.3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
-    <symbol id="i-building" viewBox="0 0 24 24"><path d="M5 21V5l7-2v18M12 8h7v13M3 21h18M8 8h1M8 12h1M8 16h1M15 12h1M15 16h1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-    <symbol id="i-pulse" viewBox="0 0 24 24"><path d="M3 12h4l2-5 3 10 2-6 2 3h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-    <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h11M8 12h11M8 18h11M4 6h.01M4 12h.01M4 18h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
-    <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M19 13.5v-3l-2-.7-.7-1.7.9-1.9-2.1-2.1-1.9.9-1.7-.7L10.5 3h-3l-.7 2-1.7.7-1.9-.9-2.1 2.1.9 1.9-.7 1.7H.3v3l2 .7.7 1.7-.9 1.9 2.1 2.1 1.9-.9 1.7.7.7 2h3l.7-2 1.7-.7 1.9.9 2.1-2.1-.9-1.9.7-1.7z" transform="translate(2 0) scale(.83)" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
     <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-    <symbol id="i-external" viewBox="0 0 24 24"><path d="M13 5h6v6M19 5l-8 8M18 13v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
     <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 3v4M16 3v4M4 10h16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
-    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 10a6 6 0 0 1 12 0v4l2 3H4l2-3zM10 20h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
     <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 4 3.5 19h17z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 9v4M12 16h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
     <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4 10-10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
     <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></symbol>
-    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
   </svg>
 
-  <div class="app-shell">
-    <aside class="sidebar" aria-label="Navegação principal">
-      <div class="sidebar__brand">
-        <div class="brand-mark">CP</div>
-        <div class="brand-copy">
-          <strong>Controle de Ponto</strong>
-          <span>POTIGUAR</span>
-        </div>
+  <main class="page" id="conteudo" data-app-shell-content>
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">Visão geral</p>
+        <h1 class="page-title">Dashboard</h1>
+        <p class="page-subtitle">Acompanhe a operação do ponto com leitura rápida e confortável.</p>
       </div>
+      <div class="date-pill"><svg class="icon" aria-hidden="true"><use href="#i-calendar"/></svg><span data-current-date>11 de agosto de 2026</span></div>
+    </header>
 
-      <nav class="sidebar__nav">
-        <div class="nav-section">
-          <div class="nav-list">
-            <a class="nav-item" href="#conteudo" aria-current="page"><svg class="icon"><use href="#i-grid"/></svg>Dashboard</a>
+    <div class="demo-notice" role="note">
+      <svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg>
+      <span><strong>Dados demonstrativos.</strong> Esta tela existe para auditoria visual da NF-01. Na aplicação real, números e estados só aparecem quando houver fonte válida e escopada.</span>
+    </div>
+
+    <section class="kpi-grid" aria-label="Indicadores principais">
+      <article class="kpi-card">
+        <div class="kpi-card__top">
+          <div class="kpi-card__identity">
+            <div class="icon-chip icon-chip--brand"><svg class="icon icon--lg" aria-hidden="true"><use href="#i-users"/></svg></div>
+            <div><p class="kpi-card__label">Funcionários cadastrados</p><p class="kpi-card__value">24</p></div>
           </div>
+          <span class="status-pill status-pill--brand">+2 no mês</span>
         </div>
+        <p class="kpi-card__help">Pessoas vinculadas ao contexto atual.</p>
+      </article>
 
-        <div class="nav-section">
-          <div class="nav-label">Operação</div>
-          <div class="nav-list">
-            <a class="nav-item" href="#atividade"><svg class="icon"><use href="#i-clock"/></svg>Registros</a>
-            <a class="nav-item" href="#" data-demo-action="Abrir Registrar Ponto"><svg class="icon"><use href="#i-scan"/></svg>Registrar Ponto<svg class="icon icon--sm nav-item__external"><use href="#i-external"/></svg></a>
+      <article class="kpi-card">
+        <div class="kpi-card__top">
+          <div class="kpi-card__identity">
+            <div class="icon-chip icon-chip--info"><svg class="icon icon--lg" aria-hidden="true"><use href="#i-clock"/></svg></div>
+            <div><p class="kpi-card__label">Registros hoje</p><p class="kpi-card__value">37</p></div>
           </div>
+          <span class="status-pill status-pill--info">até 12:04</span>
         </div>
+        <p class="kpi-card__help">Marcações recebidas hoje.</p>
+      </article>
 
-        <div class="nav-section">
-          <div class="nav-label">Gestão</div>
-          <div class="nav-list">
-            <a class="nav-item" href="#" data-demo-action="Abrir Funcionários"><svg class="icon"><use href="#i-users"/></svg>Funcionários</a>
-            <a class="nav-item" href="#" data-demo-action="Abrir Empresas e Obras"><svg class="icon"><use href="#i-building"/></svg>Empresas / Obras</a>
+      <article class="kpi-card">
+        <div class="kpi-card__top">
+          <div class="kpi-card__identity">
+            <div class="icon-chip icon-chip--warning"><svg class="icon icon--lg" aria-hidden="true"><use href="#i-scan"/></svg></div>
+            <div><p class="kpi-card__label">Biometrias pendentes</p><p class="kpi-card__value">2</p></div>
           </div>
+          <span class="status-pill status-pill--warning">requer ação</span>
         </div>
+        <p class="kpi-card__help">Funcionários ainda sem cadastro facial.</p>
+      </article>
+    </section>
 
-        <div class="nav-section">
-          <div class="nav-label">Sistema</div>
-          <div class="nav-list">
-            <a class="nav-item" href="#" data-demo-action="Abrir Saúde operacional"><svg class="icon"><use href="#i-pulse"/></svg>Saúde operacional</a>
-            <a class="nav-item" href="#" data-demo-action="Abrir Eventos e Logs"><svg class="icon"><use href="#i-list"/></svg>Eventos / Logs</a>
-          </div>
-        </div>
-
-        <div class="nav-section">
-          <div class="nav-list">
-            <a class="nav-item" href="#" data-demo-action="Abrir Configurações"><svg class="icon"><use href="#i-settings"/></svg>Configurações</a>
-          </div>
-        </div>
-      </nav>
-    </aside>
-
-    <div class="app-main">
-      <header class="topbar">
-        <div class="topbar__start">
-          <button class="icon-button mobile-menu-button" type="button" aria-label="Abrir menu" aria-expanded="false" data-nav-toggle><svg class="icon"><use href="#i-menu"/></svg></button>
-          <button class="context-button" type="button" data-demo-action="Trocar contexto">
-            <svg class="icon" aria-hidden="true"><use href="#i-building"/></svg>
-            <strong>Potiguar Locações</strong>
-            <span>• Galpão principal</span>
-            <svg class="icon icon--sm chevron" aria-hidden="true"><use href="#i-chevron"/></svg>
-          </button>
-        </div>
-
-        <div class="topbar__end">
-          <span class="audit-badge">MOCKUP NF-01 · V3</span>
-          <button class="icon-button" type="button" aria-label="Notificações" data-demo-action="Notificações"><svg class="icon"><use href="#i-bell"/></svg></button>
-          <button class="profile-button" type="button" data-demo-action="Perfil">
-            <span class="avatar">LC</span>
-            <span class="profile-copy"><strong>Leandro Carlos</strong><span>Administrador</span></span>
-            <svg class="icon icon--sm" aria-hidden="true"><use href="#i-chevron"/></svg>
-          </button>
-        </div>
-      </header>
-
-      <main class="page" id="conteudo">
-        <header class="page-header">
-          <div>
-            <p class="eyebrow">Visão geral</p>
-            <h1 class="page-title">Dashboard</h1>
-            <p class="page-subtitle">Acompanhe a operação do ponto com leitura rápida e confortável.</p>
-          </div>
-          <div class="date-pill"><svg class="icon"><use href="#i-calendar"/></svg><span data-current-date>11 de agosto de 2026</span></div>
+    <div class="dashboard-grid">
+      <section class="panel panel--primary" id="atividade" aria-labelledby="atividade-titulo">
+        <header class="panel__header">
+          <div><h2 class="panel__title" id="atividade-titulo">Atividade recente</h2><p class="panel__subtitle">Últimas marcações do contexto atual</p></div>
+          <button class="text-action" type="button" data-demo-action="Ver registros">Ver registros <svg class="icon icon--sm" aria-hidden="true"><use href="#i-chevron"/></svg></button>
         </header>
 
-        <div class="demo-notice" role="note">
-          <svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg>
-          <span><strong>Dados demonstrativos.</strong> Esta tela existe para auditoria visual da NF-01. Na aplicação real, números e estados só aparecem quando houver fonte válida e escopada.</span>
+        <div class="activity-list" role="table" aria-label="Registros recentes demonstrativos">
+          <div class="activity-head" role="row">
+            <span role="columnheader">Funcionário</span><span role="columnheader">Tipo</span><span role="columnheader">Horário</span><span role="columnheader">Unidade</span><span role="columnheader">Status</span>
+          </div>
+
+          <div class="activity-row" role="row">
+            <div class="person" role="cell"><span class="person__avatar">JS</span><span><span class="person__name">João Souza</span><span class="person__meta">Matrícula 00123</span></span></div>
+            <div class="activity-cell cell-type" role="cell"><span class="status-pill status-pill--success">Entrada</span></div>
+            <div class="activity-cell cell-time" role="cell">08:02</div>
+            <div class="activity-cell cell-unit" role="cell">Galpão</div>
+            <div class="activity-cell cell-status" role="cell"><span class="status-pill status-pill--success"><span class="status-pill__dot"></span>Confirmado</span></div>
+          </div>
+
+          <div class="activity-row" role="row">
+            <div class="person" role="cell"><span class="person__avatar">MS</span><span><span class="person__name">Maria Silva</span><span class="person__meta">Matrícula 00124</span></span></div>
+            <div class="activity-cell cell-type" role="cell"><span class="status-pill status-pill--success">Entrada</span></div>
+            <div class="activity-cell cell-time" role="cell">08:05</div>
+            <div class="activity-cell cell-unit" role="cell">Galpão</div>
+            <div class="activity-cell cell-status" role="cell"><span class="status-pill status-pill--success"><span class="status-pill__dot"></span>Confirmado</span></div>
+          </div>
+
+          <div class="activity-row" role="row">
+            <div class="person" role="cell"><span class="person__avatar">LS</span><span><span class="person__name">Lucas Santos</span><span class="person__meta">Matrícula 00131</span></span></div>
+            <div class="activity-cell cell-type" role="cell"><span class="status-pill status-pill--info">Saída</span></div>
+            <div class="activity-cell cell-time" role="cell">12:01</div>
+            <div class="activity-cell cell-unit" role="cell">Galpão</div>
+            <div class="activity-cell cell-status" role="cell"><span class="status-pill status-pill--success"><span class="status-pill__dot"></span>Confirmado</span></div>
+          </div>
+
+          <div class="activity-row" role="row">
+            <div class="person" role="cell"><span class="person__avatar">AP</span><span><span class="person__name">Ana Paula</span><span class="person__meta">Matrícula 00142</span></span></div>
+            <div class="activity-cell cell-type" role="cell"><span class="status-pill status-pill--info">Saída</span></div>
+            <div class="activity-cell cell-time" role="cell">12:04</div>
+            <div class="activity-cell cell-unit" role="cell">Obra 02</div>
+            <div class="activity-cell cell-status" role="cell"><span class="status-pill status-pill--success"><span class="status-pill__dot"></span>Confirmado</span></div>
+          </div>
+
+          <div class="activity-footer">
+            <span>Mostrando 4 registros recentes</span>
+            <button class="button button--primary" type="button" data-demo-action="Abrir lista completa">Abrir lista completa <svg class="icon icon--sm" aria-hidden="true"><use href="#i-chevron"/></svg></button>
+          </div>
         </div>
+      </section>
 
-        <section class="kpi-grid" aria-label="Indicadores principais">
-          <article class="kpi-card">
-            <div class="kpi-card__top">
-              <div class="kpi-card__identity">
-                <div class="icon-chip icon-chip--brand"><svg class="icon icon--lg"><use href="#i-users"/></svg></div>
-                <div><p class="kpi-card__label">Funcionários cadastrados</p><p class="kpi-card__value">24</p></div>
-              </div>
-              <span class="status-pill status-pill--brand">+2 no mês</span>
-            </div>
-            <p class="kpi-card__help">Pessoas vinculadas ao contexto atual.</p>
-          </article>
+      <aside class="side-stack" aria-label="Ações e atenções">
+        <section class="panel panel--secondary" aria-labelledby="atencao-titulo">
+          <header class="panel__header"><div><h2 class="panel__title" id="atencao-titulo">Atenção necessária</h2><p class="panel__subtitle">Itens que podem exigir ação</p></div></header>
+          <div class="attention-list">
+            <button class="attention-item attention-item--warning" type="button" data-demo-action="Revisar funcionários">
+              <span class="attention-icon"><svg class="icon" aria-hidden="true"><use href="#i-scan"/></svg></span>
+              <span class="attention-copy"><strong>2 biometrias pendentes</strong><p>Funcionários cadastrados ainda sem biometria facial.</p><span class="attention-link">Revisar funcionários</span></span>
+              <svg class="icon icon--sm attention-chevron" aria-hidden="true"><use href="#i-chevron"/></svg>
+            </button>
 
-          <article class="kpi-card">
-            <div class="kpi-card__top">
-              <div class="kpi-card__identity">
-                <div class="icon-chip icon-chip--info"><svg class="icon icon--lg"><use href="#i-clock"/></svg></div>
-                <div><p class="kpi-card__label">Registros hoje</p><p class="kpi-card__value">37</p></div>
-              </div>
-              <span class="status-pill status-pill--info">até 12:04</span>
+            <div class="attention-summary" role="status">
+              <svg class="icon icon--sm" aria-hidden="true"><use href="#i-check"/></svg>
+              <span><strong>Sem outras pendências.</strong> Nenhuma outra ação operacional indicada neste mockup.</span>
             </div>
-            <p class="kpi-card__help">Marcações recebidas hoje.</p>
-          </article>
-
-          <article class="kpi-card">
-            <div class="kpi-card__top">
-              <div class="kpi-card__identity">
-                <div class="icon-chip icon-chip--warning"><svg class="icon icon--lg"><use href="#i-scan"/></svg></div>
-                <div><p class="kpi-card__label">Biometrias pendentes</p><p class="kpi-card__value">2</p></div>
-              </div>
-              <span class="status-pill status-pill--warning">requer ação</span>
-            </div>
-            <p class="kpi-card__help">Funcionários ainda sem cadastro facial.</p>
-          </article>
+          </div>
         </section>
 
-        <div class="dashboard-grid">
-          <section class="panel panel--primary" id="atividade" aria-labelledby="atividade-titulo">
-            <header class="panel__header">
-              <div><h2 class="panel__title" id="atividade-titulo">Atividade recente</h2><p class="panel__subtitle">Últimas marcações do contexto atual</p></div>
-              <button class="text-action" type="button" data-demo-action="Ver registros">Ver registros <svg class="icon icon--sm"><use href="#i-chevron"/></svg></button>
-            </header>
-
-            <div class="activity-list" role="table" aria-label="Registros recentes demonstrativos">
-              <div class="activity-head" role="row">
-                <span role="columnheader">Funcionário</span><span role="columnheader">Tipo</span><span role="columnheader">Horário</span><span role="columnheader">Unidade</span><span role="columnheader">Status</span>
-              </div>
-
-              <div class="activity-row" role="row">
-                <div class="person" role="cell"><span class="person__avatar">JS</span><span><span class="person__name">João Souza</span><span class="person__meta">Matrícula 00123</span></span></div>
-                <div class="activity-cell cell-type" role="cell"><span class="status-pill status-pill--success">Entrada</span></div>
-                <div class="activity-cell cell-time" role="cell">08:02</div>
-                <div class="activity-cell cell-unit" role="cell">Galpão</div>
-                <div class="activity-cell cell-status" role="cell"><span class="status-pill status-pill--success"><span class="status-pill__dot"></span>Confirmado</span></div>
-              </div>
-
-              <div class="activity-row" role="row">
-                <div class="person" role="cell"><span class="person__avatar">MS</span><span><span class="person__name">Maria Silva</span><span class="person__meta">Matrícula 00124</span></span></div>
-                <div class="activity-cell cell-type" role="cell"><span class="status-pill status-pill--success">Entrada</span></div>
-                <div class="activity-cell cell-time" role="cell">08:05</div>
-                <div class="activity-cell cell-unit" role="cell">Galpão</div>
-                <div class="activity-cell cell-status" role="cell"><span class="status-pill status-pill--success"><span class="status-pill__dot"></span>Confirmado</span></div>
-              </div>
-
-              <div class="activity-row" role="row">
-                <div class="person" role="cell"><span class="person__avatar">LS</span><span><span class="person__name">Lucas Santos</span><span class="person__meta">Matrícula 00131</span></span></div>
-                <div class="activity-cell cell-type" role="cell"><span class="status-pill status-pill--info">Saída</span></div>
-                <div class="activity-cell cell-time" role="cell">12:01</div>
-                <div class="activity-cell cell-unit" role="cell">Galpão</div>
-                <div class="activity-cell cell-status" role="cell"><span class="status-pill status-pill--success"><span class="status-pill__dot"></span>Confirmado</span></div>
-              </div>
-
-              <div class="activity-row" role="row">
-                <div class="person" role="cell"><span class="person__avatar">AP</span><span><span class="person__name">Ana Paula</span><span class="person__meta">Matrícula 00142</span></span></div>
-                <div class="activity-cell cell-type" role="cell"><span class="status-pill status-pill--info">Saída</span></div>
-                <div class="activity-cell cell-time" role="cell">12:04</div>
-                <div class="activity-cell cell-unit" role="cell">Obra 02</div>
-                <div class="activity-cell cell-status" role="cell"><span class="status-pill status-pill--success"><span class="status-pill__dot"></span>Confirmado</span></div>
-              </div>
-
-              <div class="activity-footer">
-                <span>Mostrando 4 registros recentes</span>
-                <button class="button button--primary" type="button" data-demo-action="Abrir lista completa">Abrir lista completa <svg class="icon icon--sm"><use href="#i-chevron"/></svg></button>
-              </div>
-            </div>
-          </section>
-
-          <aside class="side-stack" aria-label="Ações e atenções">
-            <section class="panel panel--secondary" aria-labelledby="atencao-titulo">
-              <header class="panel__header"><div><h2 class="panel__title" id="atencao-titulo">Atenção necessária</h2><p class="panel__subtitle">Itens que podem exigir ação</p></div></header>
-              <div class="attention-list">
-                <button class="attention-item attention-item--warning" type="button" data-demo-action="Revisar funcionários">
-                  <span class="attention-icon"><svg class="icon"><use href="#i-scan"/></svg></span>
-                  <span class="attention-copy"><strong>2 biometrias pendentes</strong><p>Funcionários cadastrados ainda sem biometria facial.</p><span class="attention-link">Revisar funcionários</span></span>
-                  <svg class="icon icon--sm attention-chevron"><use href="#i-chevron"/></svg>
-                </button>
-
-                <div class="attention-summary" role="status">
-                  <svg class="icon icon--sm" aria-hidden="true"><use href="#i-check"/></svg>
-                  <span><strong>Sem outras pendências.</strong> Nenhuma outra ação operacional indicada neste mockup.</span>
-                </div>
-              </div>
-            </section>
-
-            <section class="panel panel--secondary quick-actions" id="quick-actions" aria-labelledby="atalhos-titulo">
-              <header class="panel__header"><div><h2 class="panel__title" id="atalhos-titulo">Atalhos</h2><p class="panel__subtitle">Ações frequentes</p></div></header>
-              <div class="quick-actions__list">
-                <button class="quick-action" type="button" data-demo-action="Cadastrar funcionário"><span class="quick-action__icon"><svg class="icon"><use href="#i-plus"/></svg></span><span class="quick-action__label">Cadastrar funcionário</span><svg class="icon icon--sm quick-action__chevron"><use href="#i-chevron"/></svg></button>
-                <button class="quick-action" type="button" data-demo-action="Consultar registros"><span class="quick-action__icon"><svg class="icon"><use href="#i-clock"/></svg></span><span class="quick-action__label">Consultar registros</span><svg class="icon icon--sm quick-action__chevron"><use href="#i-chevron"/></svg></button>
-                <button class="quick-action" type="button" data-demo-action="Cadastrar biometria"><span class="quick-action__icon"><svg class="icon"><use href="#i-scan"/></svg></span><span class="quick-action__label">Cadastrar biometria</span><svg class="icon icon--sm quick-action__chevron"><use href="#i-chevron"/></svg></button>
-              </div>
-            </section>
-          </aside>
-        </div>
-
-        <p class="page-footnote">NF-01 · Design Lab HTML-first · Dashboard V3 · Design System aprovado provisoriamente · sem backend de produção.</p>
-      </main>
+        <section class="panel panel--secondary quick-actions" id="quick-actions" aria-labelledby="atalhos-titulo">
+          <header class="panel__header"><div><h2 class="panel__title" id="atalhos-titulo">Atalhos</h2><p class="panel__subtitle">Ações frequentes</p></div></header>
+          <div class="quick-actions__list">
+            <button class="quick-action" type="button" data-demo-action="Cadastrar funcionário"><span class="quick-action__icon"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg></span><span class="quick-action__label">Cadastrar funcionário</span><svg class="icon icon--sm quick-action__chevron" aria-hidden="true"><use href="#i-chevron"/></svg></button>
+            <button class="quick-action" type="button" data-demo-action="Consultar registros"><span class="quick-action__icon"><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg></span><span class="quick-action__label">Consultar registros</span><svg class="icon icon--sm quick-action__chevron" aria-hidden="true"><use href="#i-chevron"/></svg></button>
+            <button class="quick-action" type="button" data-demo-action="Cadastrar biometria"><span class="quick-action__icon"><svg class="icon" aria-hidden="true"><use href="#i-scan"/></svg></span><span class="quick-action__label">Cadastrar biometria</span><svg class="icon icon--sm quick-action__chevron" aria-hidden="true"><use href="#i-chevron"/></svg></button>
+          </div>
+        </section>
+      </aside>
     </div>
-  </div>
+
+    <p class="page-footnote">NF-01 · Design Lab HTML-first · Dashboard V3 · AppShell compartilhado I4 · sem backend de produção.</p>
+  </main>
 
   <div class="toast" role="status" aria-live="polite" data-toast></div>
   <script src="../assets/interactions.js" defer></script>
+  <script src="../assets/app-shell.js" defer></script>
 </body>
 </html>
