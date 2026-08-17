@@ -24,6 +24,7 @@ COMPONENT_CATALOG_BASELINE=FROZEN
 COMPONENT_INDIVIDUAL_REVIEW=IN_PROGRESS
 PHASE_A_COMPONENT_REVIEW=COMPLETE
 PHASE_B_COMPONENT_REVIEW=COMPLETE
+PHASE_C_COMPONENT_REVIEW=COMPLETE
 ```
 
 ### RC transversal
@@ -57,6 +58,7 @@ MEDIUM_GAPS_CLOSED=6/6
 [x] StatusBadge
 [x] MetricCard
 [x] HealthCard
+[x] LastUpdated
 ```
 
 ## Fase A — Estrutura
@@ -83,7 +85,7 @@ MEDIUM_GAPS_CLOSED=6/6
 [x] C1 StatusBadge
 [x] C2 MetricCard
 [x] C3 HealthCard
-[ ] C4 LastUpdated
+[x] C4 LastUpdated
 ```
 
 Guardrails:
@@ -97,9 +99,15 @@ NO_SOURCE => NO_METRIC
 CHECK_ERROR != TARGET_DOWN
 OFFLINE != ERROR
 STALE_DATA != CURRENT_DATA
+LAST_UPDATED != FRESHNESS_ENGINE
+PAGE_RENDER_TIME != DATA_UPDATE_TIME
+NO_TIMESTAMP != NOW
+CLIENT_CLOCK != CANONICAL_TIMESTAMP
 ```
 
-**Próxima ação oficial:** `C4 — revisar LastUpdated como componente`, sem aplicar visualmente às telas.
+```text
+PHASE_C_COMPONENT_REVIEW=COMPLETE
+```
 
 ## Fase D — Busca, filtros e dados tabulares
 
@@ -109,6 +117,8 @@ STALE_DATA != CURRENT_DATA
 [ ] D3 DataTable
 [ ] D4 Pagination
 ```
+
+**Próxima ação oficial:** `D1 — revisar Search como componente`, sem aplicar visualmente às telas.
 
 ## Fase E — Estados de sistema e feedback
 
@@ -205,6 +215,6 @@ DO_NOT_EDIT_DECISOES_CONGELADAS_MD
 Ler decisões canônicas, este roadmap, closeout, catálogo, especificação Novo Funcionário V2, checkpoints individuais recentes e PR #32/HEAD atual; depois continuar pelo primeiro item não concluído.
 
 ```text
-NEXT_OFFICIAL_ITEM=C4_LAST_UPDATED_COMPONENT_REVIEW
+NEXT_OFFICIAL_ITEM=D1_SEARCH_COMPONENT_REVIEW
 VISUAL_IMPLEMENTATION=NOT_YET
 ```
