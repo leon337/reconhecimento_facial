@@ -53,6 +53,10 @@ K1_HIGH_GAP_THEMES=7
 K1_MEDIUM_GAP_THEMES=6
 K1_LOW_DEFERRED_OBSERVATIONS=2
 EMPLOYEES_VISUAL_CHANGE_IN_K1=NO
+K2_EMPLOYEES_CANONICAL_RECONCILIATION=COMPLETE
+K2_ACCEPTANCE=PASS_SOURCE_LEVEL
+K2_HIGH_GAPS_RECONCILED_SOURCE_LEVEL=7/7
+EMPLOYEES_VISUAL_CHANGE_IN_K2=YES_DESIGN_LAB_ONLY
 
 CANONICAL_APPSHELL=ONE
 CURRENT_APPSHELL_OWNER=docs/nf-01/prototype/assets/app-shell.css+app-shell.js
@@ -203,7 +207,7 @@ DEFER=
 
 ```text
 [x] K1 — auditoria Current × Canonical, sem mudança visual
-[ ] K2 — reconciliação canônica de Funcionários no Design Lab
+[x] K2 — reconciliação canônica de Funcionários no Design Lab
 [ ] K3 — aceite pós-K2 e fechamento source-level da Fase K
 ```
 
@@ -234,7 +238,7 @@ K1-H6 paginação viva fictícia sobre seis fixtures locais
 K1-H7 RBAC de ações/menu por linha não materializado
 ```
 
-### Direção proposta para K2
+### Direção aprovada para K2
 
 ```text
 PRESERVE=
@@ -253,7 +257,7 @@ RECONCILE=
   employee != account hierarchy
   users:create-aware New employee CTA
   biometrics:manage-aware biometric actions
-  permission-aware row menu
+  permission-aware row actions
   LOADING|EMPTY_DATASET|READY|FILTER_NO_RESULTS|ERROR|OFFLINE|NO_PERMISSION
   local dimensioning/responsive behavior
 
@@ -266,6 +270,32 @@ DEFER=
   DetailDrawer until needed
   full a11y/responsive validation to Phase N
   cross-screen coherence to Phase M
+```
+
+### Resultado K2
+
+```text
+K2_OUTPUT=docs/nf-01/60_NF01_PHASE_K_K2_EMPLOYEES_CANONICAL_RECONCILIATION_2026-08-17.md
+K2_IMPLEMENTATION=DESIGN_LAB_ONLY
+K2_EMPLOYEES_HTML_CHANGED=YES
+K2_EMPLOYEES_CSS_CHANGED=YES
+K2_EMPLOYEES_JS_CHANGED=YES
+K2_HIGH_GAPS_RECONCILED_SOURCE_LEVEL=7/7
+
+EMPLOYEE_FIXTURE_SOURCE=EXPLICIT
+DATASET_TOTAL_SEPARATE_FROM_FILTERED_COUNT=YES
+BIOMETRIC_PENDING_DERIVED_FROM_FIXTURES=YES
+ADMIN_PSEUDO_KPI=REMOVED
+TABLE_PRIORITY=NAME_REGISTRATION|UNIT|BIOMETRIC|STATUS|ACTIONS
+ACCOUNT_USERNAME=SECONDARY_METADATA
+NEW_EMPLOYEE_PERMISSION=users:create
+NEW_EMPLOYEE_TARGET=03.04-novo-funcionario-v2.html
+BIOMETRIC_ACTION_PERMISSION=biometrics:manage
+ROW_READONLY_FALLBACK=YES
+COLLECTION_STATES=LOADING|EMPTY_DATASET|READY|FILTER_NO_RESULTS|ERROR|OFFLINE|NO_PERMISSION
+FAKE_PAGINATION=REMOVED
+LOCAL_EMPLOYEES_DIMENSIONING=rem/fr/minmax/container-query
+RUNTIME_RBAC_ENFORCEMENT=NOT_IMPLEMENTED_IN_NF01
 ```
 
 ### Guardrails I6
@@ -340,6 +370,12 @@ J2_FALSE_GREEN_PROTECTION=PASS_SOURCE_LEVEL
 J2_PERMISSION_METADATA=PASS_SOURCE_LEVEL
 J3_DASHBOARD_POST_RECONCILIATION_ACCEPTANCE=PASS_SOURCE_LEVEL
 K1_EMPLOYEES_AUDIT=PERSISTED
+K2_EMPLOYEES_RECONCILIATION=PASS_SOURCE_LEVEL
+K2_DATASET_TOTAL_FILTERED_COUNT_SEPARATION=PASS_SOURCE_LEVEL
+K2_PERMISSION_AFFORDANCES=PASS_SOURCE_LEVEL
+K2_COLLECTION_STATE_CONTRACT=PASS_SOURCE_LEVEL
+K2_FAKE_PAGINATION_REMOVED=PASS_SOURCE_LEVEL
+K2_CONTAINER_AWARE_RESPONSIVE_LAYER=PASS_SOURCE_LEVEL
 ```
 
 Ainda não executado:
@@ -366,7 +402,7 @@ N Validação Design Lab..... NOT_STARTED
 O Evidências/fechamento.... NOT_STARTED
 ```
 
-I4/I5/I6 trocaram somente os cascos estruturais; I7 isolou o casco histórico; I8 auditou e endureceu apenas o contrato estrutural; I9 fechou a Fase I em base source-level. J1 auditou o Dashboard; J2 executou a reconciliação canônica; J3 confirmou o aceite pós-J2 e fechou a Fase J. K1 iniciou a Fase K com auditoria documental de Funcionários; nenhuma mudança visual de Funcionários ocorreu em K1.
+I4/I5/I6 trocaram somente os cascos estruturais; I7 isolou o casco histórico; I8 auditou e endureceu apenas o contrato estrutural; I9 fechou a Fase I em base source-level. J1 auditou o Dashboard; J2 executou a reconciliação canônica; J3 confirmou o aceite pós-J2 e fechou a Fase J. K1 iniciou a Fase K com auditoria documental de Funcionários; K2 reconciliou os sete temas HIGH no Design Lab. K3 ainda precisa auditar o resultado pós-K2 antes de fechar a Fase K.
 
 ## Continuidade canônica
 
@@ -404,6 +440,8 @@ DECISOES_CONGELADAS.md
 58_* J3
 ↓
 59_* K1
+↓
+60_* K2
 ```
 
 ## Guardrails permanentes
@@ -423,6 +461,6 @@ DO_NOT_EDIT_DECISOES_CONGELADAS_MD
 
 ```text
 NEXT_OFFICIAL_PHASE=K_EMPLOYEES_RECONCILIATION
-NEXT_OFFICIAL_ITEM=K2_DEFINITION_GATE
+NEXT_OFFICIAL_ITEM=K3_DEFINITION_GATE
 VISUAL_IMPLEMENTATION=DESIGN_LAB_ONLY
 ```
