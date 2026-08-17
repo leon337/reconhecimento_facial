@@ -19,6 +19,7 @@ Antes de alterar qualquer tela do laboratório, ler:
 ../49_NF01_DESIGN_LAB_I3_SHARED_APPSHELL_SUBSTRATE_2026-08-17.md
 ../50_NF01_DESIGN_LAB_I4_DASHBOARD_APPSHELL_ADOPTION_2026-08-17.md
 ../51_NF01_DESIGN_LAB_I5_EMPLOYEES_APPSHELL_ADOPTION_2026-08-17.md
+../52_NF01_DESIGN_LAB_I6_ONBOARDING_V2_APPSHELL_ADOPTION_2026-08-17.md
 ```
 
 `DECISOES_CONGELADAS.md` permanece inalterado e superior quando aplicável.
@@ -36,41 +37,13 @@ MERGE_AUTHORIZED=NO
 
 Durante auditoria, usar somente dados fictícios. Não inserir dados pessoais reais no Design Lab.
 
-## Estrutura atual
-
-```text
-prototype/
-├── index.html
-├── README.md
-├── NEW_EMPLOYEE_V2_UX_SPEC.md
-├── assets/
-│   ├── app-shell.css
-│   ├── app-shell.js
-│   ├── dashboard-v3.css
-│   ├── employees-v1.css
-│   └── employees-v1.js
-├── components/
-└── screens/
-    ├── 01.01-app-shell.html
-    ├── 02.01-dashboard.html
-    ├── 03.01-funcionarios.html
-    ├── 03.03-novo-funcionario.html
-    └── 03.04-novo-funcionario-v2.html
-```
-
-Os antigos `app-shell-i1.css` e `app-shell-i1.js` foram substituídos pelo substrato compartilhado I3 e não devem voltar a ser usados em novas telas.
-
 ## Como abrir localmente
 
 ```bash
 python3 -m http.server 4173 -d docs/nf-01/prototype
 ```
 
-Depois:
-
-```text
-http://localhost:4173/
-```
+Depois acessar `http://localhost:4173/`.
 
 ## Fase I — AppShell
 
@@ -80,28 +53,12 @@ I2_APPSHELL_ADOPTION_CONTRACT=COMPLETE
 I3_SHARED_APPSHELL_SUBSTRATE=COMPLETE
 I4_DASHBOARD_SHARED_APPSHELL_ADOPTION=COMPLETE
 I5_EMPLOYEES_SHARED_APPSHELL_ADOPTION=COMPLETE
+I6_ONBOARDING_V2_SHARED_APPSHELL_ADOPTION=COMPLETE
 CANONICAL_APPSHELL=ONE
-FIRST_INCREMENTAL_CONSUMER=screens/02.01-dashboard.html
-SECOND_INCREMENTAL_CONSUMER=screens/03.01-funcionarios.html
 PRODUCTION_CHANGE=NO
 ```
 
-### I1 — baseline visual
-
-I1 materializou `CollapsibleSidebar + TopHeader + MainWorkspace`, com desktop expandido/compacto, overlay mobile, foco, `inert`, Escape, reduced motion, skip link e um único `main`.
-
-### I2 — contrato de adoção
-
-```text
-CANONICAL_APPSHELL=ONE
-PAGE_CONTENT != SHELL_IMPLEMENTATION
-SHARED_APPSHELL_STRUCTURE=REQUIRED
-SHARED_APPSHELL_BEHAVIOR=REQUIRED
-COPY_PASTE_SHELL_PER_SCREEN=PROHIBITED
-LEGACY_APP_SHELL=SUPERSEDED_FOR_NEW_WORK
-```
-
-### I3 — substrato reutilizável
+O substrato compartilhado é:
 
 ```text
 assets/app-shell.css
@@ -109,64 +66,55 @@ assets/app-shell.css
 assets/app-shell.js
 ```
 
-A página consumidora fornece metadados e um único `<main id="conteudo" data-app-shell-content>`. O bootstrap compartilhado materializa Sidebar, TopHeader, workspace, comportamento responsivo, preferência compacta, foco, `inert`, Escape e item ativo.
+A página consumidora fornece metadados e um único `<main id="conteudo" data-app-shell-content>`. O bootstrap compartilhado materializa `CollapsibleSidebar + TopHeader + MainWorkspace`, comportamento responsivo, preferência compacta, foco, `inert`, Escape e item ativo.
 
 ```text
 DESIGN_LAB_JS_COMPOSITION != PRODUCTION_ARCHITECTURE
 ```
 
-### I4 — Dashboard
+## Consumidores incrementais
 
-`screens/02.01-dashboard.html` tornou-se o primeiro consumidor real do AppShell compartilhado, sem iniciar a Fase J.
+```text
+01.01 AppShell referência............. I3
+02.01 Dashboard Desktop V3........... I4
+03.01 Funcionários Desktop V1........ I5
+03.04 Novo Funcionário Desktop V2.... I6
+```
+
+Dashboard, Funcionários e Novo Funcionário V2 agora compartilham o mesmo casco administrativo no Design Lab. O conteúdo específico de cada tela permanece independente.
+
+### I4 — Dashboard
 
 ```text
 DASHBOARD_SHARED_APPSHELL=YES
-DASHBOARD_LOCAL_SIDEBAR=REMOVED
-DASHBOARD_LOCAL_TOPHEADER=REMOVED
 DASHBOARD_CONTENT_REDESIGN_IN_I4=NO
 PHASE_J_DASHBOARD_RECONCILIATION=NOT_STARTED
 ```
 
-`dashboard-v3.css` preserva somente o conteúdo do Dashboard. `components.css` e `interactions.js` mantêm compatibilidade histórica para telas ainda não migradas.
-
 ### I5 — Funcionários
-
-`screens/03.01-funcionarios.html` tornou-se o segundo consumidor real do mesmo substrato, sem iniciar a Fase K.
 
 ```text
 EMPLOYEES_SHARED_APPSHELL=YES
-EMPLOYEES_LOCAL_SIDEBAR=REMOVED
-EMPLOYEES_LOCAL_TOPHEADER=REMOVED
 EMPLOYEES_CONTENT_REDESIGN_IN_I5=NO
 PHASE_K_EMPLOYEES_RECONCILIATION=NOT_STARTED
 ```
 
-Foram preservados:
+Busca, filtros, DataTable, Pagination, EmptyState e `employees-v1.js` foram preservados.
+
+### I6 — Novo Funcionário V2
 
 ```text
-Breadcrumb
-PageHeader
-summary cards
-Search
-filtros
-DataTable
-Pagination
-EmptyState
-employees-v1.js
-Toast/interações demonstrativas
+ONBOARDING_SHARED_APPSHELL=YES
+ACTIVE_NAV=employees
+ONBOARDING_IS_SUBFLOW_OF_EMPLOYEES=YES
+DASHBOARD_V3_CSS_DEPENDENCY=REMOVED
+ONBOARDING_CONTENT_REDESIGN_IN_I6=NO
+PHASE_L_ONBOARDING_RECONCILIATION=NOT_STARTED
 ```
 
-`employees-v1.css` agora contém apenas estilos do conteúdo de Funcionários; as regras locais do shell foram removidas. A busca e os filtros permanecem locais e demonstrativos.
+O wizard de oito etapas, draft local, validação e `new-employee-v2.js` foram preservados. I6 removeu apenas o casco administrativo local.
 
-## Estado visual
-
-```text
-AppShell I3...................... substrato compartilhado + referência canônica
-Dashboard Desktop V3........... consumidor compartilhado I4; conteúdo preservado
-Funcionários Desktop V1........ consumidor compartilhado I5; conteúdo preservado
-Novo Funcionário Desktop V1.... referência histórica
-Novo Funcionário Desktop V2.... contrato funcional preservado; shell ainda não migrado
-```
+Importante: decisões históricas ainda visíveis dentro do conteúdo do onboarding — como rail vertical, painel lateral e organização espacial anterior — continuam **não canônicas** e serão reconciliadas somente na Fase L.
 
 ## Direções substituídas
 
@@ -217,7 +165,7 @@ O wizard continua com oito etapas:
 7 Revisão e conclusão
 ```
 
-Regras principais permanecem: `HorizontalStepper` icon-first; `NEEDS_REVIEW`; `ContextDrawer` sob demanda; `StickyFormActions`; autosave/draft/conflito/retomada; EntityPicker com catálogo mestre/ID; biometria separada da foto administrativa; conclusão futura transacional/idempotente; `OUTCOME_UNKNOWN` exige reconciliação; contexto do header não é empresa contratante.
+Regras canônicas principais permanecem: `HorizontalStepper` icon-first; `NEEDS_REVIEW`; `ContextDrawer` sob demanda; `StickyFormActions`; autosave/draft/conflito/retomada; EntityPicker com catálogo mestre/ID; biometria separada da foto administrativa; conclusão futura transacional/idempotente; `OUTCOME_UNKNOWN` exige reconciliação; contexto do header não é empresa contratante.
 
 ## Design System atual
 
@@ -237,21 +185,18 @@ RESPONSIVO != DIMINUIR_TUDO
 RESPONSIVO = REORGANIZAR
 ```
 
-## Auditoria obrigatória
+## Validação ainda pendente
 
-- coerência com o registro canônico;
-- uma única implementação viva do AppShell;
-- exatamente um `main` por consumidor;
-- ausência de shell duplicado após montagem repetida;
-- conteúdo de cada consumidor preservado;
-- 360/768/1024/1440 + larguras intermediárias;
-- zoom 200%;
-- keyboard-only;
-- screen reader;
-- reduced motion;
-- mobile keyboard safe;
-- estados de erro/loading/conflict/offline;
-- ausência de dados ou estados apresentados como reais sem fonte.
+```text
+BROWSER_VISUAL_MATRIX_360_768_1024_1440=NO
+INTERMEDIATE_WIDTH_VISUAL_TEST=NO
+ZOOM_200_MANUAL_TEST=NO
+SCREEN_READER_MANUAL_TEST=NO
+AUTOMATED_A11Y_SCAN=NO
+NEW_DESIGN_UNIT_TESTS_EXECUTED=NO
+NEW_DESIGN_INTEGRATION_TESTS_EXECUTED=NO
+PRODUCTION_E2E=NO
+```
 
 ## Testes futuros
 
@@ -260,7 +205,7 @@ UNITARIO
 → montagem idempotente + active nav + preferência + aria-expanded + inert + foco + reduced motion
 
 INTEGRACAO
-→ AppShell + Dashboard + Funcionários + conteúdos independentes preservados
+→ AppShell + Dashboard + Funcionários + Onboarding V2 + conteúdos independentes preservados
 
 RESPONSIVO
 → 360 / 768 / 1024 / 1440 + intermediários + container resize
