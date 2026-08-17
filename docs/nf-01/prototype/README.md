@@ -17,6 +17,7 @@ Antes de alterar qualquer tela do laboratório, ler:
 ../47_NF01_DESIGN_LAB_I1_APPSHELL_2026-08-17.md
 ../48_NF01_DESIGN_LAB_I2_APPSHELL_ADOPTION_CONTRACT_2026-08-17.md
 ../49_NF01_DESIGN_LAB_I3_SHARED_APPSHELL_SUBSTRATE_2026-08-17.md
+../50_NF01_DESIGN_LAB_I4_DASHBOARD_APPSHELL_ADOPTION_2026-08-17.md
 ```
 
 `DECISOES_CONGELADAS.md` permanece inalterado e superior quando aplicável.
@@ -43,7 +44,8 @@ prototype/
 ├── NEW_EMPLOYEE_V2_UX_SPEC.md
 ├── assets/
 │   ├── app-shell.css
-│   └── app-shell.js
+│   ├── app-shell.js
+│   └── dashboard-v3.css
 ├── components/
 └── screens/
     ├── 01.01-app-shell.html
@@ -73,24 +75,16 @@ http://localhost:4173/
 I1_DESIGN_LAB_APPSHELL=COMPLETE
 I2_APPSHELL_ADOPTION_CONTRACT=COMPLETE
 I3_SHARED_APPSHELL_SUBSTRATE=COMPLETE
+I4_DASHBOARD_SHARED_APPSHELL_ADOPTION=COMPLETE
 REFERENCE_SCREEN=screens/01.01-app-shell.html
+FIRST_INCREMENTAL_CONSUMER=screens/02.01-dashboard.html
 CANONICAL_APPSHELL=ONE
 PRODUCTION_CHANGE=NO
 ```
 
 ### I1 — baseline visual
 
-I1 materializou a referência inicial de:
-
-- `CollapsibleSidebar` em desktop largo, com preferência local não sensível persistida;
-- sidebar compacta na faixa intermediária para devolver largura ao workspace;
-- navegação overlay em mobile, com backdrop, `Escape`, foco e `inert`;
-- `TopHeader` com contexto demonstrativo separado do valor de empresa do vínculo;
-- `Breadcrumb`, `PageHeader`, skip link e um único `main`;
-- targets interativos confortáveis;
-- reduced motion;
-- reflow sem alterar ordem semântica;
-- `Registrar ponto` como saída para jornada independente, sem envolver `/punch` no shell administrativo.
+I1 materializou a referência inicial de `CollapsibleSidebar + TopHeader + MainWorkspace`, com navegação desktop/intermediária/mobile, foco, `inert`, Escape, reduced motion, skip link e um único `main`.
 
 ### I2 — contrato de adoção
 
@@ -105,11 +99,9 @@ COPY_PASTE_SHELL_PER_SCREEN=PROHIBITED
 LEGACY_APP_SHELL=SUPERSEDED_FOR_NEW_WORK
 ```
 
-Dashboard, Funcionários e Novo Funcionário continuam preservados e ainda não foram declarados reconciliados.
-
 ### I3 — substrato reutilizável
 
-I3 substitui a implementação temporária `.i1-*` por uma interface interna neutra do Design Lab:
+I3 substituiu a implementação temporária `.i1-*` por uma interface interna neutra do Design Lab:
 
 ```text
 assets/app-shell.css
@@ -117,35 +109,9 @@ assets/app-shell.css
 assets/app-shell.js
 ```
 
-A página consumidora fornece:
+A página consumidora fornece metadados e um único `<main id="conteudo" data-app-shell-content>`. O bootstrap compartilhado materializa Sidebar, TopHeader, wrapper do workspace, comportamento responsivo, preferência compacta, foco, `inert`, Escape e item ativo.
 
-```text
-BODY METADATA
-+
-<main id="conteudo" data-app-shell-content>
-  Breadcrumb
-  PageHeader
-  PageContent
-</main>
-```
-
-O bootstrap compartilhado materializa:
-
-```text
-CollapsibleSidebar
-+
-TopHeader
-+
-MainWorkspace wrapper
-+
-mobile overlay / inert / focus / Escape
-+
-preferência compacta
-+
-active nav state
-```
-
-A montagem é deliberadamente idempotente: chamadas repetidas de `NF01AppShell.mount()` não devem criar outro shell. O `main` original da página é preservado e movido para o workspace, em vez de um segundo `main` ser criado.
+A montagem é idempotente: chamadas repetidas de `NF01AppShell.mount()` não devem criar outro shell.
 
 Regra crítica:
 
@@ -153,13 +119,27 @@ Regra crítica:
 DESIGN_LAB_JS_COMPOSITION != PRODUCTION_ARCHITECTURE
 ```
 
-O mecanismo JS de composição existe apenas para o laboratório estático. Ele não congela a futura arquitetura Flask/Jinja, includes, macros ou herança de templates.
+### I4 — primeiro consumidor incremental
+
+I4 adotou o substrato compartilhado em `screens/02.01-dashboard.html` sem iniciar a Fase J.
+
+```text
+DASHBOARD_SHARED_APPSHELL=YES
+DASHBOARD_LEGACY_SIDEBAR=REMOVED_FROM_SCREEN
+DASHBOARD_LEGACY_TOPHEADER=REMOVED_FROM_SCREEN
+DASHBOARD_CONTENT_REDESIGN_IN_I4=NO
+PHASE_J_DASHBOARD_RECONCILIATION=NOT_STARTED
+```
+
+O conteúdo do Dashboard V3 foi preservado: PageHeader, aviso demonstrativo, KPIs, atividade recente, atenção, atalhos, data e Toast demonstrativo. `dashboard-v3.css` passou a conter somente refinamentos específicos do conteúdo; regras de casco do Dashboard foram removidas desse arquivo.
+
+`components.css` e `interactions.js` ainda mantêm compatibilidade histórica para telas não migradas. I4 **não** remove contratos legados globalmente antes da vez de Funcionários/onboarding.
 
 ## Estado visual
 
 ```text
 AppShell I3...................... substrato compartilhado + referência canônica
-Dashboard Desktop V3........... conteúdo/padrão visual anterior preservado; shell a reconciliar
+Dashboard Desktop V3........... primeiro consumidor compartilhado em I4; conteúdo preservado
 Funcionários Desktop V1........ conteúdo anterior preservado; shell a reconciliar
 Novo Funcionário Desktop V1.... referência histórica
 Novo Funcionário Desktop V2.... contrato funcional preservado; layout espacial a reconciliar
@@ -167,7 +147,7 @@ Novo Funcionário Desktop V2.... contrato funcional preservado; layout espacial 
 
 ## Direções substituídas
 
-O laboratório ainda pode conter visualmente decisões históricas. Elas **não são mais canônicas**:
+O laboratório ainda pode conter visualmente decisões históricas em telas ainda não migradas. Elas **não são mais canônicas**:
 
 ```text
 sidebar permanentemente expandida........ SUPERSEDED
@@ -198,6 +178,8 @@ ContextDrawer sob demanda
 +
 StickyFormActions no onboarding
 ```
+
+`/punch` permanece fora do AppShell administrativo.
 
 ## Novo Funcionário — contrato
 
@@ -279,7 +261,7 @@ UNITARIO
 → montagem idempotente + preferência + aria-expanded + inert + foco + reduced motion
 
 INTEGRACAO
-→ AppShell + conteúdo de página + navegação + viewport + reconciliação incremental
+→ AppShell + consumidores + conteúdo preservado + navegação + viewport + reconciliação incremental
 
 RESPONSIVO
 → 360 / 768 / 1024 / 1440 + intermediários + container resize
