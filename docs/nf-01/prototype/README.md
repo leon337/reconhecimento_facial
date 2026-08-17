@@ -42,6 +42,8 @@ J1 auditou o Dashboard sem mudar o visual. J2 executou a primeira reconciliaçã
 
 J2 também converteu o dimensionamento local tocado para `rem/fr/minmax`; a dívida transversal de `components.css` permanece diferida para gate próprio.
 
+A validação de J2 é source-level do protótipo. O Design Lab não declara teste automatizado, homologação visual ou enforcement RBAC de produção.
+
 Continuam diferidos:
 
 ```text
