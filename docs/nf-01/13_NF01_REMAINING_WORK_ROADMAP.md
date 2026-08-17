@@ -25,6 +25,7 @@ COMPONENT_INDIVIDUAL_REVIEW=IN_PROGRESS
 PHASE_A_COMPONENT_REVIEW=COMPLETE
 PHASE_B_COMPONENT_REVIEW=COMPLETE
 PHASE_C_COMPONENT_REVIEW=COMPLETE
+PHASE_D_COMPONENT_REVIEW=COMPLETE
 ```
 
 ### RC transversal
@@ -62,6 +63,7 @@ MEDIUM_GAPS_CLOSED=6/6
 [x] Search
 [x] FilterBar
 [x] DataTable
+[x] Pagination
 ```
 
 ## Fase A — Estrutura
@@ -118,10 +120,10 @@ PHASE_C_COMPONENT_REVIEW=COMPLETE
 [x] D1 Search
 [x] D2 FilterBar
 [x] D3 DataTable
-[ ] D4 Pagination
+[x] D4 Pagination
 ```
 
-Guardrails congelados para D1–D3:
+Guardrails congelados para D1–D4:
 
 ```text
 SEARCH != FILTER_BAR
@@ -155,9 +157,20 @@ PERMISSION => AUTHORIZED_COLUMNS => AUTHORIZED_DATA
 PERMISSION => ACTION_CATALOG => RENDER
 NO_DATA != ZERO
 MINIMUM_NECESSARY_DATA
+PAGINATION != DATASET_ENGINE
+PAGINATION != AUTHORIZATION_ENGINE
+PAGE_CHANGE => PRESERVE_SEARCH_FILTER_SORT
+PAGE_SIZE_CHANGE => PAGE_1
+TOTAL_COUNT => SAME_AUTHORIZED_QUERY_SCOPE
+INVALID_PAGE != NO_RESULTS
+MUTATION_CAN_INVALIDATE_CURRENT_PAGE
+PAGE_BASED_PRESENTATION_WITH_CURSOR_COMPATIBILITY
+CURRENT_QUERY_STATE_WINS
 ```
 
-**Próxima ação oficial:** `D4 — revisar Pagination como componente`, sem aplicar visualmente às telas.
+```text
+PHASE_D_COMPONENT_REVIEW=COMPLETE
+```
 
 ## Fase E — Estados de sistema e feedback
 
@@ -168,6 +181,8 @@ MINIMUM_NECESSARY_DATA
 [ ] E4 DegradationBanner
 [~] E5 Toast — revisão de integração/coerência
 ```
+
+**Próxima ação oficial:** `E1 — revisar EmptyState como componente`, sem aplicar visualmente às telas.
 
 ## Fase F — Overlays, confirmação e histórico
 
@@ -254,6 +269,6 @@ DO_NOT_EDIT_DECISOES_CONGELADAS_MD
 Ler decisões canônicas, este roadmap, closeout, catálogo, especificação Novo Funcionário V2, checkpoints individuais recentes e PR #32/HEAD atual; depois continuar pelo primeiro item não concluído.
 
 ```text
-NEXT_OFFICIAL_ITEM=D4_PAGINATION_COMPONENT_REVIEW
+NEXT_OFFICIAL_ITEM=E1_EMPTY_STATE_COMPONENT_REVIEW
 VISUAL_IMPLEMENTATION=NOT_YET
 ```
