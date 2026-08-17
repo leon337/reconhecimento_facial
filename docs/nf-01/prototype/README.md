@@ -31,12 +31,19 @@ PHASE_J_CLOSEOUT_BASIS=SOURCE_LEVEL
 UNRESOLVED_DASHBOARD_CANONICAL_GAPS=0
 J4_REQUIRED=NO
 
+PHASE_K_EMPLOYEES_RECONCILIATION=IN_PROGRESS
+K1_EMPLOYEES_CANONICAL_GAP_AUDIT=COMPLETE
+K1_OUTPUT=../59_NF01_PHASE_K_K1_EMPLOYEES_CANONICAL_GAP_AUDIT_2026-08-17.md
+K1_AUDIT_RESULT=GAPS_FOUND
+K1_HIGH_GAP_THEMES=7
+EMPLOYEES_VISUAL_CHANGE_IN_K1=NO
+
 ACTIVE_SURFACE_LEGACY_SHELL_DEPENDENCY=0
 HISTORICAL_V1=screens/03.03-novo-funcionario.html
 HISTORICAL_V1_PRESERVED=YES
 HISTORICAL_V1_MIGRATED=NO
 NEXT_OFFICIAL_PHASE=K_EMPLOYEES_RECONCILIATION
-NEXT_OFFICIAL_ITEM=K1_DEFINITION_GATE
+NEXT_OFFICIAL_ITEM=K2_DEFINITION_GATE
 PRODUCTION_CHANGE=NO
 NF02_STARTED=NO
 PR_MERGE=NOT_AUTHORIZED
@@ -44,11 +51,11 @@ PR_MERGE=NOT_AUTHORIZED
 
 I8 endureceu o bootstrap do AppShell e I9 fechou a Fase I somente em base source-level.
 
-J1 auditou o Dashboard sem mudar o visual. J2 executou a reconciliação canônica de `screens/02.01-dashboard.html` + `assets/dashboard-v3.css`: removeu tendência sem fonte e quick actions inadequadas, deixou uma única ação `Ver registros`, explicitou origem/estado das fixtures, adicionou contratos de estados alternativos, protegeu Atenção necessária contra falso verde e registrou metadados de permissão sem fingir enforcement backend.
+J1 auditou o Dashboard sem mudar o visual. J2 executou a reconciliação canônica de `screens/02.01-dashboard.html` + `assets/dashboard-v3.css`. J3 reauditorou o resultado, corrigiu somente metainformação do índice do laboratório e encerrou a Fase J em base source-level.
 
-J3 reauditorou o Dashboard pós-J2 contra os contratos canônicos. Não encontrou gap bloqueante na tela; corrigiu somente o tile histórico do Dashboard em `index.html`, que ainda descrevia a etapa I4. A Fase J foi encerrada em base source-level, sem alterar novamente o HTML/CSS do Dashboard.
+K1 auditou `screens/03.01-funcionarios.html` + `assets/employees-v1.css` + `assets/employees-v1.js` sem alterar esses arquivos. Foram registrados sete temas HIGH: significado/origem dos resumos; hierarquia da tabela; `users:create` no CTA Novo funcionário; `biometrics:manage` nas ações biométricas; estados completos da coleção; paginação fictícia; e variantes RBAC das ações por linha.
 
-A dívida transversal de `components.css`, Saúde operacional viva e a validação completa de responsividade/acessibilidade permanecem diferidas para seus gates próprios.
+A próxima decisão é K2, que deverá reconciliar somente os gaps comprovados por K1. A dívida transversal de `components.css`, a coerência cruzada entre telas e a validação completa de responsividade/acessibilidade permanecem diferidas para seus gates próprios.
 
 Continuam diferidos:
 
