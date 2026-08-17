@@ -28,7 +28,7 @@ I9_PHASE_I_APPSHELL_CLOSEOUT=COMPLETE
 PHASE_I_CLOSEOUT_BASIS=SOURCE_LEVEL
 UNRESOLVED_PHASE_I_STRUCTURAL_GAPS=0
 
-PHASE_J_DASHBOARD_RECONCILIATION=IN_PROGRESS
+PHASE_J_DASHBOARD_RECONCILIATION=COMPLETE
 J1_DASHBOARD_CANONICAL_GAP_AUDIT=COMPLETE
 J1_AUDIT_RESULT=GAPS_FOUND
 J1_CRITICAL_GAPS=0
@@ -39,6 +39,11 @@ DASHBOARD_VISUAL_CHANGE_IN_J1=NO
 J2_DASHBOARD_CANONICAL_RECONCILIATION=COMPLETE
 J2_HIGH_GAPS_RECONCILED_SOURCE_LEVEL=6/6
 DASHBOARD_VISUAL_CHANGE_IN_J2=YES_DESIGN_LAB_ONLY
+J3_DASHBOARD_POST_RECONCILIATION_ACCEPTANCE=COMPLETE
+J3_ACCEPTANCE=PASS_SOURCE_LEVEL_WITH_ONE_CONTINUITY_FIX
+PHASE_J_CLOSEOUT_BASIS=SOURCE_LEVEL
+UNRESOLVED_DASHBOARD_CANONICAL_GAPS=0
+J4_REQUIRED=NO
 
 CANONICAL_APPSHELL=ONE
 CURRENT_APPSHELL_OWNER=docs/nf-01/prototype/assets/app-shell.css+app-shell.js
@@ -85,8 +90,17 @@ DEFERRED_TO=PHASE_N
 ```text
 [x] J1 — auditoria Current × Canonical, sem mudança visual
 [x] J2 — reconciliação canônica do Dashboard no Design Lab
-[ ] J3 — definição do próximo incremento/aceite da Fase J
-[ ] J4+ — incrementos posteriores ainda não executados
+[x] J3 — aceite pós-J2 e fechamento source-level da Fase J
+```
+
+```text
+PHASE_J_RESULT=COMPLETE_SOURCE_LEVEL
+PHASE_J_COMPLETE != NF01_COMPLETE
+UNRESOLVED_DASHBOARD_CANONICAL_GAPS=0
+J4_REQUIRED=NO
+FULL_VISUAL_ACCEPTANCE=DEFERRED_TO_PHASE_N
+FULL_ACCESSIBILITY_ACCEPTANCE=DEFERRED_TO_PHASE_N
+AUTOMATED_ACCEPTANCE=DEFERRED_TO_PHASE_N
 ```
 
 ### Resultado J1
@@ -139,7 +153,24 @@ COMPONENTS_CSS_GLOBAL_PX_DEBT=DEFERRED
 LIVE_HEALTH_OPERATIONAL_ACTION=NOT_ADDED
 ```
 
-### Direção preservada pós-J2
+### Resultado J3
+
+```text
+J3_OUTPUT=docs/nf-01/58_NF01_PHASE_J_J3_DASHBOARD_POST_RECONCILIATION_ACCEPTANCE_2026-08-17.md
+J3_IMPLEMENTATION=AUDIT_AND_CONTINUITY_METADATA_ONLY
+J3_DASHBOARD_HTML_CHANGED=NO
+J3_DASHBOARD_CSS_CHANGED=NO
+J3_BLOCKING_GAPS_FOUND=0
+J3_CONTINUITY_DRIFT_FOUND=1
+J3_CONTINUITY_DRIFT_FIXED=1
+
+J3_CONTINUITY_FIX=docs/nf-01/prototype/index.html
+J3_ACCEPTANCE=PASS_SOURCE_LEVEL_WITH_ONE_CONTINUITY_FIX
+UNRESOLVED_DASHBOARD_CANONICAL_GAPS=0
+J4_REQUIRED=NO
+```
+
+### Direção preservada pós-J3
 
 ```text
 PRESERVE=
@@ -153,6 +184,7 @@ PRESERVE=
   /punch outside admin Dashboard
 
 DEFER=
+  Breadcrumb on Dashboard root until real hierarchy requires it
   live Saúde operacional until real surface/source exists
   global px debt in components.css
   full a11y/responsive validation to Phase N
@@ -228,6 +260,7 @@ J2_METRIC_SOURCE_STATE_CONTRACT=PASS_SOURCE_LEVEL
 J2_ACTIVITY_STATE_CONTRACT=PASS_SOURCE_LEVEL
 J2_FALSE_GREEN_PROTECTION=PASS_SOURCE_LEVEL
 J2_PERMISSION_METADATA=PASS_SOURCE_LEVEL
+J3_DASHBOARD_POST_RECONCILIATION_ACCEPTANCE=PASS_SOURCE_LEVEL
 ```
 
 Ainda não executado:
@@ -246,7 +279,7 @@ PRODUCTION_E2E=NO
 ## Fases posteriores
 
 ```text
-J Dashboard................ IN_PROGRESS
+J Dashboard................ COMPLETE_SOURCE_LEVEL
 K Funcionários............. NOT_STARTED
 L Novo Funcionário V2...... NOT_STARTED
 M Coerência entre telas.... NOT_STARTED
@@ -254,7 +287,7 @@ N Validação Design Lab..... NOT_STARTED
 O Evidências/fechamento.... NOT_STARTED
 ```
 
-I4/I5/I6 trocaram somente os cascos estruturais; I7 isolou o casco histórico; I8 auditou e endureceu apenas o contrato estrutural; I9 fechou a Fase I em base source-level. J1 iniciou a Fase J com auditoria documental; J2 executou a primeira reconciliação canônica do conteúdo do Dashboard somente no Design Lab.
+I4/I5/I6 trocaram somente os cascos estruturais; I7 isolou o casco histórico; I8 auditou e endureceu apenas o contrato estrutural; I9 fechou a Fase I em base source-level. J1 auditou o Dashboard; J2 executou a reconciliação canônica; J3 confirmou o aceite pós-J2, corrigiu apenas metainformação do índice do Design Lab e fechou a Fase J em base source-level.
 
 ## Continuidade canônica
 
@@ -288,6 +321,8 @@ DECISOES_CONGELADAS.md
 56_* J1
 ↓
 57_* J2
+↓
+58_* J3
 ```
 
 ## Guardrails permanentes
@@ -306,7 +341,7 @@ DO_NOT_EDIT_DECISOES_CONGELADAS_MD
 ```
 
 ```text
-NEXT_OFFICIAL_PHASE=J_DASHBOARD_RECONCILIATION
-NEXT_OFFICIAL_ITEM=J3_DEFINITION_GATE
+NEXT_OFFICIAL_PHASE=K_EMPLOYEES_RECONCILIATION
+NEXT_OFFICIAL_ITEM=K1_DEFINITION_GATE
 VISUAL_IMPLEMENTATION=DESIGN_LAB_ONLY
 ```
