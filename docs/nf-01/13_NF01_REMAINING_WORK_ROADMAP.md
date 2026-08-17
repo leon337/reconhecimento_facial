@@ -21,11 +21,17 @@ I3_SHARED_APPSHELL_SUBSTRATE=COMPLETE
 I4_DASHBOARD_SHARED_APPSHELL_ADOPTION=COMPLETE
 I5_EMPLOYEES_SHARED_APPSHELL_ADOPTION=COMPLETE
 I6_ONBOARDING_V2_SHARED_APPSHELL_ADOPTION=COMPLETE
+I7_LEGACY_SHELL_QUARANTINE=COMPLETE
 
 CANONICAL_APPSHELL=ONE
+CURRENT_APPSHELL_OWNER=docs/nf-01/prototype/assets/app-shell.css+app-shell.js
+LEGACY_SHELL_OWNER=docs/nf-01/prototype/assets/legacy-shell.css+legacy-shell.js
 DASHBOARD_SHARED_APPSHELL=YES
 EMPLOYEES_SHARED_APPSHELL=YES
 ONBOARDING_SHARED_APPSHELL=YES
+ACTIVE_SURFACE_LEGACY_SHELL_DEPENDENCY=0
+HISTORICAL_V1_PRESERVED=YES
+HISTORICAL_V1_MIGRATED=NO
 
 PRODUCTION_CODE_CHANGED=NO
 NF02_STARTED=NO
@@ -42,9 +48,12 @@ FINAL_HUMAN_GATE=NOT_READY
 [x] I4 — Dashboard adota AppShell
 [x] I5 — Funcionários adota AppShell
 [x] I6 — Novo Funcionário V2 adota AppShell
-[ ] I7 — próximo incremento de adoção/validação
-[ ] I8–I9 — fechamento incremental do AppShell
+[x] I7 — quarentena do shell legado
+[ ] I8 — próximo incremento de validação/fechamento do AppShell
+[ ] I9 — fechamento incremental da Fase I
 ```
+
+### Guardrails I6
 
 ```text
 I6_TARGET=docs/nf-01/prototype/screens/03.04-novo-funcionario-v2.html
@@ -59,6 +68,19 @@ ONBOARDING_CONTENT_REDESIGN_IN_I6=NO
 PHASE_L_ONBOARDING_RECONCILIATION=NOT_STARTED
 ```
 
+### Guardrails I7
+
+```text
+GLOBAL_COMPONENTS_OWNS_LEGACY_SHELL=NO
+GLOBAL_INTERACTIONS_OWNS_LEGACY_NAV=NO
+LEGACY_SHELL_QUARANTINED=YES
+LEGACY_SHELL_SCOPE=body[data-legacy-shell]
+HISTORICAL_V1=docs/nf-01/prototype/screens/03.03-novo-funcionario.html
+HISTORICAL_V1_PRESERVED=YES
+HISTORICAL_V1_DASHBOARD_CSS_DEPENDENCY=REMOVED
+ACTIVE_SURFACE_LEGACY_SHELL_DEPENDENCY=0
+```
+
 Validação source-level:
 
 ```text
@@ -66,6 +88,9 @@ DASHBOARD_SHARED_APPSHELL=PASS
 EMPLOYEES_SHARED_APPSHELL=PASS
 ONBOARDING_SHARED_APPSHELL=PASS
 SINGLE_MAIN_CONTRACT=PASS_SOURCE_LEVEL
+COMPONENTS_GLOBAL_LEGACY_SHELL_REMOVED=PASS
+SHARED_INTERACTIONS_LEGACY_NAV_REMOVED=PASS
+HISTORICAL_V1_LEGACY_SHELL_ISOLATED=PASS
 ```
 
 Ainda não executado:
@@ -92,7 +117,7 @@ N Validação Design Lab..... NOT_STARTED
 O Evidências/fechamento.... NOT_STARTED
 ```
 
-I4/I5/I6 trocaram somente os cascos estruturais; não consumiram as fases J/K/L.
+I4/I5/I6 trocaram somente os cascos estruturais; I7 apenas isolou o casco histórico. Nenhum desses gates consumiu as fases J/K/L.
 
 ## Continuidade canônica
 
@@ -116,6 +141,8 @@ DECISOES_CONGELADAS.md
 51_* I5
 ↓
 52_* I6
+↓
+53_* I7
 ```
 
 ## Guardrails permanentes
@@ -135,6 +162,6 @@ DO_NOT_EDIT_DECISOES_CONGELADAS_MD
 
 ```text
 NEXT_OFFICIAL_PHASE=I_DESIGN_LAB_APPSHELL
-NEXT_OFFICIAL_ITEM=I7_DEFINITION_GATE
+NEXT_OFFICIAL_ITEM=I8_DEFINITION_GATE
 VISUAL_IMPLEMENTATION=DESIGN_LAB_ONLY
 ```
