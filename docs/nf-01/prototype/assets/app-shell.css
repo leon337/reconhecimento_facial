@@ -222,12 +222,6 @@ body.app-shell-is-compact .app-shell__nav-text,
 body.app-shell-is-compact .app-shell__nav-external { width: 0; opacity: 0; overflow: hidden; }
 body.app-shell-is-compact .app-shell__sidebar-toolbar { justify-content: center; }
 body.app-shell-is-compact .app-shell__nav-item { justify-content: center; padding-inline: .5rem; }
-
-body.app-shell-is-compact .app-shell__nav-item::after,
-@media (min-width: 48rem) and (max-width: 69.99rem) {
-  .app-shell__nav-item::after { content: none; }
-}
-
 body.app-shell-is-compact .app-shell__nav-item::after {
   content: attr(data-label);
   position: absolute;
