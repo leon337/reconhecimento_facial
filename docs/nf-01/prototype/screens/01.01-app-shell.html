@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>AppShell I1 — NF-01 Design Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/design-tokens.css">
+  <link rel="stylesheet" href="../assets/components.css">
+  <link rel="stylesheet" href="../assets/app-shell-i1.css">
+</head>
+<body>
+  <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+
+  <svg class="icon-sprite" aria-hidden="true">
+    <symbol id="i-grid" viewBox="0 0 24 24"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-scan" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="3.5" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 19c.6-3.2 2.4-5 5.5-5s4.9 1.8 5.5 5M15 6.5c2 .2 3.2 1.4 3.2 3.1S17 12.5 15 12.8M17 14.2c2 .6 3 2.1 3.5 4.3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-building" viewBox="0 0 24 24"><path d="M5 21V5l7-2v18M12 8h7v13M3 21h18M8 8h1M8 12h1M8 16h1M15 12h1M15 16h1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-pulse" viewBox="0 0 24 24"><path d="M3 12h4l2-5 3 10 2-6 2 3h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h11M8 12h11M8 18h11M4 6h.01M4 12h.01M4 18h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5 12a7 7 0 0 1 .2-1.7L3.7 9.1l2-3.4 1.8.7A7 7 0 0 1 10 5V3h4v2a7 7 0 0 1 2.5 1.4l1.8-.7 2 3.4-1.5 1.2A7 7 0 0 1 19 12c0 .6-.1 1.2-.2 1.7l1.5 1.2-2 3.4-1.8-.7A7 7 0 0 1 14 19v2h-4v-2a7 7 0 0 1-2.5-1.4l-1.8.7-2-3.4 1.5-1.2A7 7 0 0 1 5 12Z" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-panel-left" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9 4v16M14 9l3 3-3 3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 10a6 6 0 0 1 12 0v4l2 3H4l2-3zM10 20h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  </svg>
+
+  <div class="i1-shell">
+    <aside class="i1-sidebar" id="i1-sidebar" aria-label="Navegação principal" data-i1-sidebar>
+      <div class="i1-brand">
+        <div class="i1-brand__mark" aria-hidden="true">CP</div>
+        <div class="i1-brand__copy"><strong>Controle de Ponto</strong><span>POTIGUAR</span></div>
+      </div>
+
+      <div class="i1-sidebar__toolbar">
+        <button class="i1-collapse-button" type="button" aria-controls="i1-sidebar" aria-expanded="true" aria-label="Recolher navegação" data-i1-collapse>
+          <svg class="icon" aria-hidden="true"><use href="#i-panel-left"/></svg>
+        </button>
+      </div>
+
+      <nav class="i1-nav" aria-label="Áreas administrativas">
+        <div class="i1-nav__section">
+          <div class="i1-nav__list">
+            <a class="i1-nav__item" href="#conteudo" aria-current="page" data-label="Dashboard"><svg class="icon" aria-hidden="true"><use href="#i-grid"/></svg><span class="i1-nav__text">Dashboard</span></a>
+          </div>
+        </div>
+        <div class="i1-nav__section">
+          <div class="i1-nav__label">Operação</div>
+          <div class="i1-nav__list">
+            <a class="i1-nav__item" href="#" data-label="Registros"><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg><span class="i1-nav__text">Registros</span></a>
+            <a class="i1-nav__item" href="#" data-label="Registrar ponto — fluxo independente"><svg class="icon" aria-hidden="true"><use href="#i-scan"/></svg><span class="i1-nav__text">Registrar ponto</span><span class="i1-nav__external" aria-hidden="true">↗</span></a>
+          </div>
+        </div>
+        <div class="i1-nav__section">
+          <div class="i1-nav__label">Gestão</div>
+          <div class="i1-nav__list">
+            <a class="i1-nav__item" href="#" data-label="Funcionários"><svg class="icon" aria-hidden="true"><use href="#i-users"/></svg><span class="i1-nav__text">Funcionários</span></a>
+            <a class="i1-nav__item" href="#" data-label="Empresas e obras"><svg class="icon" aria-hidden="true"><use href="#i-building"/></svg><span class="i1-nav__text">Empresas / Obras</span></a>
+          </div>
+        </div>
+        <div class="i1-nav__section">
+          <div class="i1-nav__label">Sistema</div>
+          <div class="i1-nav__list">
+            <a class="i1-nav__item" href="#" data-label="Saúde operacional"><svg class="icon" aria-hidden="true"><use href="#i-pulse"/></svg><span class="i1-nav__text">Saúde operacional</span></a>
+            <a class="i1-nav__item" href="#" data-label="Eventos e logs"><svg class="icon" aria-hidden="true"><use href="#i-list"/></svg><span class="i1-nav__text">Eventos / Logs</span></a>
+            <a class="i1-nav__item" href="#" data-label="Configurações"><svg class="icon" aria-hidden="true"><use href="#i-settings"/></svg><span class="i1-nav__text">Configurações</span></a>
+          </div>
+        </div>
+      </nav>
+    </aside>
+
+    <button class="i1-backdrop" type="button" aria-label="Fechar navegação" data-i1-backdrop></button>
+
+    <div class="i1-main">
+      <header class="i1-topbar">
+        <div class="i1-topbar__start">
+          <button class="icon-button i1-mobile-menu" type="button" aria-controls="i1-sidebar" aria-expanded="false" aria-label="Abrir navegação" data-i1-mobile-menu>
+            <svg class="icon" aria-hidden="true"><use href="#i-menu"/></svg>
+          </button>
+          <button class="i1-context" type="button" aria-label="Contexto atual: Potiguar Locações, Galpão principal. Demonstração; não altera dados do formulário.">
+            <svg class="icon" aria-hidden="true"><use href="#i-building"/></svg>
+            <span class="i1-context__copy"><strong>Potiguar Locações</strong><span>Galpão principal · contexto demonstrativo</span></span>
+            <svg class="icon icon--sm" aria-hidden="true"><use href="#i-chevron"/></svg>
+          </button>
+        </div>
+        <div class="i1-topbar__end">
+          <button class="icon-button" type="button" aria-label="Notificações demonstrativas"><svg class="icon" aria-hidden="true"><use href="#i-bell"/></svg></button>
+          <button class="i1-profile" type="button" aria-label="Abrir perfil demonstrativo">
+            <span class="i1-profile__avatar" aria-hidden="true">AD</span>
+            <span class="i1-profile__copy"><strong>Administrador Demo</strong><span>Perfil fictício</span></span>
+          </button>
+        </div>
+      </header>
+
+      <main class="i1-workspace" id="conteudo">
+        <nav class="i1-breadcrumb" aria-label="Breadcrumb">
+          <ol><li>Design Lab</li><li aria-hidden="true">›</li><li aria-current="page">AppShell I1</li></ol>
+        </nav>
+
+        <header class="i1-page-header">
+          <div>
+            <p class="eyebrow">NF-01 · Design Lab</p>
+            <h1>Baseline canônica do AppShell</h1>
+            <p>Referência isolada para validar navegação, top header, workspace, landmarks e adaptação responsiva antes de reconciliar as telas de Dashboard, Funcionários e Novo Funcionário.</p>
+          </div>
+        </header>
+
+        <section class="i1-demo-card" aria-labelledby="i1-contrato">
+          <h2 id="i1-contrato">Contrato materializado em I1</h2>
+          <p>Esta tela usa exclusivamente conteúdo fictício. O item “Registrar ponto” representa uma saída para fluxo independente; o shell administrativo não envolve a jornada de marcação de ponto.</p>
+          <div class="i1-contract-grid">
+            <div class="i1-contract-item"><strong>Desktop largo</strong><span>Sidebar expandida por padrão e recolhível para aproximadamente 4,5 rem; preferência local não sensível é persistida.</span></div>
+            <div class="i1-contract-item"><strong>Faixa intermediária</strong><span>Sidebar compacta libera espaço ao workspace sem reservar gutter morto.</span></div>
+            <div class="i1-contract-item"><strong>Mobile</strong><span>Navegação vira overlay acionado por menu; Escape e backdrop fecham e o foco retorna ao gatilho.</span></div>
+            <div class="i1-contract-item"><strong>Acessibilidade</strong><span>Skip link, um único main, foco visível, nomes acessíveis e ordem semântica preservada.</span></div>
+            <div class="i1-contract-item"><strong>Responsividade</strong><span>Reflow por espaço disponível, alvos confortáveis e suporte a reduced motion.</span></div>
+            <div class="i1-contract-item"><strong>Isolamento</strong><span>Somente docs/nf-01/prototype/**; nenhum template, rota ou backend de produção é alterado.</span></div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script src="../assets/app-shell-i1.js"></script>
+</body>
+</html>
