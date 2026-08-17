@@ -26,6 +26,7 @@ PHASE_A_COMPONENT_REVIEW=COMPLETE
 PHASE_B_COMPONENT_REVIEW=COMPLETE
 PHASE_C_COMPONENT_REVIEW=COMPLETE
 PHASE_D_COMPONENT_REVIEW=COMPLETE
+PHASE_E_COMPONENT_REVIEW=IN_PROGRESS
 ```
 
 ### RC transversal
@@ -64,6 +65,7 @@ MEDIUM_GAPS_CLOSED=6/6
 [x] FilterBar
 [x] DataTable
 [x] Pagination
+[x] EmptyState
 ```
 
 ## Fase A — Estrutura
@@ -175,14 +177,31 @@ PHASE_D_COMPONENT_REVIEW=COMPLETE
 ## Fase E — Estados de sistema e feedback
 
 ```text
-[ ] E1 EmptyState
+[x] E1 EmptyState
 [ ] E2 ErrorState
 [ ] E3 Skeleton
 [ ] E4 DegradationBanner
 [~] E5 Toast — revisão de integração/coerência
 ```
 
-**Próxima ação oficial:** `E1 — revisar EmptyState como componente`, sem aplicar visualmente às telas.
+Guardrails congelados para E1:
+
+```text
+EMPTY_STATE != DATA_ENGINE
+LOADING != EMPTY
+ERROR != EMPTY
+NO_PERMISSION != EMPTY
+NO_RESULTS != EMPTY_DATASET
+EMPTY != SUCCESS
+ERROR_RESPONSE != EMPTY_RESPONSE
+UNRESOLVED_REQUEST => NO_CONFIRMED_EMPTY_STATE
+STALE_ZERO_RESULT_MUST_NOT_OVERRIDE_CURRENT_QUERY
+CTA => PERMISSION => AVAILABLE_ACTIONS
+RBAC_SCOPE_BEFORE_EMPTY_CLASSIFICATION
+ZERO_RESULTS => NO_PAGINATION_NAVIGATION
+```
+
+**Próxima ação oficial:** `E2 — revisar ErrorState como componente`, sem aplicar visualmente às telas.
 
 ## Fase F — Overlays, confirmação e histórico
 
@@ -269,6 +288,6 @@ DO_NOT_EDIT_DECISOES_CONGELADAS_MD
 Ler decisões canônicas, este roadmap, closeout, catálogo, especificação Novo Funcionário V2, checkpoints individuais recentes e PR #32/HEAD atual; depois continuar pelo primeiro item não concluído.
 
 ```text
-NEXT_OFFICIAL_ITEM=E1_EMPTY_STATE_COMPONENT_REVIEW
+NEXT_OFFICIAL_ITEM=E2_ERROR_STATE_COMPONENT_REVIEW
 VISUAL_IMPLEMENTATION=NOT_YET
 ```
