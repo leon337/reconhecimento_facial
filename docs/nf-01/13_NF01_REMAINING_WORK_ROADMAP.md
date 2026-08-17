@@ -47,6 +47,12 @@ H9_COMPONENT_SURFACE_COHERENCE=COMPLETE
 H10_CATALOG_COMPLETENESS_RC_CLOSEOUT=COMPLETE
 CATALOG_COMPLETENESS_RC=PASS_DOCUMENTAL
 NEW_COMPONENT_GAP_COUNT=0
+PHASE_I_DESIGN_LAB_APPSHELL=IN_PROGRESS
+I1_DESIGN_LAB_APPSHELL=COMPLETE
+I2_APPSHELL_ADOPTION_CONTRACT=COMPLETE
+CANONICAL_APPSHELL=ONE
+LEGACY_APP_SHELL=SUPERSEDED_FOR_NEW_WORK
+SCREEN_RECONCILIATION=NOT_STARTED
 ```
 
 ### RC transversal
@@ -498,7 +504,7 @@ PHASE_G_COMPONENT_REVIEW=COMPLETE
 COMPONENT_INDIVIDUAL_REVIEW=COMPLETE
 ```
 
-**Próxima ação oficial:** `I1 — iniciar materialização e validação do AppShell no Design Lab`, sem alterar produção.
+**Próxima ação oficial:** `I3 — definir o próximo incremento da Fase I após o contrato de adoção I2`, sem alterar produção.
 
 ## Fase H — RC de completude do catálogo
 
@@ -900,7 +906,31 @@ PHASE_H_CATALOG_COMPLETENESS_RC=COMPLETE
 ## Fase I — Design Lab / AppShell
 
 ```text
-[ ] I1–I9 materialização e validação do AppShell
+[x] I1 — baseline canônica do AppShell no Design Lab
+[x] I2 — contrato de adoção/reuso do AppShell
+[ ] I3–I9 — materialização compartilhável, reconciliação e validação incremental
+```
+
+Guardrails I1/I2:
+
+```text
+I1_IMPLEMENTATION_SCOPE=DESIGN_LAB_ONLY
+I1_REFERENCE_SCREEN=docs/nf-01/prototype/screens/01.01-app-shell.html
+CANONICAL_APPSHELL=ONE
+PAGE_CONTENT != SHELL_IMPLEMENTATION
+SHARED_APPSHELL_STRUCTURE=REQUIRED
+SHARED_APPSHELL_BEHAVIOR=REQUIRED
+COPY_PASTE_SHELL_PER_SCREEN=PROHIBITED
+SCREEN_LOCAL_SHELL_FORK=PROHIBITED_FOR_NEW_WORK
+LEGACY_APP_SHELL=SUPERSEDED_FOR_NEW_WORK
+LEGACY_SCREEN_CONTENT=PRESERVED_FOR_RECONCILIATION
+I1_CLASS_NAMES_AS_PERMANENT_PUBLIC_API=NOT_FROZEN
+DASHBOARD_RECONCILED_WITH_CANONICAL_APPSHELL=NO
+EMPLOYEES_RECONCILED_WITH_CANONICAL_APPSHELL=NO
+ONBOARDING_RECONCILED_WITH_CANONICAL_APPSHELL=NO
+PUNCH_ROUTE => OUTSIDE_ADMIN_APPSHELL
+MASS_SCREEN_REWRITE=NO
+BIG_BANG_MIGRATION=NO
 ```
 
 ## Fase J — Dashboard
@@ -958,10 +988,10 @@ DO_NOT_EDIT_DECISOES_CONGELADAS_MD
 
 ## Ponte para novo chat
 
-Ler decisões canônicas, este roadmap, closeout da Fase H, catálogo, especificação Novo Funcionário V2, checkpoints individuais recentes e PR #32/HEAD atual; depois continuar pelo primeiro item não concluído.
+Ler decisões canônicas, este roadmap, closeout da Fase H, checkpoints `47_*`/`48_*`, catálogo, especificação Novo Funcionário V2 e PR #32/HEAD atual; depois continuar pelo primeiro item não concluído.
 
 ```text
 NEXT_OFFICIAL_PHASE=I_DESIGN_LAB_APPSHELL
-NEXT_OFFICIAL_ITEM=I1_DESIGN_LAB_APPSHELL
+NEXT_OFFICIAL_ITEM=I3_DEFINITION_GATE
 VISUAL_IMPLEMENTATION=DESIGN_LAB_ONLY
 ```
