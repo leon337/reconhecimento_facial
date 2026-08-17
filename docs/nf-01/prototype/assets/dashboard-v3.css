@@ -1,50 +1,10 @@
-/* NF-01 Design Lab — Dashboard V3 refinement layer
-   Aplicada depois de components.css para preservar a V2 como referência
-   e isolar os ajustes aprovados na RC Visual da V2. */
+/* NF-01 Design Lab — Dashboard V3 content refinement layer
+   I4 removeu deste arquivo as regras do shell legado. O AppShell é fornecido
+   por app-shell.css/app-shell.js; este arquivo preserva apenas a apresentação
+   específica do conteúdo do Dashboard, sem iniciar a Fase J. */
 
-/* 1. Sidebar: legibilidade, altura útil e correção do botão mobile no desktop */
-.brand-copy strong { font-size: 16px; }
-.brand-copy span { font-size: 11px; }
-
-.sidebar__nav {
-  padding: 14px 12px 18px;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255,255,255,.20) transparent;
-}
-.sidebar__nav::-webkit-scrollbar { width: 6px; }
-.sidebar__nav::-webkit-scrollbar-track { background: transparent; }
-.sidebar__nav::-webkit-scrollbar-thumb {
-  border-radius: 999px;
-  background: rgba(255,255,255,.18);
-}
-.sidebar__nav::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.28); }
-
-.nav-label {
-  color: #bfd0c6;
-  font-size: 12px;
-  letter-spacing: .075em;
-}
-.nav-item {
-  min-height: 46px;
-  font-size: 15px;
-  line-height: 1.3;
-}
-
-/* components.css define .icon-button depois de .mobile-menu-button;
-   esta regra corrige a cascata para desktop. */
-.icon-button.mobile-menu-button { display: none; }
-
-/* 2. Topbar: conforto de leitura */
-.context-button strong { font-size: 14px; }
-.context-button span { font-size: 13px; }
-.profile-copy strong { font-size: 14px; }
-.profile-copy span { font-size: 12.5px; }
-.avatar { font-size: 12px; }
-.audit-badge { font-size: 12px; }
 .date-pill { font-size: 14px; }
 
-/* 3. Aviso de auditoria: presente, mas menos dominante */
 .demo-notice {
   padding: 11px 14px;
   font-size: 14px;
@@ -52,7 +12,6 @@
   box-shadow: inset 0 1px 0 rgba(255,255,255,.72), 0 2px 7px rgba(122,92,0,.04);
 }
 
-/* 4. Hierarquia de elevação: KPI < painel principal > painéis auxiliares */
 .kpi-card {
   min-height: 172px;
   box-shadow:
@@ -75,7 +34,6 @@
     var(--shadow-inset-highlight);
 }
 
-/* 5. KPIs: mesmo eixo óptico e tipografia confortável */
 .kpi-card__identity { align-items: flex-start; }
 .kpi-card__identity > div:last-child {
   min-height: 76px;
@@ -105,7 +63,6 @@
   font-size: 12px;
 }
 
-/* 6. Painéis e tabela: leitura mais confortável */
 .panel__title { font-size: 20px; }
 .panel__subtitle { font-size: 14px; }
 .text-action, .button { font-size: 14px; }
@@ -122,7 +79,6 @@
 .activity-cell { font-size: 14px; }
 .activity-footer { font-size: 13px; }
 
-/* 7. Atenção: apenas a pendência real ocupa card; estado neutro vira rodapé discreto */
 .attention-list { gap: 12px; }
 .attention-item { min-height: 110px; }
 .attention-copy strong { font-size: 15px; }
@@ -141,27 +97,11 @@
 .attention-summary .icon { color: var(--success-strong); }
 .attention-summary strong { color: #415048; font-weight: 700; }
 
-/* 8. Atalhos: mais confortáveis sem aumentar o ruído visual */
 .quick-actions__list { gap: 11px; }
 .quick-action { min-height: 56px; }
 .quick-action__label { font-size: 15px; }
 
 .page-footnote { font-size: 12.5px; }
-
-/* 9. Telas desktop baixas: compactar somente o eixo vertical da navegação */
-@media (min-width: 981px) and (max-height: 760px) {
-  .sidebar__brand { min-height: 72px; padding-block: 14px; }
-  .sidebar__nav { padding-block: 10px 12px; }
-  .nav-section { margin-top: 12px; }
-  .nav-label { padding-bottom: 5px; }
-  .nav-item { min-height: 40px; }
-}
-
-/* 10. Breakpoint móvel: o botão só existe de fato abaixo de 980px */
-@media (max-width: 980px) {
-  .icon-button.mobile-menu-button { display: grid; }
-  .nav-item { min-height: 46px; }
-}
 
 @media (max-width: 720px) {
   .kpi-card__identity > div:last-child { min-height: auto; }
@@ -171,7 +111,6 @@
 }
 
 @media (max-width: 430px) {
-  .nav-item { font-size: 15px; }
   .kpi-card__value { font-size: 34px; }
   .quick-action__label { font-size: 15px; }
 }
