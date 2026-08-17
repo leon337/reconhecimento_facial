@@ -17,12 +17,19 @@ I9_PHASE_I_APPSHELL_CLOSEOUT=COMPLETE
 PHASE_I_DESIGN_LAB_APPSHELL=COMPLETE
 PHASE_I_CLOSEOUT_BASIS=SOURCE_LEVEL
 UNRESOLVED_PHASE_I_STRUCTURAL_GAPS=0
+
+PHASE_J_DASHBOARD_RECONCILIATION=IN_PROGRESS
+J1_DASHBOARD_CANONICAL_GAP_AUDIT=COMPLETE
+J1_IMPLEMENTATION=DOCUMENTAL_AUDIT_ONLY
+DASHBOARD_VISUAL_CHANGE_IN_J1=NO
+J1_OUTPUT=../56_NF01_PHASE_J_J1_DASHBOARD_CANONICAL_GAP_AUDIT_2026-08-17.md
+
 ACTIVE_SURFACE_LEGACY_SHELL_DEPENDENCY=0
 HISTORICAL_V1=screens/03.03-novo-funcionario.html
 HISTORICAL_V1_PRESERVED=YES
 HISTORICAL_V1_MIGRATED=NO
 NEXT_OFFICIAL_PHASE=J_DASHBOARD_RECONCILIATION
-NEXT_OFFICIAL_ITEM=J1_DEFINITION_GATE
+NEXT_OFFICIAL_ITEM=J2_DASHBOARD_CANONICAL_RECONCILIATION_GATE
 PRODUCTION_CHANGE=NO
 NF02_STARTED=NO
 PR_MERGE=NOT_AUTHORIZED
@@ -30,7 +37,9 @@ PR_MERGE=NOT_AUTHORIZED
 
 I8 endureceu o bootstrap para exigir exatamente um `<main data-app-shell-content>` e corrigiu o conjunto de foco do overlay mobile, excluindo controles ocultos e preservando corretamente o gatilho antes de aplicar `inert` ao conteúdo.
 
-I9 fecha somente a Fase I do AppShell em base source-level. Isso não fecha a NF-01 e não declara homologação visual, acessibilidade completa, testes automatizados ou prontidão de produção.
+I9 fechou somente a Fase I do AppShell em base source-level. J1 iniciou a Fase J com uma auditoria Current × Canonical do Dashboard, sem alterar `02.01-dashboard.html` nem `dashboard-v3.css`.
+
+O J1 preserva AppShell, PageHeader, a separação de `/punch`, ausência de IA/PREDIX e o aviso explícito de dados demonstrativos. O próximo gate deve reconciliar contratos de estado/origem dos KPIs e da atividade, proteção contra falso verde em Atenção, hierarquia de ações e RBAC visual do Dashboard.
 
 Continuam diferidos:
 
