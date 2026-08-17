@@ -4,15 +4,9 @@ Laboratório visual isolado para materializar e auditar a NF-01 antes da NF-02.
 
 ## Fonte canônica
 
-Antes de alterar qualquer tela do laboratório, ler:
-
 ```text
 ../12_NF01_CANONICAL_DECISIONS_2026-08-11.md
-../05_DESIGN_SYSTEM.md
-../06_COMPONENT_CATALOG.md
-../07_WIREFRAMES.md
-../08_RESPONSIVE_ACCESSIBILITY.md
-../09_TEST_AND_ACCEPTANCE_STRATEGY.md
+../13_NF01_REMAINING_WORK_ROADMAP.md
 ../46_NF01_CATALOG_COMPLETENESS_H10_CLOSEOUT_2026-08-17.md
 ../47_NF01_DESIGN_LAB_I1_APPSHELL_2026-08-17.md
 ../48_NF01_DESIGN_LAB_I2_APPSHELL_ADOPTION_CONTRACT_2026-08-17.md
@@ -35,95 +29,31 @@ NF02_STARTED=NO
 MERGE_AUTHORIZED=NO
 ```
 
-Usar somente dados fictícios no laboratório.
-
-## AppShell compartilhado
+## AppShell
 
 ```text
-assets/app-shell.css
-+
-assets/app-shell.js
-```
-
-A página consumidora fornece metadados e um único `<main id="conteudo" data-app-shell-content>`. O substrato materializa `CollapsibleSidebar + TopHeader + MainWorkspace`, comportamento responsivo, preferência compacta, foco, `inert`, Escape e item ativo.
-
-```text
-DESIGN_LAB_JS_COMPOSITION != PRODUCTION_ARCHITECTURE
 CANONICAL_APPSHELL=ONE
+SHARED_APPSHELL=assets/app-shell.css+assets/app-shell.js
+DESIGN_LAB_JS_COMPOSITION != PRODUCTION_ARCHITECTURE
 ```
 
-## Estado da Fase I
+Consumidores:
 
 ```text
-I1_DESIGN_LAB_APPSHELL=COMPLETE
-I2_APPSHELL_ADOPTION_CONTRACT=COMPLETE
-I3_SHARED_APPSHELL_SUBSTRATE=COMPLETE
-I4_DASHBOARD_SHARED_APPSHELL_ADOPTION=COMPLETE
-I5_EMPLOYEES_SHARED_APPSHELL_ADOPTION=COMPLETE
-I6_ONBOARDING_V2_SHARED_APPSHELL_ADOPTION=COMPLETE
+01.01 referência AppShell............. I3
+02.01 Dashboard...................... I4
+03.01 Funcionários................... I5
+03.04 Novo Funcionário V2............ I6
+```
+
+Dashboard, Funcionários e Novo Funcionário V2 compartilham o mesmo casco administrativo no Design Lab. As fases J/K/L continuam não iniciadas; I4/I5/I6 não redesenharam o conteúdo das respectivas telas.
+
+I6 preservou wizard de oito etapas, draft, validação e `new-employee-v2.js`, removeu Sidebar/TopHeader locais e eliminou a dependência de `dashboard-v3.css` do onboarding V2.
+
+Decisões históricas internas do wizard, como rail vertical e painel lateral, continuam visíveis somente como material a reconciliar na Fase L.
+
+```text
 NEXT_OFFICIAL_ITEM=I7_DEFINITION_GATE
-PRODUCTION_CHANGE=NO
-```
-
-Consumidores atuais:
-
-```text
-01.01 AppShell referência............. I3
-02.01 Dashboard Desktop V3........... I4
-03.01 Funcionários Desktop V1........ I5
-03.04 Novo Funcionário Desktop V2.... I6
-```
-
-Dashboard, Funcionários e Novo Funcionário V2 compartilham o mesmo casco administrativo. O conteúdo específico permanece independente e ainda será reconciliado nas fases J/K/L.
-
-## Limites das adoções
-
-```text
-DASHBOARD_CONTENT_REDESIGN_IN_I4=NO
-PHASE_J_DASHBOARD_RECONCILIATION=NOT_STARTED
-EMPLOYEES_CONTENT_REDESIGN_IN_I5=NO
-PHASE_K_EMPLOYEES_RECONCILIATION=NOT_STARTED
-ONBOARDING_CONTENT_REDESIGN_IN_I6=NO
-PHASE_L_ONBOARDING_RECONCILIATION=NOT_STARTED
-```
-
-I6 removeu do Novo Funcionário V2 o casco administrativo local e a dependência de `dashboard-v3.css`, preservando wizard de oito etapas, draft local, validação e `new-employee-v2.js`.
-
-Decisões históricas ainda visíveis no conteúdo do onboarding — rail vertical, painel lateral e organização espacial anterior — continuam substituídas pelo contrato canônico e serão tratadas somente na Fase L.
-
-## Direção canônica
-
-```text
-Shared AppShell substrate
-+
-CollapsibleSidebar
-+
-TopHeader
-+
-Breadcrumb / PageHeader fornecidos pela página
-+
-HorizontalStepper quando houver wizard
-+
-MainWorkspace amplo
-+
-ContextDrawer sob demanda
-+
-StickyFormActions no onboarding
-```
-
-`/punch` permanece fora do AppShell administrativo.
-
-## Novo Funcionário — oito etapas
-
-```text
-0 Tipo de relação
-1 Dados pessoais
-2 Endereço
-3 Vínculo
-4 Pagamento
-5 Acesso ao sistema
-6 Biometria
-7 Revisão e conclusão
 ```
 
 ## Validação ainda pendente
@@ -139,4 +69,4 @@ NEW_DESIGN_INTEGRATION_TESTS_EXECUTED=NO
 PRODUCTION_E2E=NO
 ```
 
-O Design Lab funciona como estação de pré-montagem: a peça é auditada aqui antes de qualquer entrada na linha de produção.
+O Design Lab funciona como estação de pré-montagem antes de qualquer alteração de produção.
