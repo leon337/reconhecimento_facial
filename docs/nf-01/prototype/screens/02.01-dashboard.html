@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
-  <title>Dashboard Desktop V3 — NF-01 Design Lab</title>
+  <title>Dashboard Canônico J2 — NF-01 Design Lab</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -18,8 +18,10 @@
   data-app-shell-context-title="Potiguar Locações"
   data-app-shell-context-subtitle="Galpão principal · contexto demonstrativo"
   data-app-shell-profile-name="Administrador Demo"
-  data-app-shell-profile-role="Perfil fictício"
-  data-app-shell-profile-avatar="AD">
+  data-app-shell-profile-role="Admin · perfil fictício"
+  data-app-shell-profile-avatar="AD"
+  data-dashboard-demo-role="admin"
+  data-dashboard-demo-permissions="users:view users:create biometrics:manage punch:view punch:create">
 
   <svg class="icon-sprite" aria-hidden="true">
     <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
@@ -28,65 +30,79 @@
     <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
     <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 3v4M16 3v4M4 10h16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
     <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 4 3.5 19h17z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 9v4M12 16h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
-    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4 10-10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 10v6M12 7h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
   </svg>
 
-  <main class="page" id="conteudo" data-app-shell-content>
+  <main class="page dashboard-page" id="conteudo" data-app-shell-content>
     <header class="page-header">
       <div>
-        <p class="eyebrow">Visão geral</p>
+        <p class="eyebrow">Visão geral da operação</p>
         <h1 class="page-title">Dashboard</h1>
-        <p class="page-subtitle">Acompanhe a operação do ponto com leitura rápida e confortável.</p>
+        <p class="page-subtitle">Acompanhe pessoas, registros e pendências do contexto autorizado.</p>
       </div>
-      <div class="date-pill"><svg class="icon" aria-hidden="true"><use href="#i-calendar"/></svg><span data-current-date>11 de agosto de 2026</span></div>
+      <div class="date-pill"><svg class="icon" aria-hidden="true"><use href="#i-calendar"/></svg><span data-current-date>17 de agosto de 2026</span></div>
     </header>
 
     <div class="demo-notice" role="note">
-      <svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg>
-      <span><strong>Dados demonstrativos.</strong> Esta tela existe para auditoria visual da NF-01. Na aplicação real, números e estados só aparecem quando houver fonte válida e escopada.</span>
+      <svg class="icon" aria-hidden="true"><use href="#i-info"/></svg>
+      <span><strong>Dados demonstrativos.</strong> Os números abaixo são fixtures do Design Lab. J2 explicita origem, estado e permissão; produção só poderá renderizar valores após fonte válida e escopada.</span>
     </div>
 
     <section class="kpi-grid" aria-label="Indicadores principais">
-      <article class="kpi-card">
+      <article class="kpi-card" data-dashboard-metric="employees" data-state="ready" data-source="design-lab.users">
         <div class="kpi-card__top">
           <div class="kpi-card__identity">
             <div class="icon-chip icon-chip--brand"><svg class="icon icon--lg" aria-hidden="true"><use href="#i-users"/></svg></div>
             <div><p class="kpi-card__label">Funcionários cadastrados</p><p class="kpi-card__value">24</p></div>
           </div>
-          <span class="status-pill status-pill--brand">+2 no mês</span>
+          <span class="metric-state">READY · demo</span>
         </div>
-        <p class="kpi-card__help">Pessoas vinculadas ao contexto atual.</p>
+        <p class="kpi-card__help">Pessoas vinculadas ao contexto demonstrativo atual.</p>
+        <div class="metric-card__meta">
+          <span>Origem: fixture Funcionários</span>
+          <span>Escopo: contexto atual</span>
+        </div>
       </article>
 
-      <article class="kpi-card">
+      <article class="kpi-card" data-dashboard-metric="punches-today" data-state="ready" data-source="design-lab.punches">
         <div class="kpi-card__top">
           <div class="kpi-card__identity">
             <div class="icon-chip icon-chip--info"><svg class="icon icon--lg" aria-hidden="true"><use href="#i-clock"/></svg></div>
             <div><p class="kpi-card__label">Registros hoje</p><p class="kpi-card__value">37</p></div>
           </div>
-          <span class="status-pill status-pill--info">até 12:04</span>
+          <span class="metric-state">READY · demo</span>
         </div>
-        <p class="kpi-card__help">Marcações recebidas hoje.</p>
+        <p class="kpi-card__help">Marcações demonstrativas recebidas hoje no contexto atual.</p>
+        <div class="metric-card__meta">
+          <span>Origem: fixture Registros</span>
+          <time datetime="2026-08-17T12:04:00-03:00">Atualizado: 12:04</time>
+        </div>
       </article>
 
-      <article class="kpi-card">
+      <article class="kpi-card" data-dashboard-metric="biometrics-pending" data-state="warning" data-source="design-lab.biometrics">
         <div class="kpi-card__top">
           <div class="kpi-card__identity">
             <div class="icon-chip icon-chip--warning"><svg class="icon icon--lg" aria-hidden="true"><use href="#i-scan"/></svg></div>
             <div><p class="kpi-card__label">Biometrias pendentes</p><p class="kpi-card__value">2</p></div>
           </div>
-          <span class="status-pill status-pill--warning">requer ação</span>
+          <span class="status-pill status-pill--warning">Requer atenção · demo</span>
         </div>
-        <p class="kpi-card__help">Funcionários ainda sem cadastro facial.</p>
+        <p class="kpi-card__help">Funcionários demonstrativos ainda sem biometria facial ativa.</p>
+        <div class="metric-card__meta">
+          <span>Origem: fixture Biometria</span>
+          <span>Estado: WARNING</span>
+        </div>
       </article>
     </section>
 
     <div class="dashboard-grid">
-      <section class="panel panel--primary" id="atividade" aria-labelledby="atividade-titulo">
+      <section class="panel panel--primary" id="atividade" aria-labelledby="atividade-titulo" data-dashboard-surface="recent-activity" data-state="ready">
         <header class="panel__header">
-          <div><h2 class="panel__title" id="atividade-titulo">Atividade recente</h2><p class="panel__subtitle">Últimas marcações do contexto atual</p></div>
-          <button class="text-action" type="button" data-demo-action="Ver registros">Ver registros <svg class="icon icon--sm" aria-hidden="true"><use href="#i-chevron"/></svg></button>
+          <div>
+            <h2 class="panel__title" id="atividade-titulo">Atividade recente</h2>
+            <p class="panel__subtitle">Últimas marcações do contexto atual · fixture demonstrativa</p>
+          </div>
+          <button class="text-action" type="button" data-required-permission="punch:view" data-demo-action="Consultar registros">Ver registros <svg class="icon icon--sm" aria-hidden="true"><use href="#i-chevron"/></svg></button>
         </header>
 
         <div class="activity-list" role="table" aria-label="Registros recentes demonstrativos">
@@ -127,41 +143,64 @@
           </div>
 
           <div class="activity-footer">
-            <span>Mostrando 4 registros recentes</span>
-            <button class="button button--primary" type="button" data-demo-action="Abrir lista completa">Abrir lista completa <svg class="icon icon--sm" aria-hidden="true"><use href="#i-chevron"/></svg></button>
+            <span>4 registros demonstrativos · origem: fixture Design Lab</span>
           </div>
         </div>
       </section>
 
-      <aside class="side-stack" aria-label="Ações e atenções">
-        <section class="panel panel--secondary" aria-labelledby="atencao-titulo">
-          <header class="panel__header"><div><h2 class="panel__title" id="atencao-titulo">Atenção necessária</h2><p class="panel__subtitle">Itens que podem exigir ação</p></div></header>
+      <aside class="side-stack" aria-label="Atenções operacionais">
+        <section class="panel panel--secondary" aria-labelledby="atencao-titulo" data-dashboard-surface="attention" data-state="warning">
+          <header class="panel__header">
+            <div>
+              <h2 class="panel__title" id="atencao-titulo">Atenção necessária</h2>
+              <p class="panel__subtitle">Somente itens com fonte confirmada devem aparecer aqui</p>
+            </div>
+          </header>
           <div class="attention-list">
-            <button class="attention-item attention-item--warning" type="button" data-demo-action="Revisar funcionários">
+            <button class="attention-item attention-item--warning" type="button" data-required-permission="users:view" data-demo-action="Ver funcionários com biometria pendente">
               <span class="attention-icon"><svg class="icon" aria-hidden="true"><use href="#i-scan"/></svg></span>
-              <span class="attention-copy"><strong>2 biometrias pendentes</strong><p>Funcionários cadastrados ainda sem biometria facial.</p><span class="attention-link">Revisar funcionários</span></span>
+              <span class="attention-copy"><strong>2 biometrias pendentes</strong><p>Fixture demonstrativa de funcionários ainda sem biometria facial ativa.</p><span class="attention-link">Ver funcionários</span></span>
               <svg class="icon icon--sm attention-chevron" aria-hidden="true"><use href="#i-chevron"/></svg>
             </button>
 
-            <div class="attention-summary" role="status">
-              <svg class="icon icon--sm" aria-hidden="true"><use href="#i-check"/></svg>
-              <span><strong>Sem outras pendências.</strong> Nenhuma outra ação operacional indicada neste mockup.</span>
+            <div class="attention-policy" role="note">
+              <svg class="icon icon--sm" aria-hidden="true"><use href="#i-info"/></svg>
+              <span>O Dashboard não infere “tudo certo” quando não há fonte suficiente. Ausência de sinal deve virar estado explícito, nunca falso verde.</span>
             </div>
-          </div>
-        </section>
-
-        <section class="panel panel--secondary quick-actions" id="quick-actions" aria-labelledby="atalhos-titulo">
-          <header class="panel__header"><div><h2 class="panel__title" id="atalhos-titulo">Atalhos</h2><p class="panel__subtitle">Ações frequentes</p></div></header>
-          <div class="quick-actions__list">
-            <button class="quick-action" type="button" data-demo-action="Cadastrar funcionário"><span class="quick-action__icon"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg></span><span class="quick-action__label">Cadastrar funcionário</span><svg class="icon icon--sm quick-action__chevron" aria-hidden="true"><use href="#i-chevron"/></svg></button>
-            <button class="quick-action" type="button" data-demo-action="Consultar registros"><span class="quick-action__icon"><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg></span><span class="quick-action__label">Consultar registros</span><svg class="icon icon--sm quick-action__chevron" aria-hidden="true"><use href="#i-chevron"/></svg></button>
-            <button class="quick-action" type="button" data-demo-action="Cadastrar biometria"><span class="quick-action__icon"><svg class="icon" aria-hidden="true"><use href="#i-scan"/></svg></span><span class="quick-action__label">Cadastrar biometria</span><svg class="icon icon--sm quick-action__chevron" aria-hidden="true"><use href="#i-chevron"/></svg></button>
           </div>
         </section>
       </aside>
     </div>
 
-    <p class="page-footnote">NF-01 · Design Lab HTML-first · Dashboard V3 · AppShell compartilhado I4 · sem backend de produção.</p>
+    <!-- Contratos de estado do Design Lab: não são conteúdo vivo nem entram no DOM renderizado enquanto permanecem em <template>. -->
+    <template data-dashboard-state-template="metric-loading">
+      <article class="kpi-card dashboard-state" data-state="loading" aria-busy="true"><p>Carregando indicador…</p></article>
+    </template>
+    <template data-dashboard-state-template="metric-empty">
+      <article class="kpi-card dashboard-state" data-state="empty"><p>Nenhum dado disponível para este contexto.</p></article>
+    </template>
+    <template data-dashboard-state-template="metric-error">
+      <article class="kpi-card dashboard-state" data-state="error"><p>Não foi possível carregar este indicador. Tente novamente.</p></article>
+    </template>
+    <template data-dashboard-state-template="metric-offline">
+      <article class="kpi-card dashboard-state" data-state="offline"><p>Sem conexão. O indicador não foi atualizado.</p></article>
+    </template>
+    <template data-dashboard-state-template="metric-no-permission">
+      <article class="kpi-card dashboard-state" data-state="no_permission"><p>Você não possui acesso a este indicador.</p></article>
+    </template>
+    <template data-dashboard-state-template="metric-telemetry-unavailable">
+      <article class="kpi-card dashboard-state" data-state="telemetry_unavailable"><p>Não há sinal suficiente para avaliar esta informação.</p></article>
+    </template>
+
+    <template data-dashboard-state-template="activity-loading"><section class="dashboard-state" data-state="loading" aria-busy="true"><h2>Atividade recente</h2><p>Carregando registros…</p></section></template>
+    <template data-dashboard-state-template="activity-empty"><section class="dashboard-state" data-state="empty"><h2>Atividade recente</h2><p>Nenhum registro encontrado no contexto atual.</p></section></template>
+    <template data-dashboard-state-template="activity-error"><section class="dashboard-state" data-state="error"><h2>Atividade recente</h2><p>Não foi possível carregar os registros. Tente novamente.</p></section></template>
+    <template data-dashboard-state-template="activity-offline"><section class="dashboard-state" data-state="offline"><h2>Atividade recente</h2><p>Sem conexão. Os registros recentes não puderam ser atualizados.</p></section></template>
+    <template data-dashboard-state-template="activity-no-permission"><section class="dashboard-state" data-state="no_permission"><h2>Acesso insuficiente</h2><p>Seu perfil não possui permissão para consultar registros.</p></section></template>
+    <template data-dashboard-state-template="dashboard-no-permission"><section class="dashboard-state" data-state="no_permission"><h2>Acesso insuficiente</h2><p>Este perfil não possui acesso ao Dashboard administrativo.</p></section></template>
+
+    <!-- Contrato RBAC do mock: admin/super_admin = leitura + mutações permitidas pelo backend; manager = leitura/usuários sem biometria; auditor = leitura; operator = sem shell administrativo. -->
+    <p class="page-footnote">NF-01 · Design Lab HTML-first · Dashboard J2 reconciliado · estados/origem/RBAC explícitos · sem backend de produção.</p>
   </main>
 
   <div class="toast" role="status" aria-live="polite" data-toast></div>
