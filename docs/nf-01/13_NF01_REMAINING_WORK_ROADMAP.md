@@ -33,7 +33,6 @@ Interpretação:
 
 - `12_*` registra **o que já foi decidido/congelado**;
 - `13_*` registra **o que ainda falta executar/revisar para encerrar a NF-01**;
-- se um documento antigo sugerir que toda revisão de componentes terminou, mas este roadmap marcar revisão individual como pendente, **este roadmap controla o status operacional do trabalho restante**;
 - nenhuma linha deste roadmap autoriza NF-02, produção, backend, migração, IA, deploy ou merge.
 
 ---
@@ -47,6 +46,10 @@ PRODUCTION_CODE_CHANGED=NO
 NF02_STARTED=NO
 PR32_MERGED=NO
 FINAL_HUMAN_GATE=NOT_READY
+COMPONENT_CATALOG_BASELINE=FROZEN
+COMPONENT_INDIVIDUAL_REVIEW=IN_PROGRESS
+PHASE_A_COMPONENT_REVIEW=COMPLETE
+PHASE_B_COMPONENT_REVIEW=COMPLETE
 ```
 
 ### RC transversal
@@ -56,19 +59,6 @@ CRITICAL_GAPS_CLOSED=6/6
 HIGH_GAPS_CLOSED=9/9
 MEDIUM_GAPS_CLOSED=6/6
 ```
-
-Isso significa que as lacunas transversais encontradas pela RC foram tratadas em especificação.
-
-**Não significa que todos os componentes do catálogo passaram por revisão individual profunda.**
-
-### Status correto do catálogo
-
-```text
-COMPONENT_CATALOG_BASELINE=FROZEN
-COMPONENT_INDIVIDUAL_REVIEW=IN_PROGRESS
-```
-
-A baseline define nomes, papéis, estados gerais e limites. A revisão individual aprofunda comportamento, variantes, interação, responsividade, acessibilidade, RBAC, testes e anti-padrões antes de cada componente ser considerado encerrado individualmente.
 
 ---
 
@@ -96,38 +86,9 @@ A baseline define nomes, papéis, estados gerais e limites. A revisão individua
 [x] MetricCard
 ```
 
-Os itens aprovados por LEANDRO estão registrados nos checkpoints individuais da NF-01.
-
-Políticas transversais já congeladas e que governam os componentes restantes:
-
-```text
-[x] Dimensioning Policy — rem/fr/minmax/clamp/container queries
-[x] Responsive != shrink everything
-[x] Wizard State + Draft/Conflict Model
-[x] Dependency Invalidation
-[x] Conditional Data Lifecycle
-[x] Submit Outcome Reconciliation
-[x] Runtime Permission Revalidation
-[x] Browser Back/Forward/Refresh
-[x] Session Expiration Recovery
-[x] Stepper Discoverability / NEEDS_REVIEW
-[x] App Context != Form Company
-[x] Required/Optional Policy
-[x] Error Hierarchy
-[x] Step Focus Management
-[x] Mobile Keyboard Safe Actions
-[x] Design Tokens baseline
-[x] Lucide Icon System
-[x] Motion / Reduced Motion
-[x] Semantic DOM Order
-[x] Toast Policy
-```
-
 ---
 
-# 3. Regra para revisão individual de cada componente restante
-
-Cada componente pendente deve passar pelo seguinte checklist antes de receber `FROZEN_INDIVIDUALLY`:
+# 3. Regra para revisão individual
 
 ```text
 1. propósito e problema que resolve
@@ -144,29 +105,20 @@ Cada componente pendente deve passar pelo seguinte checklist antes de receber `F
 12. testes unitários futuros
 13. testes de integração futuros
 14. testes responsivos/a11y futuros
-15. RC rápida: “há melhoria aplicável ainda não incorporada?”
+15. RC rápida
 16. aprovação humana explícita
 17. marcar como FROZEN_INDIVIDUALLY
 ```
 
-O padrão continua sendo revisão individual.
-
-Analogia operacional: cada componente é uma peça da linha de montagem. Estar listado no catálogo significa que a peça existe no projeto; passar pela revisão individual significa que ela foi inspecionada antes de entrar no conjunto final.
-
 ---
 
-# 4. Fase A — Revisão individual dos componentes estruturais restantes
-
-**Objetivo:** fechar o esqueleto comum das páginas antes de desenhar telas finais.
+# 4. Fase A — Estrutura
 
 ```text
 [x] A1 AppShell
 [x] A2 TopHeader
 [x] A3 Breadcrumb
 [x] A4 PageHeader
-```
-
-```text
 PHASE_A_COMPONENT_REVIEW=COMPLETE
 ```
 
@@ -179,18 +131,8 @@ PHASE_A_COMPONENT_REVIEW=COMPLETE
 [x] B2 IconButton
 [x] B3 Tooltip
 [x] B4 Tabs
-```
-
-```text
 PHASE_B_COMPONENT_REVIEW=COMPLETE
 ```
-
-Observações permanentes:
-
-- `Tooltip` nunca contém informação obrigatória;
-- `IconButton` precisa de nome acessível e contexto suficiente;
-- `Tabs` não substitui wizard nem navegação principal;
-- hierarquia `primary / secondary / tertiary / destructive` deve permanecer consistente com `StickyFormActions`.
 
 ---
 
@@ -203,7 +145,7 @@ Observações permanentes:
 [ ] C4 LastUpdated
 ```
 
-Guardrail obrigatório:
+Guardrails:
 
 ```text
 BRAND_GREEN != HEALTHY
@@ -213,7 +155,7 @@ NO_DATA != ZERO
 NO_SOURCE => NO_METRIC
 ```
 
-**Próxima ação oficial:** `C3 — revisar HealthCard como componente`, sem ainda aplicar visualmente às telas.
+**Próxima ação oficial:** `C3 — revisar HealthCard como componente`, sem aplicar visualmente às telas.
 
 ---
 
@@ -226,15 +168,6 @@ NO_SOURCE => NO_METRIC
 [ ] D4 Pagination
 ```
 
-Pontos de revisão obrigatórios:
-
-- busca e filtro não são a mesma coisa;
-- filtros ativos nunca ficam invisíveis;
-- DataTable não deve ser esmagada em mobile;
-- 360 px pode usar resumo/lista + DetailDrawer sem perder semântica;
-- ordenação e paginação devem ser acessíveis;
-- preservar estado de busca/filtro/página quando apropriado.
-
 ---
 
 # 8. Fase E — Estados de sistema e feedback
@@ -244,34 +177,18 @@ Pontos de revisão obrigatórios:
 [ ] E2 ErrorState
 [ ] E3 Skeleton
 [ ] E4 DegradationBanner
-[~] E5 Toast — política transversal já congelada; realizar apenas revisão de integração/coerência
-```
-
-Regra:
-
-```text
-EMPTY != ERROR
-ERROR_CRITICO != TOAST_APENAS
-LOADING_TIMEOUT => ESTADO_TERMINAL_RECUPERAVEL
+[~] E5 Toast — revisão de integração/coerência
 ```
 
 ---
 
-# 9. Fase F — Overlays, confirmação e histórico de eventos
+# 9. Fase F — Overlays, confirmação e histórico
 
 ```text
 [ ] F1 DetailDrawer
 [ ] F2 ConfirmationModal
 [ ] F3 EventTimeline
 ```
-
-Pontos obrigatórios:
-
-- focus trap somente quando a semântica exigir;
-- retorno de foco ao disparador;
-- Escape e fechamento explícito;
-- confirmação destrutiva deve mostrar entidade + consequência;
-- EventTimeline não pode inventar causalidade entre eventos.
 
 ---
 
@@ -282,109 +199,49 @@ Pontos obrigatórios:
 [ ] G2 PunchResult
 ```
 
-Esses dois componentes exigem revisão aprofundada porque participam de fluxos operacionais sensíveis.
-
-### CameraPanel
-
-Revisar pelo menos:
-
-```text
-CAMERA_PERMISSION_REQUIRED
-CAMERA_UNAVAILABLE
-CAMERA_READY
-CAPTURE_PREPARING
-CAPTURING
-VALIDATING_QUALITY
-PROCESSING
-SUCCESS
-FAILURE
-```
-
-Guardrails:
-
-- câmera ao vivo no fluxo normal;
-- não usar galeria/upload como atalho;
-- texto de estado acompanha preview;
-- não mostrar frame congelado como câmera ativa;
-- acessível por teclado nos controles aplicáveis;
-- reduced motion respeitado.
-
-### PunchResult
-
-Revisar pelo menos:
-
-```text
-SUCCESS_CONFIRMED
-RETRYABLE_ERROR
-DUPLICATE_BLOCKED
-OFFLINE/NETWORK_ERROR quando distinguível
-OUTCOME_UNKNOWN quando aplicável
-```
-
-Guardrail:
-
-```text
-SUCCESS somente após confirmação real do servidor/persistência correspondente.
-```
-
 ---
 
 # 11. Fase H — RC de completude do catálogo
 
-Somente após A–G:
-
 ```text
-[ ] H1 comparar 06_COMPONENT_CATALOG.md com todos os contratos individuais
-[ ] H2 verificar componente listado sem revisão profunda
+[ ] H1 comparar 06_COMPONENT_CATALOG.md com contratos individuais
+[ ] H2 verificar componente sem revisão profunda
 [ ] H3 verificar duplicações conceituais
 [ ] H4 verificar inconsistências de estados
 [ ] H5 verificar consistência de nomes
-[ ] H6 verificar RBAC entre componentes
+[ ] H6 verificar RBAC
 [ ] H7 verificar acessibilidade transversal
-[ ] H8 verificar responsividade/container behavior transversal
-[ ] H9 verificar testes futuros unitários/integrados previstos
+[ ] H8 verificar responsividade/container behavior
+[ ] H9 verificar testes futuros previstos
 [ ] H10 corrigir documentação residual conflitante
 ```
 
-Saída:
-
-```text
-COMPONENT_INDIVIDUAL_REVIEW=COMPLETE
-COMPONENT_CATALOG=FINAL_FOR_NF01
-```
-
 ---
 
-# 12. Fase I — Reconciliar o shell visual no Design Lab
-
-**Somente depois da revisão individual dos componentes.**
+# 12. Fase I — Design Lab / AppShell
 
 ```text
-[ ] I1 materializar AppShell canônico no Design Lab
+[ ] I1 materializar AppShell canônico
 [ ] I2 CollapsibleSidebar expandida/compacta/overlay
 [ ] I3 TopHeader
 [ ] I4 Breadcrumb + PageHeader
-[ ] I5 validar área útil recuperada pelo conteúdo
-[ ] I6 validar navegação e estado ativo
+[ ] I5 validar área útil
+[ ] I6 validar navegação/estado ativo
 [ ] I7 validar 360/768/1024/1440+
-[ ] I8 validar zoom 200%
-[ ] I9 validar teclado/foco
+[ ] I8 zoom 200%
+[ ] I9 teclado/foco
 ```
-
-Nenhum código de produção.
 
 ---
 
-# 13. Fase J — Reconciliar Dashboard
-
-Preservar conteúdo/decisões aprovadas; trocar shell/distribuição quando necessário.
+# 13. Fase J — Dashboard
 
 ```text
-[ ] J1 aplicar AppShell canônico
-[ ] J2 preservar operação como protagonista
-[ ] J3 preservar política sem falso verde
-[ ] J4 revisar cards/métricas/atividade/alertas
-[ ] J5 validar densidade e área útil
+[ ] J1 AppShell
+[ ] J2 operação protagonista
+[ ] J3 sem falso verde
+[ ] J4 cards/métricas/atividade/alertas
+[ ] J5 densidade/área útil
 [ ] J6 responsividade
 [ ] J7 acessibilidade
 [ ] J8 RC visual
@@ -392,15 +249,15 @@ Preservar conteúdo/decisões aprovadas; trocar shell/distribuição quando nece
 
 ---
 
-# 14. Fase K — Reconciliar Funcionários
+# 14. Fase K — Funcionários
 
 ```text
-[ ] K1 aplicar AppShell canônico
-[ ] K2 preservar título + Novo funcionário
-[ ] K3 preservar métricas aprovadas
-[ ] K4 revisar Search + FilterBar
-[ ] K5 revisar DataTable / fallback mobile
-[ ] K6 preservar estado biométrico e ações por permissão
+[ ] K1 AppShell
+[ ] K2 título + Novo funcionário
+[ ] K3 métricas
+[ ] K4 Search + FilterBar
+[ ] K5 DataTable / fallback mobile
+[ ] K6 biometria e permissões
 [ ] K7 responsividade
 [ ] K8 acessibilidade
 [ ] K9 RC visual
@@ -408,25 +265,23 @@ Preservar conteúdo/decisões aprovadas; trocar shell/distribuição quando nece
 
 ---
 
-# 15. Fase L — Reconciliar Novo Funcionário V2
-
-O contrato funcional de oito etapas permanece congelado.
+# 15. Fase L — Novo Funcionário V2
 
 ```text
 [ ] L1 remover stepper vertical residual
-[ ] L2 aplicar HorizontalStepper icon-first
-[ ] L3 adicionar “Ver etapas” sob demanda
-[ ] L4 aplicar ContextDrawer sob demanda
-[ ] L5 aplicar ResponsiveFormGrid
-[ ] L6 aplicar FormSection / Progressive Disclosure
-[ ] L7 aplicar FieldGroup canônico
-[ ] L8 aplicar EntityPicker e Date/Time/Period
-[ ] L9 aplicar StickyFormActions
-[ ] L10 demonstrar Wizard State / autosave / conflito / NEEDS_REVIEW
-[ ] L11 demonstrar Error Hierarchy
-[ ] L12 demonstrar permissões de biometria
-[ ] L13 demonstrar revisão/conclusão sem CTA prematuro
-[ ] L14 responsividade 360/768/1024/1440+
+[ ] L2 HorizontalStepper icon-first
+[ ] L3 “Ver etapas” sob demanda
+[ ] L4 ContextDrawer
+[ ] L5 ResponsiveFormGrid
+[ ] L6 FormSection / Progressive Disclosure
+[ ] L7 FieldGroup
+[ ] L8 EntityPicker + Date/Time/Period
+[ ] L9 StickyFormActions
+[ ] L10 Wizard State/autosave/conflito/NEEDS_REVIEW
+[ ] L11 Error Hierarchy
+[ ] L12 permissões biometria
+[ ] L13 revisão/conclusão
+[ ] L14 360/768/1024/1440+
 [ ] L15 zoom 200%
 [ ] L16 teclado/foco/a11y
 [ ] L17 RC visual
@@ -437,60 +292,24 @@ O contrato funcional de oito etapas permanece congelado.
 # 16. Fase M — Coerência entre telas
 
 ```text
-[ ] M1 Dashboard, Funcionários e Novo Funcionário usam o mesmo shell
-[ ] M2 mesmas ações usam mesma hierarquia visual
-[ ] M3 mesmos estados usam mesma linguagem
-[ ] M4 sidebar mantém comportamento entre telas
-[ ] M5 header mantém contexto consistente
-[ ] M6 spacing/tokens consistentes
-[ ] M7 não existem componentes duplicados ad hoc
-[ ] M8 nenhum protótipo contradiz registro canônico
+[ ] M1 shell comum
+[ ] M2 hierarquia visual comum
+[ ] M3 linguagem de estados comum
+[ ] M4 sidebar consistente
+[ ] M5 header consistente
+[ ] M6 spacing/tokens
+[ ] M7 sem componentes ad hoc duplicados
+[ ] M8 protótipos reconciliados
 ```
 
 ---
 
 # 17. Fase N — Validação do Design Lab
 
-### Responsividade
-
 ```text
-[ ] 360
-[ ] 768
-[ ] 1024
-[ ] 1440+
-[ ] larguras intermediárias orientadas pelo conteúdo
-[ ] portrait/landscape quando aplicável
-[ ] teclado virtual mobile
-```
-
-### Acessibilidade
-
-```text
-[ ] teclado completo
-[ ] Tab / Shift+Tab
-[ ] foco visível
-[ ] retorno de foco drawer/modal
-[ ] foco após mudança de etapa
-[ ] foco/summary após erro
-[ ] zoom 200% / reflow
-[ ] reduced motion
-[ ] labels / aria-describedby
-[ ] aria-current / aria-live
-[ ] screen reader nos fluxos críticos
-[ ] contraste real dos estados finais
-```
-
-### Testes futuros — contrato
-
-A NF-01 continua sem afirmar execução de testes de produção da nova UI. Antes do Gate, porém, a documentação deve continuar explicitando o que a NF-02 deverá automatizar:
-
-```text
-UNITARIOS
-INTEGRACAO
-REGRESSAO
-RESPONSIVO
-ACESSIBILIDADE
-SEGURANCA
+RESPONSIVIDADE: 360 / 768 / 1024 / 1440+ / intermediários / teclado mobile
+ACESSIBILIDADE: teclado / foco / zoom 200% / reduced motion / ARIA / screen reader / contraste
+TESTES FUTUROS: UNITÁRIOS / INTEGRAÇÃO / REGRESSÃO / RESPONSIVO / A11Y / SEGURANÇA
 ```
 
 ---
@@ -498,53 +317,27 @@ SEGURANCA
 # 18. Fase O — Evidências, auditoria e fechamento
 
 ```text
-[ ] O1 atualizar evidências visuais
-[ ] O2 atualizar 07_WIREFRAMES.md se necessário
-[ ] O3 atualizar 08_RESPONSIVE_ACCESSIBILITY.md se necessário
-[ ] O4 atualizar 09_TEST_AND_ACCEPTANCE_STRATEGY.md
-[ ] O5 executar revisão independente final da NF-01
-[ ] O6 reconciliar 10_NF01_CLOSEOUT.md
-[ ] O7 atualizar PR #32
-[ ] O8 verificar CI/evidências aplicáveis
-[ ] O9 confirmar invariantes de produção
-[ ] O10 solicitar Gate humano final de LEANDRO
-```
-
-Somente após aprovação explícita:
-
-```text
-FINAL_HUMAN_GATE=APPROVED
-```
-
-O merge continua sendo uma ação separada e também não deve ser inferido.
-
----
-
-# 19. Definição de pronto da NF-01
-
-A NF-01 somente pode ser considerada pronta quando **todos** forem verdadeiros:
-
-```text
-[ ] decisões canônicas reconciliadas
-[ ] revisão individual dos componentes concluída
-[ ] catálogo final reconciliado
-[ ] AppShell visual reconciliado
-[ ] Dashboard reconciliado
-[ ] Funcionários reconciliado
-[ ] Novo Funcionário reconciliado
-[ ] coerência entre telas validada
-[ ] responsividade validada no Design Lab
-[ ] acessibilidade validada no nível aplicável à NF-01
-[ ] contrato de testes da NF-02 atualizado
-[ ] revisão independente concluída
-[ ] PR #32 atualizado
-[ ] nenhuma mudança de produção fora do escopo
-[ ] Gate humano explícito de LEANDRO
+[ ] O1 evidências visuais
+[ ] O2 wireframes
+[ ] O3 responsive/accessibility
+[ ] O4 test/acceptance strategy
+[ ] O5 revisão independente
+[ ] O6 closeout
+[ ] O7 PR #32
+[ ] O8 CI/evidências
+[ ] O9 invariantes de produção
+[ ] O10 Gate humano final de LEANDRO
 ```
 
 ---
 
-# 20. Guardrails permanentes até o fechamento
+# 19. Definição de pronto
+
+A NF-01 só fecha após catálogo, Design Lab, três telas reconciliadas, coerência, responsividade/a11y, contrato de testes, revisão independente, PR atualizado, ausência de mudança de produção fora do escopo e Gate explícito de LEANDRO.
+
+---
+
+# 20. Guardrails permanentes
 
 ```text
 DO_NOT_MERGE_WITHOUT_EXPLICIT_LEANDRO_APPROVAL
@@ -561,24 +354,9 @@ DO_NOT_EDIT_DECISOES_CONGELADAS_MD
 
 ---
 
-# 21. Ponte para um novo chat
+# 21. Ponte para novo chat
 
-Um novo chat deve começar lendo, nesta ordem:
-
-```text
-1. DECISOES_CONGELADAS.md
-2. docs/nf-01/12_NF01_CANONICAL_DECISIONS_2026-08-11.md
-3. docs/nf-01/13_NF01_REMAINING_WORK_ROADMAP.md
-4. docs/nf-01/10_NF01_CLOSEOUT.md
-5. docs/nf-01/06_COMPONENT_CATALOG.md
-6. docs/nf-01/prototype/NEW_EMPLOYEE_V2_UX_SPEC.md
-7. checkpoints de revisão individual mais recentes
-8. PR #32 e HEAD atual da branch
-```
-
-Depois deve continuar **pelo primeiro item não concluído deste roadmap**.
-
-Estado atual:
+Ler decisões canônicas, este roadmap, closeout, catálogo, especificação Novo Funcionário V2, checkpoints individuais recentes e PR #32/HEAD atual; depois continuar pelo primeiro item não concluído.
 
 ```text
 NEXT_OFFICIAL_ITEM=C3_HEALTH_CARD_COMPONENT_REVIEW
