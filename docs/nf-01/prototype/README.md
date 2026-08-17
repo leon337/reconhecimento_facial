@@ -13,6 +13,7 @@ Antes de alterar qualquer tela do laboratório, ler:
 ../07_WIREFRAMES.md
 ../08_RESPONSIVE_ACCESSIBILITY.md
 ../09_TEST_AND_ACCEPTANCE_STRATEGY.md
+../46_NF01_CATALOG_COMPLETENESS_H10_CLOSEOUT_2026-08-17.md
 ```
 
 `DECISOES_CONGELADAS.md` permanece inalterado e superior quando aplicável.
@@ -38,8 +39,11 @@ prototype/
 ├── README.md
 ├── NEW_EMPLOYEE_V2_UX_SPEC.md
 ├── assets/
+│   ├── app-shell-i1.css
+│   └── app-shell-i1.js
 ├── components/
 └── screens/
+    ├── 01.01-app-shell.html
     ├── 02.01-dashboard.html
     ├── 03.01-funcionarios.html
     ├── 03.03-novo-funcionario.html
@@ -58,9 +62,32 @@ Depois:
 http://localhost:4173/
 ```
 
+## Fase I — baseline AppShell
+
+```text
+I1_DESIGN_LAB_APPSHELL=IMPLEMENTED_IN_ISOLATED_PROTOTYPE
+REFERENCE_SCREEN=screens/01.01-app-shell.html
+PRODUCTION_CHANGE=NO
+```
+
+A tela `01.01-app-shell.html` é a referência canônica inicial para a materialização da Fase I. Ela demonstra:
+
+- `CollapsibleSidebar` em desktop largo, com preferência local não sensível persistida;
+- sidebar compacta na faixa intermediária para devolver largura ao workspace;
+- navegação overlay em mobile, com backdrop, `Escape`, foco e `inert` quando fechada;
+- `TopHeader` com contexto demonstrativo separado do valor de empresa do vínculo;
+- `Breadcrumb`, `PageHeader`, skip link e um único `main`;
+- targets interativos confortáveis;
+- reduced motion;
+- reflow sem alterar ordem semântica;
+- `Registrar ponto` representado como saída para jornada independente, sem envolver `/punch` no shell administrativo.
+
+A baseline I1 **não reconcilia ainda** Dashboard, Funcionários ou Novo Funcionário com o novo shell; essas telas históricas permanecem preservadas para as próximas etapas da Fase I/J/K/L.
+
 ## Estado visual
 
 ```text
+AppShell I1...................... baseline canônica materializada no Design Lab
 Dashboard Desktop V3........... conteúdo/padrão visual anterior preservado; shell a reconciliar
 Funcionários Desktop V1........ aprovado anteriormente; shell a reconciliar
 Novo Funcionário Desktop V1.... referência histórica
