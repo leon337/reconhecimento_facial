@@ -59,6 +59,7 @@ MEDIUM_GAPS_CLOSED=6/6
 [x] MetricCard
 [x] HealthCard
 [x] LastUpdated
+[x] Search
 ```
 
 ## Fase A — Estrutura
@@ -112,13 +113,27 @@ PHASE_C_COMPONENT_REVIEW=COMPLETE
 ## Fase D — Busca, filtros e dados tabulares
 
 ```text
-[ ] D1 Search
+[x] D1 Search
 [ ] D2 FilterBar
 [ ] D3 DataTable
 [ ] D4 Pagination
 ```
 
-**Próxima ação oficial:** `D1 — revisar Search como componente`, sem aplicar visualmente às telas.
+Guardrails já congelados para D1:
+
+```text
+SEARCH != FILTER_BAR
+SEARCH_COMPONENT != SEARCH_ENGINE
+EMPTY_DATASET != ZERO_SEARCH_RESULTS
+STALE_RESPONSE_MUST_NOT_OVERRIDE_CURRENT_QUERY
+NEW_SEARCH => PAGE_1
+RBAC_SCOPE_BEFORE_QUERY
+NO_GLOBAL_RESULT_THEN_HIDE
+NO_UNAUTHORIZED_COUNT_LEAK
+PLACEHOLDER != ACCESSIBLE_LABEL
+```
+
+**Próxima ação oficial:** `D2 — revisar FilterBar como componente`, sem aplicar visualmente às telas.
 
 ## Fase E — Estados de sistema e feedback
 
@@ -215,6 +230,6 @@ DO_NOT_EDIT_DECISOES_CONGELADAS_MD
 Ler decisões canônicas, este roadmap, closeout, catálogo, especificação Novo Funcionário V2, checkpoints individuais recentes e PR #32/HEAD atual; depois continuar pelo primeiro item não concluído.
 
 ```text
-NEXT_OFFICIAL_ITEM=D1_SEARCH_COMPONENT_REVIEW
+NEXT_OFFICIAL_ITEM=D2_FILTER_BAR_COMPONENT_REVIEW
 VISUAL_IMPLEMENTATION=NOT_YET
 ```
