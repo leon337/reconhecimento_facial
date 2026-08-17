@@ -1,6 +1,7 @@
 (() => {
   const body = document.body;
   const sidebar = document.querySelector('[data-i1-sidebar]');
+  const main = document.querySelector('.i1-main');
   const collapseButton = document.querySelector('[data-i1-collapse]');
   const mobileButton = document.querySelector('[data-i1-mobile-menu]');
   const backdrop = document.querySelector('[data-i1-backdrop]');
@@ -36,8 +37,14 @@
   const setMobileOpen = (open, { restoreFocus = false } = {}) => {
     body.classList.toggle('i1-nav-open', open);
     if (mobileButton) mobileButton.setAttribute('aria-expanded', String(open));
-    if (mobileQuery.matches) setSidebarAvailability(open);
-    else setSidebarAvailability(true);
+
+    if (mobileQuery.matches) {
+      setSidebarAvailability(open);
+      main?.toggleAttribute('inert', open);
+    } else {
+      setSidebarAvailability(true);
+      main?.removeAttribute('inert');
+    }
 
     if (open) {
       mobileTrigger = document.activeElement instanceof HTMLElement ? document.activeElement : mobileButton;
@@ -55,9 +62,11 @@
     if (mobileQuery.matches) {
       setCompact(false, { persist: false });
       setSidebarAvailability(false);
+      main?.removeAttribute('inert');
       return;
     }
     setSidebarAvailability(true);
+    main?.removeAttribute('inert');
     if (desktopQuery.matches) setCompact(getStoredCompact(), { persist: false });
     else setCompact(false, { persist: false });
   };
@@ -71,6 +80,10 @@
   });
 
   backdrop?.addEventListener('click', () => setMobileOpen(false, { restoreFocus: true }));
+
+  document.querySelectorAll('.i1-nav__item[href="#"]').forEach((link) => {
+    link.addEventListener('click', (event) => event.preventDefault());
+  });
 
   sidebar?.addEventListener('click', (event) => {
     if (!mobileQuery.matches) return;
