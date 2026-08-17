@@ -60,6 +60,7 @@ MEDIUM_GAPS_CLOSED=6/6
 [x] HealthCard
 [x] LastUpdated
 [x] Search
+[x] FilterBar
 ```
 
 ## Fase A — Estrutura
@@ -114,12 +115,12 @@ PHASE_C_COMPONENT_REVIEW=COMPLETE
 
 ```text
 [x] D1 Search
-[ ] D2 FilterBar
+[x] D2 FilterBar
 [ ] D3 DataTable
 [ ] D4 Pagination
 ```
 
-Guardrails já congelados para D1:
+Guardrails congelados para D1–D2:
 
 ```text
 SEARCH != FILTER_BAR
@@ -131,9 +132,20 @@ RBAC_SCOPE_BEFORE_QUERY
 NO_GLOBAL_RESULT_THEN_HIDE
 NO_UNAUTHORIZED_COUNT_LEAK
 PLACEHOLDER != ACCESSIBLE_LABEL
+FILTER_BAR != FILTER_ENGINE
+APPLIED_FILTERS_MUST_REMAIN_DISCOVERABLE
+DRAFT_FILTERS != APPLIED_FILTERS
+SEARCH_CLEAR != FILTER_CLEAR
+FILTER_CHANGE => PAGE_1
+EMPTY_DATASET != NO_RESULTS
+PROHIBITED != TEMPORARILY_UNAVAILABLE
+FILTER_DIMENSIONS_OPTIONS_COUNTS_RESULTS => SAME_AUTHORIZED_SCOPE
+NO_UNAUTHORIZED_OPTION_OR_COUNT_LEAK
+NO_SILENT_DEPENDENCY_CLEARING
+FILTER_OPTIONS_ERROR != RESULTS_ERROR
 ```
 
-**Próxima ação oficial:** `D2 — revisar FilterBar como componente`, sem aplicar visualmente às telas.
+**Próxima ação oficial:** `D3 — revisar DataTable como componente`, sem aplicar visualmente às telas.
 
 ## Fase E — Estados de sistema e feedback
 
@@ -230,6 +242,6 @@ DO_NOT_EDIT_DECISOES_CONGELADAS_MD
 Ler decisões canônicas, este roadmap, closeout, catálogo, especificação Novo Funcionário V2, checkpoints individuais recentes e PR #32/HEAD atual; depois continuar pelo primeiro item não concluído.
 
 ```text
-NEXT_OFFICIAL_ITEM=D2_FILTER_BAR_COMPONENT_REVIEW
+NEXT_OFFICIAL_ITEM=D3_DATA_TABLE_COMPONENT_REVIEW
 VISUAL_IMPLEMENTATION=NOT_YET
 ```
