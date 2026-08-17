@@ -66,6 +66,7 @@ MEDIUM_GAPS_CLOSED=6/6
 [x] DataTable
 [x] Pagination
 [x] EmptyState
+[x] ErrorState
 ```
 
 ## Fase A — Estrutura
@@ -178,13 +179,13 @@ PHASE_D_COMPONENT_REVIEW=COMPLETE
 
 ```text
 [x] E1 EmptyState
-[ ] E2 ErrorState
+[x] E2 ErrorState
 [ ] E3 Skeleton
 [ ] E4 DegradationBanner
 [~] E5 Toast — revisão de integração/coerência
 ```
 
-Guardrails congelados para E1:
+Guardrails congelados para E1–E2:
 
 ```text
 EMPTY_STATE != DATA_ENGINE
@@ -199,9 +200,22 @@ STALE_ZERO_RESULT_MUST_NOT_OVERRIDE_CURRENT_QUERY
 CTA => PERMISSION => AVAILABLE_ACTIONS
 RBAC_SCOPE_BEFORE_EMPTY_CLASSIFICATION
 ZERO_RESULTS => NO_PAGINATION_NAVIGATION
+REQUEST_FAILED != OPERATION_FAILED
+TRANSPORT_ERROR != CONFIRMED_OPERATION_FAILURE
+RETRY != BLIND_REPEAT
+UNKNOWN_OUTCOME => RECONCILE_OR_VERIFY
+PARTIAL_FAILURE => LOCALIZE_FAILURE
+REFRESH_ERROR != NO_USABLE_DATA
+USER_MESSAGE != INTERNAL_DIAGNOSTIC
+NO_STACK_TRACE_SQL_SECRET_OR_SENSITIVE_INTERNAL_DETAIL
+FIELD_VALIDATION_ERROR != ERROR_STATE
+ERROR_STATE != TOAST
+ERROR_STATE != DEGRADATION_BANNER
+RBAC_SCOPE_BEFORE_ERROR_MESSAGE
+STALE_ERROR_RESPONSE_MUST_NOT_OVERRIDE_CURRENT_STATE
 ```
 
-**Próxima ação oficial:** `E2 — revisar ErrorState como componente`, sem aplicar visualmente às telas.
+**Próxima ação oficial:** `E3 — revisar Skeleton como componente`, sem aplicar visualmente às telas.
 
 ## Fase F — Overlays, confirmação e histórico
 
@@ -288,6 +302,6 @@ DO_NOT_EDIT_DECISOES_CONGELADAS_MD
 Ler decisões canônicas, este roadmap, closeout, catálogo, especificação Novo Funcionário V2, checkpoints individuais recentes e PR #32/HEAD atual; depois continuar pelo primeiro item não concluído.
 
 ```text
-NEXT_OFFICIAL_ITEM=E2_ERROR_STATE_COMPONENT_REVIEW
+NEXT_OFFICIAL_ITEM=E3_SKELETON_COMPONENT_REVIEW
 VISUAL_IMPLEMENTATION=NOT_YET
 ```
