@@ -31,7 +31,7 @@ PHASE_J_CLOSEOUT_BASIS=SOURCE_LEVEL
 UNRESOLVED_DASHBOARD_CANONICAL_GAPS=0
 J4_REQUIRED=NO
 
-PHASE_K_EMPLOYEES_RECONCILIATION=IN_PROGRESS
+PHASE_K_EMPLOYEES_RECONCILIATION=COMPLETE
 K1_EMPLOYEES_CANONICAL_GAP_AUDIT=COMPLETE
 K1_OUTPUT=../59_NF01_PHASE_K_K1_EMPLOYEES_CANONICAL_GAP_AUDIT_2026-08-17.md
 K1_AUDIT_RESULT=GAPS_FOUND
@@ -42,13 +42,19 @@ K2_OUTPUT=../60_NF01_PHASE_K_K2_EMPLOYEES_CANONICAL_RECONCILIATION_2026-08-17.md
 K2_ACCEPTANCE=PASS_SOURCE_LEVEL
 K2_HIGH_GAPS_RECONCILED_SOURCE_LEVEL=7/7
 EMPLOYEES_VISUAL_CHANGE_IN_K2=YES_DESIGN_LAB_ONLY
+K3_EMPLOYEES_POST_RECONCILIATION_ACCEPTANCE=COMPLETE
+K3_OUTPUT=../61_NF01_PHASE_K_K3_EMPLOYEES_POST_RECONCILIATION_ACCEPTANCE_2026-08-18.md
+K3_ACCEPTANCE=PASS_SOURCE_LEVEL_WITH_ONE_CONTINUITY_FIX
+PHASE_K_CLOSEOUT_BASIS=SOURCE_LEVEL
+UNRESOLVED_EMPLOYEES_CANONICAL_GAPS=0
+K4_REQUIRED=NO
 
 ACTIVE_SURFACE_LEGACY_SHELL_DEPENDENCY=0
 HISTORICAL_V1=screens/03.03-novo-funcionario.html
 HISTORICAL_V1_PRESERVED=YES
 HISTORICAL_V1_MIGRATED=NO
-NEXT_OFFICIAL_PHASE=K_EMPLOYEES_RECONCILIATION
-NEXT_OFFICIAL_ITEM=K3_DEFINITION_GATE
+NEXT_OFFICIAL_PHASE=L_ONBOARDING_RECONCILIATION
+NEXT_OFFICIAL_ITEM=L1_DEFINITION_GATE
 PRODUCTION_CHANGE=NO
 NF02_STARTED=NO
 PR_MERGE=NOT_AUTHORIZED
@@ -60,7 +66,7 @@ J1 auditou o Dashboard sem mudar o visual. J2 executou a reconciliação canôni
 
 K1 auditou `screens/03.01-funcionarios.html` + `assets/employees-v1.css` + `assets/employees-v1.js` sem alterar esses arquivos. K2 reconciliou os sete temas HIGH: métricas agora derivam das fixtures e não se confundem com resultados filtrados; o pseudo-KPI `Admin` foi removido; a tabela prioriza Nome/Matrícula, Unidade, Biometria e Status; `Novo funcionário` exige `users:create`; ações biométricas exigem `biometrics:manage`; os estados `LOADING`, `EMPTY_DATASET`, `READY`, `FILTER_NO_RESULTS`, `ERROR`, `OFFLINE` e `NO_PERMISSION` estão separados; e a paginação fictícia foi removida. O CSS local foi normalizado para `rem/fr/minmax` e container query.
 
-K3 permanece necessário para reauditar Funcionários pós-K2 antes do fechamento source-level da Fase K.
+K3 reauditorou Funcionários pós-K2. Nenhum gap bloqueante foi encontrado; a única inconsistência objetiva estava no tile de `prototype/index.html`, que ainda descrevia Funcionários como etapa I5. O tile foi atualizado para K3/Fase K reconciliada, sem alterar novamente `03.01-funcionarios.html`, `employees-v1.css` ou `employees-v1.js`. A Fase K foi encerrada em base source-level.
 
 A dívida transversal de `components.css`, a coerência cruzada entre telas e a validação completa de responsividade/acessibilidade permanecem diferidas para seus gates próprios.
 
