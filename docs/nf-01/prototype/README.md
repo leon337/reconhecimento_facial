@@ -13,11 +13,16 @@ ONBOARDING_SHARED_APPSHELL=YES
 I7_LEGACY_SHELL_QUARANTINE=COMPLETE
 I8_APPSHELL_STRUCTURAL_ACCEPTANCE=COMPLETE
 I8_ACCEPTANCE=PASS_SOURCE_LEVEL_WITH_HARDENING
+I9_PHASE_I_APPSHELL_CLOSEOUT=COMPLETE
+PHASE_I_DESIGN_LAB_APPSHELL=COMPLETE
+PHASE_I_CLOSEOUT_BASIS=SOURCE_LEVEL
+UNRESOLVED_PHASE_I_STRUCTURAL_GAPS=0
 ACTIVE_SURFACE_LEGACY_SHELL_DEPENDENCY=0
 HISTORICAL_V1=screens/03.03-novo-funcionario.html
 HISTORICAL_V1_PRESERVED=YES
 HISTORICAL_V1_MIGRATED=NO
-NEXT_OFFICIAL_ITEM=I9_PHASE_I_CLOSEOUT_GATE
+NEXT_OFFICIAL_PHASE=J_DASHBOARD_RECONCILIATION
+NEXT_OFFICIAL_ITEM=J1_DEFINITION_GATE
 PRODUCTION_CHANGE=NO
 NF02_STARTED=NO
 PR_MERGE=NOT_AUTHORIZED
@@ -25,4 +30,17 @@ PR_MERGE=NOT_AUTHORIZED
 
 I8 endureceu o bootstrap para exigir exatamente um `<main data-app-shell-content>` e corrigiu o conjunto de foco do overlay mobile, excluindo controles ocultos e preservando corretamente o gatilho antes de aplicar `inert` ao conteúdo.
 
-A aceitação I8 é source-level. Matriz visual 360/768/1024/1440+, larguras intermediárias, zoom 200%, screen reader, a11y automatizada, novos testes unitários/integrados e production E2E continuam não executados.
+I9 fecha somente a Fase I do AppShell em base source-level. Isso não fecha a NF-01 e não declara homologação visual, acessibilidade completa, testes automatizados ou prontidão de produção.
+
+Continuam diferidos:
+
+```text
+BROWSER_VISUAL_MATRIX_360_768_1024_1440=NO
+INTERMEDIATE_WIDTH_VISUAL_TEST=NO
+ZOOM_200_MANUAL_TEST=NO
+SCREEN_READER_MANUAL_TEST=NO
+AUTOMATED_A11Y_SCAN=NO
+NEW_DESIGN_UNIT_TESTS_EXECUTED=NO
+NEW_DESIGN_INTEGRATION_TESTS_EXECUTED=NO
+PRODUCTION_E2E_EXECUTED=NO
+```
