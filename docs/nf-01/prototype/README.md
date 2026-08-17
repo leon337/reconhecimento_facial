@@ -24,7 +24,7 @@ Antes de alterar qualquer tela do laboratório, ler:
 
 `DECISOES_CONGELADAS.md` permanece inalterado e superior quando aplicável.
 
-## Regra de isolamento
+## Isolamento
 
 ```text
 PROTOTYPE_SCOPE=docs/nf-01/prototype/**
@@ -35,17 +35,24 @@ NF02_STARTED=NO
 MERGE_AUTHORIZED=NO
 ```
 
-Durante auditoria, usar somente dados fictícios. Não inserir dados pessoais reais no Design Lab.
+Usar somente dados fictícios no laboratório.
 
-## Como abrir localmente
+## AppShell compartilhado
 
-```bash
-python3 -m http.server 4173 -d docs/nf-01/prototype
+```text
+assets/app-shell.css
++
+assets/app-shell.js
 ```
 
-Depois acessar `http://localhost:4173/`.
+A página consumidora fornece metadados e um único `<main id="conteudo" data-app-shell-content>`. O substrato materializa `CollapsibleSidebar + TopHeader + MainWorkspace`, comportamento responsivo, preferência compacta, foco, `inert`, Escape e item ativo.
 
-## Fase I — AppShell
+```text
+DESIGN_LAB_JS_COMPOSITION != PRODUCTION_ARCHITECTURE
+CANONICAL_APPSHELL=ONE
+```
+
+## Estado da Fase I
 
 ```text
 I1_DESIGN_LAB_APPSHELL=COMPLETE
@@ -54,25 +61,10 @@ I3_SHARED_APPSHELL_SUBSTRATE=COMPLETE
 I4_DASHBOARD_SHARED_APPSHELL_ADOPTION=COMPLETE
 I5_EMPLOYEES_SHARED_APPSHELL_ADOPTION=COMPLETE
 I6_ONBOARDING_V2_SHARED_APPSHELL_ADOPTION=COMPLETE
-CANONICAL_APPSHELL=ONE
 PRODUCTION_CHANGE=NO
 ```
 
-O substrato compartilhado é:
-
-```text
-assets/app-shell.css
-+
-assets/app-shell.js
-```
-
-A página consumidora fornece metadados e um único `<main id="conteudo" data-app-shell-content>`. O bootstrap compartilhado materializa `CollapsibleSidebar + TopHeader + MainWorkspace`, comportamento responsivo, preferência compacta, foco, `inert`, Escape e item ativo.
-
-```text
-DESIGN_LAB_JS_COMPOSITION != PRODUCTION_ARCHITECTURE
-```
-
-## Consumidores incrementais
+Consumidores atuais:
 
 ```text
 01.01 AppShell referência............. I3
@@ -81,54 +73,26 @@ DESIGN_LAB_JS_COMPOSITION != PRODUCTION_ARCHITECTURE
 03.04 Novo Funcionário Desktop V2.... I6
 ```
 
-Dashboard, Funcionários e Novo Funcionário V2 agora compartilham o mesmo casco administrativo no Design Lab. O conteúdo específico de cada tela permanece independente.
+Dashboard, Funcionários e Novo Funcionário V2 compartilham o mesmo casco administrativo. O conteúdo específico permanece independente e ainda será reconciliado nas fases J/K/L.
 
-### I4 — Dashboard
+## Limites das adoções
 
 ```text
-DASHBOARD_SHARED_APPSHELL=YES
 DASHBOARD_CONTENT_REDESIGN_IN_I4=NO
 PHASE_J_DASHBOARD_RECONCILIATION=NOT_STARTED
-```
 
-### I5 — Funcionários
-
-```text
-EMPLOYEES_SHARED_APPSHELL=YES
 EMPLOYEES_CONTENT_REDESIGN_IN_I5=NO
 PHASE_K_EMPLOYEES_RECONCILIATION=NOT_STARTED
-```
 
-Busca, filtros, DataTable, Pagination, EmptyState e `employees-v1.js` foram preservados.
-
-### I6 — Novo Funcionário V2
-
-```text
-ONBOARDING_SHARED_APPSHELL=YES
-ACTIVE_NAV=employees
-ONBOARDING_IS_SUBFLOW_OF_EMPLOYEES=YES
-DASHBOARD_V3_CSS_DEPENDENCY=REMOVED
 ONBOARDING_CONTENT_REDESIGN_IN_I6=NO
 PHASE_L_ONBOARDING_RECONCILIATION=NOT_STARTED
 ```
 
-O wizard de oito etapas, draft local, validação e `new-employee-v2.js` foram preservados. I6 removeu apenas o casco administrativo local.
+I6 removeu do Novo Funcionário V2 o casco administrativo local e a dependência de `dashboard-v3.css`, preservando wizard de oito etapas, draft local, validação e `new-employee-v2.js`.
 
-Importante: decisões históricas ainda visíveis dentro do conteúdo do onboarding — como rail vertical, painel lateral e organização espacial anterior — continuam **não canônicas** e serão reconciliadas somente na Fase L.
+Decisões históricas ainda visíveis no conteúdo do onboarding — rail vertical, painel lateral e organização espacial anterior — continuam substituídas pelo contrato canônico e serão tratadas somente na Fase L.
 
-## Direções substituídas
-
-```text
-sidebar permanentemente expandida........ SUPERSEDED
-shell copiado por tela.................... SUPERSEDED
-classes .i1-* como API permanente......... SUPERSEDED
-stepper vertical do onboarding............ SUPERSEDED
-painel contextual direito permanente...... SUPERSEDED
-larguras fixas em px como regra geral..... SUPERSEDED
-emoji como iconografia de produção......... SUPERSEDED
-```
-
-## Direção atual
+## Direção canônica
 
 ```text
 Shared AppShell substrate
@@ -150,9 +114,7 @@ StickyFormActions no onboarding
 
 `/punch` permanece fora do AppShell administrativo.
 
-## Novo Funcionário — contrato preservado
-
-O wizard continua com oito etapas:
+## Novo Funcionário — oito etapas
 
 ```text
 0 Tipo de relação
@@ -165,9 +127,7 @@ O wizard continua com oito etapas:
 7 Revisão e conclusão
 ```
 
-Regras canônicas principais permanecem: `HorizontalStepper` icon-first; `NEEDS_REVIEW`; `ContextDrawer` sob demanda; `StickyFormActions`; autosave/draft/conflito/retomada; EntityPicker com catálogo mestre/ID; biometria separada da foto administrativa; conclusão futura transacional/idempotente; `OUTCOME_UNKNOWN` exige reconciliação; contexto do header não é empresa contratante.
-
-## Design System atual
+## Design System
 
 ```text
 FONT=Manrope
@@ -176,11 +136,7 @@ BASE_UNIT=rem
 GRID=fr/minmax
 FLUID=clamp
 COMPONENT_RESPONSIVE=container queries quando aplicável
-VIEWPORT_UNITS=limitadas e contextuais
 PX=exceção técnica
-```
-
-```text
 RESPONSIVO != DIMINUIR_TUDO
 RESPONSIVO = REORGANIZAR
 ```
