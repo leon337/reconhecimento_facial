@@ -4,7 +4,7 @@
     return;
   }
 
-  const VERSION = 'i3';
+  const VERSION = 'i8';
   const STORAGE_KEY = 'nf01.designLab.appShell.compact';
   const DESKTOP_QUERY = window.matchMedia('(min-width: 70rem)');
   const MOBILE_QUERY = window.matchMedia('(max-width: 47.99rem)');
@@ -108,14 +108,19 @@
     const body = document.body;
     if (!body || body.dataset.appShellMounted === 'true') return;
 
-    const content = document.querySelector('[data-app-shell-content]');
-    if (!(content instanceof HTMLElement) || content.tagName !== 'MAIN') {
-      console.warn('NF-01 AppShell: expected one <main data-app-shell-content>.');
+    const contentCandidates = [...document.querySelectorAll('[data-app-shell-content]')];
+    if (
+      contentCandidates.length !== 1 ||
+      !(contentCandidates[0] instanceof HTMLElement) ||
+      contentCandidates[0].tagName !== 'MAIN'
+    ) {
+      console.warn('NF-01 AppShell: expected exactly one <main data-app-shell-content>.');
       return;
     }
+    const [content] = contentCandidates;
 
     if (document.querySelector('[data-app-shell-root]')) {
-      body.dataset.appShellMounted = 'true';
+      console.warn('NF-01 AppShell: root already exists before canonical mount; mount aborted.');
       return;
     }
 
@@ -180,7 +185,24 @@
       else sidebar.setAttribute('aria-hidden', 'true');
     };
 
+    const getSidebarFocusables = () => [...sidebar.querySelectorAll(
+      'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    )].filter((element) => (
+      element instanceof HTMLElement &&
+      !element.hasAttribute('inert') &&
+      !element.hidden &&
+      element.getClientRects().length > 0 &&
+      window.getComputedStyle(element).visibility !== 'hidden'
+    ));
+
     const setMobileOpen = (open, { restoreFocus = false } = {}) => {
+      if (open) {
+        const activeElement = document.activeElement;
+        mobileTrigger = activeElement instanceof HTMLElement && mainRegion.contains(activeElement)
+          ? activeElement
+          : mobileButton;
+      }
+
       body.classList.toggle('app-shell-is-nav-open', open);
       mobileButton.setAttribute('aria-expanded', String(open));
 
@@ -193,10 +215,9 @@
       }
 
       if (open) {
-        mobileTrigger = document.activeElement instanceof HTMLElement ? document.activeElement : mobileButton;
         requestAnimationFrame(() => {
-          const first = sidebar.querySelector('a[href], button:not([disabled])');
-          if (first instanceof HTMLElement) first.focus();
+          const [first] = getSidebarFocusables();
+          if (first) first.focus();
         });
       } else if (restoreFocus && mobileTrigger instanceof HTMLElement) {
         mobileTrigger.focus();
@@ -219,8 +240,7 @@
 
     const trapMobileFocus = (event) => {
       if (event.key !== 'Tab' || !MOBILE_QUERY.matches || !body.classList.contains('app-shell-is-nav-open')) return;
-      const focusables = [...sidebar.querySelectorAll('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])')]
-        .filter((element) => element instanceof HTMLElement && !element.hasAttribute('inert'));
+      const focusables = getSidebarFocusables();
       if (!focusables.length) return;
       const first = focusables[0];
       const last = focusables[focusables.length - 1];
