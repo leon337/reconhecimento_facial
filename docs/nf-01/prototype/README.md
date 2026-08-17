@@ -37,13 +37,18 @@ K1_OUTPUT=../59_NF01_PHASE_K_K1_EMPLOYEES_CANONICAL_GAP_AUDIT_2026-08-17.md
 K1_AUDIT_RESULT=GAPS_FOUND
 K1_HIGH_GAP_THEMES=7
 EMPLOYEES_VISUAL_CHANGE_IN_K1=NO
+K2_EMPLOYEES_CANONICAL_RECONCILIATION=COMPLETE
+K2_OUTPUT=../60_NF01_PHASE_K_K2_EMPLOYEES_CANONICAL_RECONCILIATION_2026-08-17.md
+K2_ACCEPTANCE=PASS_SOURCE_LEVEL
+K2_HIGH_GAPS_RECONCILED_SOURCE_LEVEL=7/7
+EMPLOYEES_VISUAL_CHANGE_IN_K2=YES_DESIGN_LAB_ONLY
 
 ACTIVE_SURFACE_LEGACY_SHELL_DEPENDENCY=0
 HISTORICAL_V1=screens/03.03-novo-funcionario.html
 HISTORICAL_V1_PRESERVED=YES
 HISTORICAL_V1_MIGRATED=NO
 NEXT_OFFICIAL_PHASE=K_EMPLOYEES_RECONCILIATION
-NEXT_OFFICIAL_ITEM=K2_DEFINITION_GATE
+NEXT_OFFICIAL_ITEM=K3_DEFINITION_GATE
 PRODUCTION_CHANGE=NO
 NF02_STARTED=NO
 PR_MERGE=NOT_AUTHORIZED
@@ -53,9 +58,11 @@ I8 endureceu o bootstrap do AppShell e I9 fechou a Fase I somente em base source
 
 J1 auditou o Dashboard sem mudar o visual. J2 executou a reconciliação canônica de `screens/02.01-dashboard.html` + `assets/dashboard-v3.css`. J3 reauditorou o resultado, corrigiu somente metainformação do índice do laboratório e encerrou a Fase J em base source-level.
 
-K1 auditou `screens/03.01-funcionarios.html` + `assets/employees-v1.css` + `assets/employees-v1.js` sem alterar esses arquivos. Foram registrados sete temas HIGH: significado/origem dos resumos; hierarquia da tabela; `users:create` no CTA Novo funcionário; `biometrics:manage` nas ações biométricas; estados completos da coleção; paginação fictícia; e variantes RBAC das ações por linha.
+K1 auditou `screens/03.01-funcionarios.html` + `assets/employees-v1.css` + `assets/employees-v1.js` sem alterar esses arquivos. K2 reconciliou os sete temas HIGH: métricas agora derivam das fixtures e não se confundem com resultados filtrados; o pseudo-KPI `Admin` foi removido; a tabela prioriza Nome/Matrícula, Unidade, Biometria e Status; `Novo funcionário` exige `users:create`; ações biométricas exigem `biometrics:manage`; os estados `LOADING`, `EMPTY_DATASET`, `READY`, `FILTER_NO_RESULTS`, `ERROR`, `OFFLINE` e `NO_PERMISSION` estão separados; e a paginação fictícia foi removida. O CSS local foi normalizado para `rem/fr/minmax` e container query.
 
-A próxima decisão é K2, que deverá reconciliar somente os gaps comprovados por K1. A dívida transversal de `components.css`, a coerência cruzada entre telas e a validação completa de responsividade/acessibilidade permanecem diferidas para seus gates próprios.
+K3 permanece necessário para reauditar Funcionários pós-K2 antes do fechamento source-level da Fase K.
+
+A dívida transversal de `components.css`, a coerência cruzada entre telas e a validação completa de responsividade/acessibilidade permanecem diferidas para seus gates próprios.
 
 Continuam diferidos:
 
