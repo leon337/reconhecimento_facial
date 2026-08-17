@@ -11,33 +11,7 @@
 
 ---
 
-## 0. Objetivo
-
-Este documento é o **controle operacional do que ainda falta concluir na NF-01**.
-
-Ele existe para que a continuidade da fase não dependa de memória de chat, resumos informais ou contexto implícito.
-
-### Fontes de verdade
-
-```text
-DECISOES_CONGELADAS.md
-        ↓
-12_NF01_CANONICAL_DECISIONS_2026-08-11.md
-        ↓
-13_NF01_REMAINING_WORK_ROADMAP.md
-        ↓
-demais documentos/protótipos da NF-01
-```
-
-Interpretação:
-
-- `12_*` registra **o que já foi decidido/congelado**;
-- `13_*` registra **o que ainda falta executar/revisar para encerrar a NF-01**;
-- nenhuma linha deste roadmap autoriza NF-02, produção, backend, migração, IA, deploy ou merge.
-
----
-
-# 1. Estado consolidado
+## Estado consolidado
 
 ```text
 NF01_STATUS=IN_PROGRESS
@@ -62,7 +36,7 @@ MEDIUM_GAPS_CLOSED=6/6
 
 ---
 
-# 2. Componentes já revisados individualmente e congelados
+## Componentes congelados
 
 ```text
 [x] CollapsibleSidebar
@@ -88,55 +62,25 @@ MEDIUM_GAPS_CLOSED=6/6
 
 ---
 
-# 3. Regra para revisão individual
-
-```text
-1. propósito e problema que resolve
-2. anatomia
-3. variantes permitidas
-4. estados
-5. comportamento e interações
-6. dependências com outros componentes
-7. RBAC / privacidade quando aplicável
-8. responsividade / container behavior
-9. teclado / foco / screen reader
-10. loading / empty / error / offline quando aplicável
-11. anti-padrões / uso proibido
-12. testes unitários futuros
-13. testes de integração futuros
-14. testes responsivos/a11y futuros
-15. RC rápida
-16. aprovação humana explícita
-17. marcar como FROZEN_INDIVIDUALLY
-```
-
----
-
-# 4. Fase A — Estrutura
+## Fase A — Estrutura
 
 ```text
 [x] A1 AppShell
 [x] A2 TopHeader
 [x] A3 Breadcrumb
 [x] A4 PageHeader
-PHASE_A_COMPONENT_REVIEW=COMPLETE
 ```
 
----
-
-# 5. Fase B — Ações, navegação local e ajuda
+## Fase B — Ações, navegação local e ajuda
 
 ```text
 [x] B1 Button
 [x] B2 IconButton
 [x] B3 Tooltip
 [x] B4 Tabs
-PHASE_B_COMPONENT_REVIEW=COMPLETE
 ```
 
----
-
-# 6. Fase C — Status, métricas e recência
+## Fase C — Status, métricas e recência
 
 ```text
 [x] C1 StatusBadge
@@ -159,7 +103,7 @@ NO_SOURCE => NO_METRIC
 
 ---
 
-# 7. Fase D — Busca, filtros e dados tabulares
+## Fase D — Busca, filtros e dados tabulares
 
 ```text
 [ ] D1 Search
@@ -168,9 +112,7 @@ NO_SOURCE => NO_METRIC
 [ ] D4 Pagination
 ```
 
----
-
-# 8. Fase E — Estados de sistema e feedback
+## Fase E — Estados de sistema e feedback
 
 ```text
 [ ] E1 EmptyState
@@ -180,9 +122,7 @@ NO_SOURCE => NO_METRIC
 [~] E5 Toast — revisão de integração/coerência
 ```
 
----
-
-# 9. Fase F — Overlays, confirmação e histórico
+## Fase F — Overlays, confirmação e histórico
 
 ```text
 [ ] F1 DetailDrawer
@@ -190,121 +130,50 @@ NO_SOURCE => NO_METRIC
 [ ] F3 EventTimeline
 ```
 
----
-
-# 10. Fase G — Câmera e resultado de ponto
+## Fase G — Câmera e resultado de ponto
 
 ```text
 [ ] G1 CameraPanel
 [ ] G2 PunchResult
 ```
 
----
-
-# 11. Fase H — RC de completude do catálogo
+## Fase H — RC de completude do catálogo
 
 ```text
-[ ] H1 comparar 06_COMPONENT_CATALOG.md com contratos individuais
-[ ] H2 verificar componente sem revisão profunda
-[ ] H3 verificar duplicações conceituais
-[ ] H4 verificar inconsistências de estados
-[ ] H5 verificar consistência de nomes
-[ ] H6 verificar RBAC
-[ ] H7 verificar acessibilidade transversal
-[ ] H8 verificar responsividade/container behavior
-[ ] H9 verificar testes futuros previstos
-[ ] H10 corrigir documentação residual conflitante
+[ ] H1–H10 revisão transversal final do catálogo
 ```
 
----
-
-# 12. Fase I — Design Lab / AppShell
+## Fase I — Design Lab / AppShell
 
 ```text
-[ ] I1 materializar AppShell canônico
-[ ] I2 CollapsibleSidebar expandida/compacta/overlay
-[ ] I3 TopHeader
-[ ] I4 Breadcrumb + PageHeader
-[ ] I5 validar área útil
-[ ] I6 validar navegação/estado ativo
-[ ] I7 validar 360/768/1024/1440+
-[ ] I8 zoom 200%
-[ ] I9 teclado/foco
+[ ] I1–I9 materialização e validação do AppShell
 ```
 
----
-
-# 13. Fase J — Dashboard
+## Fase J — Dashboard
 
 ```text
-[ ] J1 AppShell
-[ ] J2 operação protagonista
-[ ] J3 sem falso verde
-[ ] J4 cards/métricas/atividade/alertas
-[ ] J5 densidade/área útil
-[ ] J6 responsividade
-[ ] J7 acessibilidade
-[ ] J8 RC visual
+[ ] J1–J8 reconciliação visual/semântica
 ```
 
----
-
-# 14. Fase K — Funcionários
+## Fase K — Funcionários
 
 ```text
-[ ] K1 AppShell
-[ ] K2 título + Novo funcionário
-[ ] K3 métricas
-[ ] K4 Search + FilterBar
-[ ] K5 DataTable / fallback mobile
-[ ] K6 biometria e permissões
-[ ] K7 responsividade
-[ ] K8 acessibilidade
-[ ] K9 RC visual
+[ ] K1–K9 reconciliação visual/semântica
 ```
 
----
-
-# 15. Fase L — Novo Funcionário V2
+## Fase L — Novo Funcionário V2
 
 ```text
-[ ] L1 remover stepper vertical residual
-[ ] L2 HorizontalStepper icon-first
-[ ] L3 “Ver etapas” sob demanda
-[ ] L4 ContextDrawer
-[ ] L5 ResponsiveFormGrid
-[ ] L6 FormSection / Progressive Disclosure
-[ ] L7 FieldGroup
-[ ] L8 EntityPicker + Date/Time/Period
-[ ] L9 StickyFormActions
-[ ] L10 Wizard State/autosave/conflito/NEEDS_REVIEW
-[ ] L11 Error Hierarchy
-[ ] L12 permissões biometria
-[ ] L13 revisão/conclusão
-[ ] L14 360/768/1024/1440+
-[ ] L15 zoom 200%
-[ ] L16 teclado/foco/a11y
-[ ] L17 RC visual
+[ ] L1–L17 reconciliação do onboarding de 8 etapas
 ```
 
----
-
-# 16. Fase M — Coerência entre telas
+## Fase M — Coerência entre telas
 
 ```text
-[ ] M1 shell comum
-[ ] M2 hierarquia visual comum
-[ ] M3 linguagem de estados comum
-[ ] M4 sidebar consistente
-[ ] M5 header consistente
-[ ] M6 spacing/tokens
-[ ] M7 sem componentes ad hoc duplicados
-[ ] M8 protótipos reconciliados
+[ ] M1–M8 coerência transversal
 ```
 
----
-
-# 17. Fase N — Validação do Design Lab
+## Fase N — Validação do Design Lab
 
 ```text
 RESPONSIVIDADE: 360 / 768 / 1024 / 1440+ / intermediários / teclado mobile
@@ -312,32 +181,15 @@ ACESSIBILIDADE: teclado / foco / zoom 200% / reduced motion / ARIA / screen read
 TESTES FUTUROS: UNITÁRIOS / INTEGRAÇÃO / REGRESSÃO / RESPONSIVO / A11Y / SEGURANÇA
 ```
 
----
-
-# 18. Fase O — Evidências, auditoria e fechamento
+## Fase O — Evidências, auditoria e fechamento
 
 ```text
-[ ] O1 evidências visuais
-[ ] O2 wireframes
-[ ] O3 responsive/accessibility
-[ ] O4 test/acceptance strategy
-[ ] O5 revisão independente
-[ ] O6 closeout
-[ ] O7 PR #32
-[ ] O8 CI/evidências
-[ ] O9 invariantes de produção
-[ ] O10 Gate humano final de LEANDRO
+[ ] O1–O10 evidências, revisão independente, PR e Gate humano final
 ```
 
 ---
 
-# 19. Definição de pronto
-
-A NF-01 só fecha após catálogo, Design Lab, três telas reconciliadas, coerência, responsividade/a11y, contrato de testes, revisão independente, PR atualizado, ausência de mudança de produção fora do escopo e Gate explícito de LEANDRO.
-
----
-
-# 20. Guardrails permanentes
+## Guardrails permanentes
 
 ```text
 DO_NOT_MERGE_WITHOUT_EXPLICIT_LEANDRO_APPROVAL
@@ -352,9 +204,7 @@ DO_NOT_DECLARE_LEGAL_COMPLIANCE
 DO_NOT_EDIT_DECISOES_CONGELADAS_MD
 ```
 
----
-
-# 21. Ponte para novo chat
+## Ponte para novo chat
 
 Ler decisões canônicas, este roadmap, closeout, catálogo, especificação Novo Funcionário V2, checkpoints individuais recentes e PR #32/HEAD atual; depois continuar pelo primeiro item não concluído.
 
