@@ -92,6 +92,8 @@ N Validação Design Lab..... NOT_STARTED
 O Evidências/fechamento.... NOT_STARTED
 ```
 
+I4/I5/I6 trocaram somente os cascos estruturais; não consumiram as fases J/K/L.
+
 ## Continuidade canônica
 
 ```text
