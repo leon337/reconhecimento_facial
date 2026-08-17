@@ -44,12 +44,12 @@ docs/nf-01/prototype/assets/components.css  # dependência compartilhada observa
 ```text
 J1_AUDIT_RESULT=GAPS_FOUND
 CRITICAL_GAPS=0
-HIGH_GAPS=6
-MEDIUM_GAPS=5
-LOW_GAPS=2
+HIGH_GAP_THEMES=6
+MEDIUM_GAP_THEMES=5
+LOW_DEFERRED_OBSERVATIONS=2
 
-PRESERVE_ITEMS=8
-RECONCILE_ITEMS=10
+PRESERVE_ITEMS=6
+RECONCILE_ITEMS=12
 REMOVE_ITEMS=2
 DEFER_ITEMS=4
 
@@ -75,7 +75,7 @@ O Dashboard atual já está estruturalmente próximo do wireframe canônico: pos
 | Atividade recente | 4 linhas demonstrativas | dados reais do contexto; loading/empty/error separados | RECONCILE | HIGH | preservar superfície; criar estados explícitos |
 | Ações da atividade | `Ver registros` + `Abrir lista completa` | uma hierarquia de ação clara; consultar registros com `punch:view` | RECONCILE | MEDIUM | eliminar duplicidade semântica; manter um destino dominante |
 | Atenção necessária | biometria pendente + “Sem outras pendências” | somente fontes reais; warning acionável | RECONCILE | HIGH | preservar painel; nunca declarar ausência de pendências sem fonte válida |
-| Quick Action — Consultar registros | presente | wireframe prevê `Ver registros` | PRESERVE/RECONCILE | MEDIUM | manter capacidade, unificar nomenclatura/hierarquia e exigir `punch:view` |
+| Quick Action — Consultar registros | presente | wireframe prevê `Ver registros` | RECONCILE | MEDIUM | manter capacidade, unificar nomenclatura/hierarquia e exigir `punch:view` |
 | Quick Action — Cadastrar funcionário | presente | não integra o núcleo do wireframe do Dashboard | REMOVE | MEDIUM | remover do bloco primário do Dashboard em J2; ação continua pertencendo a Funcionários quando `users:create` |
 | Quick Action — Cadastrar biometria | presente, sem entidade selecionada | biometria exige `biometrics:manage` e contexto de funcionário | REMOVE | HIGH | remover do bloco genérico do Dashboard; manter no fluxo contextual de funcionário |
 | Saúde operacional | ausente | wireframe mostra papel secundário; UI de saúde ainda não implementada | DEFER | MEDIUM | não criar CTA vivo até existir superfície/fonte; nunca simular healthy |
@@ -162,13 +162,13 @@ J1-M5  dívida de dimensionamento em components.css é transversal e não deve s
 ```text
 P1 AppShell compartilhado
 P2 título/descrição “Dashboard / visão geral da operação”
-P3 trio operacional: Funcionários / Registros hoje / Biometrias pendentes
-P4 Atividade recente como superfície principal
-P5 Atenção necessária como superfície secundária operacional
-P6 banner explícito de dados demonstrativos no Design Lab
-P7 IA/PREDIX ausente do Dashboard principal
-P8 /punch fora da experiência administrativa
+P3 IA/PREDIX ausente do Dashboard principal
+P4 banner explícito de dados demonstrativos no Design Lab
+P5 /punch fora da experiência administrativa
+P6 saúde técnica ausente dos KPIs principais
 ```
+
+Os três conceitos de KPI, Atividade recente e Atenção necessária são **preservados como conceitos**, mas classificados como `RECONCILE` porque seus contratos de estado/origem ainda precisam ser materializados.
 
 ---
 
