@@ -91,65 +91,6 @@ MEDIUM_GAPS_CLOSED=6/6
 [x] Fase H — RC de completude do catálogo — PASS_DOCUMENTAL
 ```
 
-As decisões detalhadas de A–H permanecem nas fontes canônicas e checkpoints `15_*`–`46_*`.
-
-## Componentes congelados
-
-```text
-CollapsibleSidebar
-HorizontalStepper
-ContextDrawer
-StickyFormActions
-ResponsiveFormGrid
-FormSection + Progressive Disclosure
-FieldGroup / InlineHelp / ValidationMessage
-SearchableCombobox / EntityPicker
-Date / Time / Period Picker
-AppShell
-TopHeader
-Breadcrumb
-PageHeader
-Button
-IconButton
-Tooltip
-Tabs
-StatusBadge
-MetricCard
-HealthCard
-LastUpdated
-Search
-FilterBar
-DataTable
-Pagination
-EmptyState
-ErrorState
-ErrorSummary
-Skeleton
-DegradationBanner
-Toast
-DetailDrawer
-ConfirmationModal
-EventTimeline
-CameraPanel
-PunchResult
-```
-
-## Fase H — fechamento preservado
-
-```text
-H1 — inventário e cobertura canônica........ COMPLETE_WITH_GAP
-H1A — ErrorSummary.......................... GAP_RESOLVED
-H2 — estados semânticos globais............. COMPLETE
-H3 — RBAC/tenant/mínimo necessário.......... COMPLETE
-H4 — loading/empty/error/degraded/offline... COMPLETE
-H5 — mutações/unknown/idempotência........... COMPLETE
-H6 — foco/teclado/ARIA/reduced motion....... COMPLETE
-H7 — responsividade/dimensional.............. COMPLETE
-H8 — temporalidade/concorrência.............. COMPLETE
-H9 — componentes/superfícies................ COMPLETE
-H10 — closeout............................... PASS_DOCUMENTAL
-```
-
 ## Fase I — Design Lab / AppShell
 
 ```text
@@ -166,7 +107,6 @@ H10 — closeout............................... PASS_DOCUMENTAL
 ### Guardrails I1–I6
 
 ```text
-I1_REFERENCE_SCREEN=docs/nf-01/prototype/screens/01.01-app-shell.html
 CANONICAL_APPSHELL=ONE
 PAGE_CONTENT != SHELL_IMPLEMENTATION
 SHARED_APPSHELL_STRUCTURE=REQUIRED
@@ -174,7 +114,6 @@ SHARED_APPSHELL_BEHAVIOR=REQUIRED
 COPY_PASTE_SHELL_PER_SCREEN=PROHIBITED
 SCREEN_LOCAL_SHELL_FORK=PROHIBITED_FOR_NEW_WORK
 LEGACY_APP_SHELL=SUPERSEDED_FOR_NEW_WORK
-I1_CLASS_NAMES_AS_PERMANENT_PUBLIC_API=NO
 SHARED_APPSHELL_CSS=docs/nf-01/prototype/assets/app-shell.css
 SHARED_APPSHELL_JS=docs/nf-01/prototype/assets/app-shell.js
 DESIGN_LAB_JS_COMPOSITION != PRODUCTION_ARCHITECTURE
@@ -194,7 +133,6 @@ I4_TARGET=docs/nf-01/prototype/screens/02.01-dashboard.html
 DASHBOARD_SHARED_APPSHELL=YES
 DASHBOARD_LOCAL_SIDEBAR_MARKUP=NO
 DASHBOARD_LOCAL_TOPHEADER_MARKUP=NO
-DASHBOARD_LOCAL_SHELL_CSS=REMOVED
 DASHBOARD_CONTENT_PRESERVED=YES
 DASHBOARD_CONTENT_REDESIGN_IN_I4=NO
 PHASE_J_DASHBOARD_RECONCILIATION=NOT_STARTED
@@ -207,7 +145,6 @@ I5_TARGET=docs/nf-01/prototype/screens/03.01-funcionarios.html
 EMPLOYEES_SHARED_APPSHELL=YES
 EMPLOYEES_LOCAL_SIDEBAR_MARKUP=NO
 EMPLOYEES_LOCAL_TOPHEADER_MARKUP=NO
-EMPLOYEES_LOCAL_SHELL_CSS=REMOVED
 EMPLOYEES_CONTENT_PRESERVED=YES
 EMPLOYEES_FILTER_SCRIPT_PRESERVED=YES
 EMPLOYEES_CONTENT_REDESIGN_IN_I5=NO
@@ -239,14 +176,12 @@ STICKY_ACTIONS_REDESIGNED_IN_I6=NO
 ```text
 DASHBOARD_IMPORTS_SHARED_APP_SHELL_CSS=PASS
 DASHBOARD_IMPORTS_SHARED_APP_SHELL_JS=PASS
-DASHBOARD_ACTIVE_NAV_METADATA=PASS
 DASHBOARD_HAS_ONE_DECLARED_MAIN=PASS
 DASHBOARD_LOCAL_SIDEBAR_MARKUP_REMOVED=PASS
 DASHBOARD_LOCAL_TOPHEADER_MARKUP_REMOVED=PASS
 
 EMPLOYEES_IMPORTS_SHARED_APP_SHELL_CSS=PASS
 EMPLOYEES_IMPORTS_SHARED_APP_SHELL_JS=PASS
-EMPLOYEES_ACTIVE_NAV_METADATA=PASS
 EMPLOYEES_HAS_ONE_DECLARED_MAIN=PASS
 EMPLOYEES_LOCAL_SIDEBAR_MARKUP_REMOVED=PASS
 EMPLOYEES_LOCAL_TOPHEADER_MARKUP_REMOVED=PASS
@@ -254,7 +189,6 @@ EMPLOYEES_FILTER_SCRIPT_PRESERVED=PASS
 
 ONBOARDING_IMPORTS_SHARED_APP_SHELL_CSS=PASS
 ONBOARDING_IMPORTS_SHARED_APP_SHELL_JS=PASS
-ONBOARDING_ACTIVE_NAV_METADATA=PASS
 ONBOARDING_HAS_ONE_DECLARED_MAIN=PASS
 ONBOARDING_LOCAL_SIDEBAR_MARKUP_REMOVED=PASS
 ONBOARDING_LOCAL_TOPHEADER_MARKUP_REMOVED=PASS
@@ -276,49 +210,18 @@ NEW_DESIGN_INTEGRATION_TESTS_EXECUTED=NO
 PRODUCTION_E2E=NO
 ```
 
-## Fase J — Dashboard
+## Fases posteriores
 
 ```text
-[ ] J1–J8 reconciliação visual/semântica
+Fase J — Dashboard................. J1–J8  NOT_STARTED
+Fase K — Funcionários.............. K1–K9  NOT_STARTED
+Fase L — Novo Funcionário V2....... L1–L17 NOT_STARTED
+Fase M — Coerência entre telas..... M1–M8  NOT_STARTED
+Fase N — Validação do Design Lab... NOT_STARTED
+Fase O — Evidências/fechamento..... O1–O10 NOT_STARTED
 ```
 
-I4 não consome a Fase J; trocou apenas o casco estrutural.
-
-## Fase K — Funcionários
-
-```text
-[ ] K1–K9 reconciliação visual/semântica
-```
-
-I5 não consome a Fase K; trocou apenas o casco estrutural.
-
-## Fase L — Novo Funcionário V2
-
-```text
-[ ] L1–L17 reconciliação do onboarding de 8 etapas
-```
-
-I6 não consome a Fase L; o rail vertical, painel lateral e demais decisões espaciais históricas permanecem para reconciliação posterior.
-
-## Fase M — Coerência entre telas
-
-```text
-[ ] M1–M8 coerência transversal
-```
-
-## Fase N — Validação do Design Lab
-
-```text
-RESPONSIVIDADE: 360 / 768 / 1024 / 1440+ / intermediários / teclado mobile
-ACESSIBILIDADE: teclado / foco / zoom 200% / reduced motion / ARIA / screen reader / contraste
-TESTES FUTUROS: UNITÁRIOS / INTEGRAÇÃO / REGRESSÃO / RESPONSIVO / A11Y / SEGURANÇA
-```
-
-## Fase O — Evidências, auditoria e fechamento
-
-```text
-[ ] O1–O10 evidências, revisão independente, PR e Gate humano final
-```
+I4/I5/I6 trocaram somente os cascos estruturais; não consumiram as fases J/K/L.
 
 ## Fontes canônicas de continuidade
 
@@ -361,9 +264,7 @@ DO_NOT_DECLARE_LEGAL_COMPLIANCE
 DO_NOT_EDIT_DECISOES_CONGELADAS_MD
 ```
 
-## Ponte para novo chat
-
-Ler decisões canônicas, este roadmap, closeout da Fase H, checkpoints `47_*`–`52_*`, catálogo, especificação Novo Funcionário V2 e PR #32/HEAD atual; depois continuar pelo primeiro item não concluído.
+## Ponte
 
 ```text
 NEXT_OFFICIAL_PHASE=I_DESIGN_LAB_APPSHELL
