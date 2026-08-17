@@ -89,17 +89,19 @@ A baseline define nomes, papéis, estados gerais e limites. A revisão individua
 [x] Breadcrumb
 [x] PageHeader
 [x] Button
+[x] IconButton
+[x] Tooltip
+[x] Tabs
+[x] StatusBadge
 ```
 
-Os cinco últimos itens foram revisados e aprovados por LEANDRO em lote, por autorização humana explícita. O contrato detalhado está em:
+Contratos detalhados mais recentes:
 
 ```text
 docs/nf-01/15_NF01_COMPONENT_REVIEW_BATCH_A1_A4_B1_2026-08-11.md
-```
-
-```text
-BATCH_REVIEW_EXCEPTION_APPROVED_BY_LEANDRO=YES
-APPROVAL_SCOPE=A1+A2+A3+A4+B1
+docs/nf-01/16_NF01_COMPONENT_REVIEW_B2_B3_2026-08-17.md
+docs/nf-01/17_NF01_COMPONENT_REVIEW_B4_2026-08-17.md
+docs/nf-01/18_NF01_COMPONENT_REVIEW_C1_2026-08-17.md
 ```
 
 Políticas transversais já congeladas e que governam os componentes restantes:
@@ -177,9 +179,6 @@ APPSHELL_COMPONENT=FROZEN_INDIVIDUALLY
 TOP_HEADER=FROZEN_INDIVIDUALLY
 BREADCRUMB=FROZEN_INDIVIDUALLY
 PAGE_HEADER=FROZEN_INDIVIDUALLY
-```
-
-```text
 PHASE_A_COMPONENT_REVIEW=COMPLETE
 ```
 
@@ -189,9 +188,13 @@ PHASE_A_COMPONENT_REVIEW=COMPLETE
 
 ```text
 [x] B1 Button
-[ ] B2 IconButton
-[ ] B3 Tooltip
-[ ] B4 Tabs
+[x] B2 IconButton
+[x] B3 Tooltip
+[x] B4 Tabs
+```
+
+```text
+PHASE_B_COMPONENT_REVIEW=COMPLETE
 ```
 
 Observações:
@@ -201,14 +204,12 @@ Observações:
 - `Tabs` não substitui wizard nem navegação principal;
 - hierarquia `primary / secondary / tertiary / destructive` deve permanecer consistente com `StickyFormActions`.
 
-**Próxima ação oficial:** `B2 — revisar IconButton como componente`, sem ainda aplicar visualmente às telas.
-
 ---
 
 # 6. Fase C — Status, métricas e recência
 
 ```text
-[ ] C1 StatusBadge
+[x] C1 StatusBadge
 [ ] C2 MetricCard
 [ ] C3 HealthCard
 [ ] C4 LastUpdated
@@ -223,6 +224,8 @@ NO_SOURCE => NO_INVENTED_STATUS
 ```
 
 Essa fase deve preservar a política de “sem falso verde”.
+
+**Próxima ação oficial:** `C2 — revisar MetricCard como componente`, sem ainda aplicar visualmente às telas.
 
 ---
 
@@ -582,14 +585,17 @@ Um novo chat deve começar lendo, nesta ordem:
 5. docs/nf-01/06_COMPONENT_CATALOG.md
 6. docs/nf-01/prototype/NEW_EMPLOYEE_V2_UX_SPEC.md
 7. docs/nf-01/15_NF01_COMPONENT_REVIEW_BATCH_A1_A4_B1_2026-08-11.md
-8. PR #32 e HEAD atual da branch
+8. docs/nf-01/16_NF01_COMPONENT_REVIEW_B2_B3_2026-08-17.md
+9. docs/nf-01/17_NF01_COMPONENT_REVIEW_B4_2026-08-17.md
+10. docs/nf-01/18_NF01_COMPONENT_REVIEW_C1_2026-08-17.md
+11. PR #32 e HEAD atual da branch
 ```
 
 Depois deve continuar **pelo primeiro item não concluído deste roadmap**.
 
-Estado atual após o gate humano do lote:
+Estado atual:
 
 ```text
-NEXT_OFFICIAL_ITEM=B2_ICON_BUTTON_COMPONENT_REVIEW
+NEXT_OFFICIAL_ITEM=C2_METRIC_CARD_COMPONENT_REVIEW
 VISUAL_IMPLEMENTATION=NOT_YET
 ```
