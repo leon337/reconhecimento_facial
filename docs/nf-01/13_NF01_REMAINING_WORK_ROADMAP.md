@@ -45,7 +45,7 @@ PHASE_J_CLOSEOUT_BASIS=SOURCE_LEVEL
 UNRESOLVED_DASHBOARD_CANONICAL_GAPS=0
 J4_REQUIRED=NO
 
-PHASE_K_EMPLOYEES_RECONCILIATION=IN_PROGRESS
+PHASE_K_EMPLOYEES_RECONCILIATION=COMPLETE
 K1_EMPLOYEES_CANONICAL_GAP_AUDIT=COMPLETE
 K1_AUDIT_RESULT=GAPS_FOUND
 K1_CRITICAL_GAPS=0
@@ -57,6 +57,11 @@ K2_EMPLOYEES_CANONICAL_RECONCILIATION=COMPLETE
 K2_ACCEPTANCE=PASS_SOURCE_LEVEL
 K2_HIGH_GAPS_RECONCILED_SOURCE_LEVEL=7/7
 EMPLOYEES_VISUAL_CHANGE_IN_K2=YES_DESIGN_LAB_ONLY
+K3_EMPLOYEES_POST_RECONCILIATION_ACCEPTANCE=COMPLETE
+K3_ACCEPTANCE=PASS_SOURCE_LEVEL_WITH_ONE_CONTINUITY_FIX
+PHASE_K_CLOSEOUT_BASIS=SOURCE_LEVEL
+UNRESOLVED_EMPLOYEES_CANONICAL_GAPS=0
+K4_REQUIRED=NO
 
 CANONICAL_APPSHELL=ONE
 CURRENT_APPSHELL_OWNER=docs/nf-01/prototype/assets/app-shell.css+app-shell.js
@@ -208,7 +213,17 @@ DEFER=
 ```text
 [x] K1 — auditoria Current × Canonical, sem mudança visual
 [x] K2 — reconciliação canônica de Funcionários no Design Lab
-[ ] K3 — aceite pós-K2 e fechamento source-level da Fase K
+[x] K3 — aceite pós-K2 e fechamento source-level da Fase K
+```
+
+```text
+PHASE_K_RESULT=COMPLETE_SOURCE_LEVEL
+PHASE_K_COMPLETE != NF01_COMPLETE
+UNRESOLVED_EMPLOYEES_CANONICAL_GAPS=0
+K4_REQUIRED=NO
+FULL_VISUAL_ACCEPTANCE=DEFERRED_TO_PHASE_N
+FULL_ACCESSIBILITY_ACCEPTANCE=DEFERRED_TO_PHASE_N
+AUTOMATED_ACCEPTANCE=DEFERRED_TO_PHASE_N
 ```
 
 ### Resultado K1
@@ -298,6 +313,23 @@ LOCAL_EMPLOYEES_DIMENSIONING=rem/fr/minmax/container-query
 RUNTIME_RBAC_ENFORCEMENT=NOT_IMPLEMENTED_IN_NF01
 ```
 
+### Resultado K3
+
+```text
+K3_OUTPUT=docs/nf-01/61_NF01_PHASE_K_K3_EMPLOYEES_POST_RECONCILIATION_ACCEPTANCE_2026-08-18.md
+K3_IMPLEMENTATION=AUDIT_AND_CONTINUITY_METADATA_ONLY
+K3_EMPLOYEES_HTML_CHANGED=NO
+K3_EMPLOYEES_CSS_CHANGED=NO
+K3_EMPLOYEES_JS_CHANGED=NO
+K3_BLOCKING_GAPS_FOUND=0
+K3_CONTINUITY_DRIFT_FOUND=1
+K3_CONTINUITY_DRIFT_FIXED=1
+K3_CONTINUITY_FIX=docs/nf-01/prototype/index.html
+K3_ACCEPTANCE=PASS_SOURCE_LEVEL_WITH_ONE_CONTINUITY_FIX
+UNRESOLVED_EMPLOYEES_CANONICAL_GAPS=0
+K4_REQUIRED=NO
+```
+
 ### Guardrails I6
 
 ```text
@@ -376,6 +408,7 @@ K2_PERMISSION_AFFORDANCES=PASS_SOURCE_LEVEL
 K2_COLLECTION_STATE_CONTRACT=PASS_SOURCE_LEVEL
 K2_FAKE_PAGINATION_REMOVED=PASS_SOURCE_LEVEL
 K2_CONTAINER_AWARE_RESPONSIVE_LAYER=PASS_SOURCE_LEVEL
+K3_EMPLOYEES_POST_RECONCILIATION_ACCEPTANCE=PASS_SOURCE_LEVEL
 ```
 
 Ainda não executado:
@@ -395,14 +428,14 @@ PRODUCTION_E2E=NO
 
 ```text
 J Dashboard................ COMPLETE_SOURCE_LEVEL
-K Funcionários............. IN_PROGRESS
+K Funcionários............. COMPLETE_SOURCE_LEVEL
 L Novo Funcionário V2...... NOT_STARTED
 M Coerência entre telas.... NOT_STARTED
 N Validação Design Lab..... NOT_STARTED
 O Evidências/fechamento.... NOT_STARTED
 ```
 
-I4/I5/I6 trocaram somente os cascos estruturais; I7 isolou o casco histórico; I8 auditou e endureceu apenas o contrato estrutural; I9 fechou a Fase I em base source-level. J1 auditou o Dashboard; J2 executou a reconciliação canônica; J3 confirmou o aceite pós-J2 e fechou a Fase J. K1 iniciou a Fase K com auditoria documental de Funcionários; K2 reconciliou os sete temas HIGH no Design Lab. K3 ainda precisa auditar o resultado pós-K2 antes de fechar a Fase K.
+I4/I5/I6 trocaram somente os cascos estruturais; I7 isolou o casco histórico; I8 auditou e endureceu apenas o contrato estrutural; I9 fechou a Fase I em base source-level. J1 auditou o Dashboard; J2 executou a reconciliação canônica; J3 confirmou o aceite pós-J2 e fechou a Fase J. K1 iniciou a Fase K com auditoria documental de Funcionários; K2 reconciliou os sete temas HIGH no Design Lab; K3 reauditorou o resultado, corrigiu somente a metainformação do índice e fechou a Fase K em base source-level.
 
 ## Continuidade canônica
 
@@ -442,6 +475,8 @@ DECISOES_CONGELADAS.md
 59_* K1
 ↓
 60_* K2
+↓
+61_* K3
 ```
 
 ## Guardrails permanentes
@@ -460,7 +495,7 @@ DO_NOT_EDIT_DECISOES_CONGELADAS_MD
 ```
 
 ```text
-NEXT_OFFICIAL_PHASE=K_EMPLOYEES_RECONCILIATION
-NEXT_OFFICIAL_ITEM=K3_DEFINITION_GATE
+NEXT_OFFICIAL_PHASE=L_ONBOARDING_RECONCILIATION
+NEXT_OFFICIAL_ITEM=L1_DEFINITION_GATE
 VISUAL_IMPLEMENTATION=DESIGN_LAB_ONLY
 ```
