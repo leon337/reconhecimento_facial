@@ -93,16 +93,10 @@ A baseline define nomes, papéis, estados gerais e limites. A revisão individua
 [x] Tooltip
 [x] Tabs
 [x] StatusBadge
+[x] MetricCard
 ```
 
-Contratos detalhados mais recentes:
-
-```text
-docs/nf-01/15_NF01_COMPONENT_REVIEW_BATCH_A1_A4_B1_2026-08-11.md
-docs/nf-01/16_NF01_COMPONENT_REVIEW_B2_B3_2026-08-17.md
-docs/nf-01/17_NF01_COMPONENT_REVIEW_B4_2026-08-17.md
-docs/nf-01/18_NF01_COMPONENT_REVIEW_C1_2026-08-17.md
-```
+Os itens aprovados por LEANDRO estão registrados nos checkpoints individuais da NF-01.
 
 Políticas transversais já congeladas e que governam os componentes restantes:
 
@@ -155,7 +149,7 @@ Cada componente pendente deve passar pelo seguinte checklist antes de receber `F
 17. marcar como FROZEN_INDIVIDUALLY
 ```
 
-O padrão continua sendo revisão individual. O lote `A1+A2+A3+A4+B1` é uma exceção explicitamente autorizada por LEANDRO e não altera automaticamente o método dos componentes seguintes.
+O padrão continua sendo revisão individual.
 
 Analogia operacional: cada componente é uma peça da linha de montagem. Estar listado no catálogo significa que a peça existe no projeto; passar pela revisão individual significa que ela foi inspecionada antes de entrar no conjunto final.
 
@@ -172,13 +166,7 @@ Analogia operacional: cada componente é uma peça da linha de montagem. Estar l
 [x] A4 PageHeader
 ```
 
-### Critério de saída da Fase A
-
 ```text
-APPSHELL_COMPONENT=FROZEN_INDIVIDUALLY
-TOP_HEADER=FROZEN_INDIVIDUALLY
-BREADCRUMB=FROZEN_INDIVIDUALLY
-PAGE_HEADER=FROZEN_INDIVIDUALLY
 PHASE_A_COMPONENT_REVIEW=COMPLETE
 ```
 
@@ -197,7 +185,7 @@ PHASE_A_COMPONENT_REVIEW=COMPLETE
 PHASE_B_COMPONENT_REVIEW=COMPLETE
 ```
 
-Observações:
+Observações permanentes:
 
 - `Tooltip` nunca contém informação obrigatória;
 - `IconButton` precisa de nome acessível e contexto suficiente;
@@ -210,7 +198,7 @@ Observações:
 
 ```text
 [x] C1 StatusBadge
-[ ] C2 MetricCard
+[x] C2 MetricCard
 [ ] C3 HealthCard
 [ ] C4 LastUpdated
 ```
@@ -221,11 +209,11 @@ Guardrail obrigatório:
 BRAND_GREEN != HEALTHY
 TELEMETRY_UNAVAILABLE != SUCCESS
 NO_SOURCE => NO_INVENTED_STATUS
+NO_DATA != ZERO
+NO_SOURCE => NO_METRIC
 ```
 
-Essa fase deve preservar a política de “sem falso verde”.
-
-**Próxima ação oficial:** `C2 — revisar MetricCard como componente`, sem ainda aplicar visualmente às telas.
+**Próxima ação oficial:** `C3 — revisar HealthCard como componente`, sem ainda aplicar visualmente às telas.
 
 ---
 
@@ -584,11 +572,8 @@ Um novo chat deve começar lendo, nesta ordem:
 4. docs/nf-01/10_NF01_CLOSEOUT.md
 5. docs/nf-01/06_COMPONENT_CATALOG.md
 6. docs/nf-01/prototype/NEW_EMPLOYEE_V2_UX_SPEC.md
-7. docs/nf-01/15_NF01_COMPONENT_REVIEW_BATCH_A1_A4_B1_2026-08-11.md
-8. docs/nf-01/16_NF01_COMPONENT_REVIEW_B2_B3_2026-08-17.md
-9. docs/nf-01/17_NF01_COMPONENT_REVIEW_B4_2026-08-17.md
-10. docs/nf-01/18_NF01_COMPONENT_REVIEW_C1_2026-08-17.md
-11. PR #32 e HEAD atual da branch
+7. checkpoints de revisão individual mais recentes
+8. PR #32 e HEAD atual da branch
 ```
 
 Depois deve continuar **pelo primeiro item não concluído deste roadmap**.
@@ -596,6 +581,6 @@ Depois deve continuar **pelo primeiro item não concluído deste roadmap**.
 Estado atual:
 
 ```text
-NEXT_OFFICIAL_ITEM=C2_METRIC_CARD_COMPONENT_REVIEW
+NEXT_OFFICIAL_ITEM=C3_HEALTH_CARD_COMPONENT_REVIEW
 VISUAL_IMPLEMENTATION=NOT_YET
 ```
