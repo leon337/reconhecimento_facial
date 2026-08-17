@@ -26,10 +26,18 @@
     try { return localStorage.getItem(storageKey) === '1'; } catch (_) { return false; }
   };
 
+  const setSidebarAvailability = (available) => {
+    if (!sidebar) return;
+    sidebar.toggleAttribute('inert', !available);
+    if (available) sidebar.removeAttribute('aria-hidden');
+    else sidebar.setAttribute('aria-hidden', 'true');
+  };
+
   const setMobileOpen = (open, { restoreFocus = false } = {}) => {
     body.classList.toggle('i1-nav-open', open);
     if (mobileButton) mobileButton.setAttribute('aria-expanded', String(open));
-    if (sidebar) sidebar.setAttribute('aria-hidden', mobileQuery.matches && !open ? 'true' : 'false');
+    if (mobileQuery.matches) setSidebarAvailability(open);
+    else setSidebarAvailability(true);
 
     if (open) {
       mobileTrigger = document.activeElement instanceof HTMLElement ? document.activeElement : mobileButton;
@@ -46,10 +54,10 @@
     setMobileOpen(false);
     if (mobileQuery.matches) {
       setCompact(false, { persist: false });
-      sidebar?.setAttribute('aria-hidden', 'true');
+      setSidebarAvailability(false);
       return;
     }
-    sidebar?.removeAttribute('aria-hidden');
+    setSidebarAvailability(true);
     if (desktopQuery.matches) setCompact(getStoredCompact(), { persist: false });
     else setCompact(false, { persist: false });
   };
