@@ -131,8 +131,10 @@
     const collapseButton = fragment.querySelector('[data-app-shell-collapse]');
     const mobileButton = fragment.querySelector('[data-app-shell-mobile-menu]');
     const backdrop = fragment.querySelector('[data-app-shell-backdrop]');
+    const skipLink = fragment.querySelector('[data-app-shell-skip]');
 
-    if (!(shell && sidebar && mainRegion && collapseButton && mobileButton && backdrop)) return;
+    if (!(shell && sidebar && mainRegion && collapseButton && mobileButton && backdrop && skipLink)) return;
+    skipLink.setAttribute('href', `#${content.id}`);
 
     const contextTitle = body.dataset.appShellContextTitle || 'Potiguar Locações';
     const contextSubtitle = body.dataset.appShellContextSubtitle || 'Galpão principal · contexto demonstrativo';
