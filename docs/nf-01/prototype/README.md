@@ -61,6 +61,7 @@ I3_SHARED_APPSHELL_SUBSTRATE=COMPLETE
 I4_DASHBOARD_SHARED_APPSHELL_ADOPTION=COMPLETE
 I5_EMPLOYEES_SHARED_APPSHELL_ADOPTION=COMPLETE
 I6_ONBOARDING_V2_SHARED_APPSHELL_ADOPTION=COMPLETE
+NEXT_OFFICIAL_ITEM=I7_DEFINITION_GATE
 PRODUCTION_CHANGE=NO
 ```
 
@@ -80,10 +81,8 @@ Dashboard, Funcionários e Novo Funcionário V2 compartilham o mesmo casco admin
 ```text
 DASHBOARD_CONTENT_REDESIGN_IN_I4=NO
 PHASE_J_DASHBOARD_RECONCILIATION=NOT_STARTED
-
 EMPLOYEES_CONTENT_REDESIGN_IN_I5=NO
 PHASE_K_EMPLOYEES_RECONCILIATION=NOT_STARTED
-
 ONBOARDING_CONTENT_REDESIGN_IN_I6=NO
 PHASE_L_ONBOARDING_RECONCILIATION=NOT_STARTED
 ```
@@ -127,20 +126,6 @@ StickyFormActions no onboarding
 7 Revisão e conclusão
 ```
 
-## Design System
-
-```text
-FONT=Manrope
-ICON_FAMILY=Lucide
-BASE_UNIT=rem
-GRID=fr/minmax
-FLUID=clamp
-COMPONENT_RESPONSIVE=container queries quando aplicável
-PX=exceção técnica
-RESPONSIVO != DIMINUIR_TUDO
-RESPONSIVO = REORGANIZAR
-```
-
 ## Validação ainda pendente
 
 ```text
@@ -152,22 +137,6 @@ AUTOMATED_A11Y_SCAN=NO
 NEW_DESIGN_UNIT_TESTS_EXECUTED=NO
 NEW_DESIGN_INTEGRATION_TESTS_EXECUTED=NO
 PRODUCTION_E2E=NO
-```
-
-## Testes futuros
-
-```text
-UNITARIO
-→ montagem idempotente + active nav + preferência + aria-expanded + inert + foco + reduced motion
-
-INTEGRACAO
-→ AppShell + Dashboard + Funcionários + Onboarding V2 + conteúdos independentes preservados
-
-RESPONSIVO
-→ 360 / 768 / 1024 / 1440 + intermediários + container resize
-
-ACESSIBILIDADE
-→ teclado / foco / screen reader / labels / aria / contraste / reduced motion / zoom 200%
 ```
 
 O Design Lab funciona como estação de pré-montagem: a peça é auditada aqui antes de qualquer entrada na linha de produção.
