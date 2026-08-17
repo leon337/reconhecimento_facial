@@ -36,6 +36,9 @@ J1_HIGH_GAP_THEMES=6
 J1_MEDIUM_GAP_THEMES=5
 J1_LOW_DEFERRED_OBSERVATIONS=2
 DASHBOARD_VISUAL_CHANGE_IN_J1=NO
+J2_DASHBOARD_CANONICAL_RECONCILIATION=COMPLETE
+J2_HIGH_GAPS_RECONCILED_SOURCE_LEVEL=6/6
+DASHBOARD_VISUAL_CHANGE_IN_J2=YES_DESIGN_LAB_ONLY
 
 CANONICAL_APPSHELL=ONE
 CURRENT_APPSHELL_OWNER=docs/nf-01/prototype/assets/app-shell.css+app-shell.js
@@ -81,7 +84,7 @@ DEFERRED_TO=PHASE_N
 
 ```text
 [x] J1 — auditoria Current × Canonical, sem mudança visual
-[ ] J2 — reconciliação canônica do Dashboard no Design Lab
+[x] J2 — reconciliação canônica do Dashboard no Design Lab
 [ ] J3+ — incrementos posteriores da Fase J ainda não executados
 ```
 
@@ -110,13 +113,34 @@ J1-H5 Cadastrar biometria genérico sem entidade/contexto
 J1-H6 RBAC não materializado nas variantes do Dashboard
 ```
 
-### Direção proposta para J2
+### Resultado J2
 
 ```text
-TARGETS=
-  docs/nf-01/prototype/screens/02.01-dashboard.html
-  docs/nf-01/prototype/assets/dashboard-v3.css
+J2_OUTPUT=docs/nf-01/57_NF01_PHASE_J_J2_DASHBOARD_CANONICAL_RECONCILIATION_2026-08-17.md
+J2_IMPLEMENTATION=DESIGN_LAB_ONLY
+J2_DASHBOARD_HTML_CHANGED=YES
+J2_DASHBOARD_CSS_CHANGED=YES
+J2_HIGH_GAPS_RECONCILED_SOURCE_LEVEL=6/6
 
+UNSOURCED_MONTHLY_TREND=REMOVED
+METRIC_SOURCE_AND_STATE_METADATA=EXPLICIT
+METRIC_STATE_TEMPLATES=DEFINED
+ACTIVITY_STATE_TEMPLATES=DEFINED
+FALSE_GREEN_ATTENTION_SUMMARY=REMOVED
+RECORDS_PRIMARY_ACTION=ONE
+RECORDS_REQUIRED_PERMISSION=punch:view
+GENERIC_DASHBOARD_EMPLOYEE_CREATE_ACTION=REMOVED
+GENERIC_DASHBOARD_BIOMETRIC_ACTION=REMOVED
+DASHBOARD_RBAC_SOURCE_CONTRACT=DEFINED
+RUNTIME_RBAC_ENFORCEMENT=NOT_IMPLEMENTED_IN_NF01
+LOCAL_DASHBOARD_DIMENSIONING=rem/fr/minmax
+COMPONENTS_CSS_GLOBAL_PX_DEBT=DEFERRED
+LIVE_HEALTH_OPERATIONAL_ACTION=NOT_ADDED
+```
+
+### Direção preservada pós-J2
+
+```text
 PRESERVE=
   AppShell
   PageHeader
@@ -126,18 +150,6 @@ PRESERVE=
   demo-data notice
   no AI/PREDIX primary card
   /punch outside admin Dashboard
-
-RECONCILE=
-  MetricCard states/origin
-  Activity states
-  Attention false-green protection
-  one clear records action
-  RBAC variants
-  local responsive/dimensioning policy
-
-REMOVE_FROM_DASHBOARD_PRIMARY_QUICK_ACTIONS=
-  Cadastrar funcionário
-  Cadastrar biometria
 
 DEFER=
   live Saúde operacional until real surface/source exists
@@ -211,6 +223,10 @@ HISTORICAL_V1_LEGACY_SHELL_ISOLATED=PASS
 I8_EXACT_ONE_MAIN_GUARD=PASS_SOURCE_LEVEL
 I8_VISIBLE_MOBILE_FOCUS_SET=PASS_SOURCE_LEVEL
 I8_TRIGGER_BEFORE_INERT=PASS_SOURCE_LEVEL
+J2_METRIC_SOURCE_STATE_CONTRACT=PASS_SOURCE_LEVEL
+J2_ACTIVITY_STATE_CONTRACT=PASS_SOURCE_LEVEL
+J2_FALSE_GREEN_PROTECTION=PASS_SOURCE_LEVEL
+J2_PERMISSION_METADATA=PASS_SOURCE_LEVEL
 ```
 
 Ainda não executado:
@@ -237,7 +253,7 @@ N Validação Design Lab..... NOT_STARTED
 O Evidências/fechamento.... NOT_STARTED
 ```
 
-I4/I5/I6 trocaram somente os cascos estruturais; I7 isolou o casco histórico; I8 auditou e endureceu apenas o contrato estrutural; I9 fechou a Fase I em base source-level. J1 iniciou a Fase J somente com auditoria documental e não alterou o Dashboard visual.
+I4/I5/I6 trocaram somente os cascos estruturais; I7 isolou o casco histórico; I8 auditou e endureceu apenas o contrato estrutural; I9 fechou a Fase I em base source-level. J1 iniciou a Fase J com auditoria documental; J2 executou a primeira reconciliação canônica do conteúdo do Dashboard somente no Design Lab.
 
 ## Continuidade canônica
 
@@ -269,6 +285,8 @@ DECISOES_CONGELADAS.md
 55_* I9
 ↓
 56_* J1
+↓
+57_* J2
 ```
 
 ## Guardrails permanentes
@@ -288,6 +306,6 @@ DO_NOT_EDIT_DECISOES_CONGELADAS_MD
 
 ```text
 NEXT_OFFICIAL_PHASE=J_DASHBOARD_RECONCILIATION
-NEXT_OFFICIAL_ITEM=J2_DASHBOARD_CANONICAL_RECONCILIATION_GATE
+NEXT_OFFICIAL_ITEM=J3_DEFINITION_GATE
 VISUAL_IMPLEMENTATION=DESIGN_LAB_ONLY
 ```
