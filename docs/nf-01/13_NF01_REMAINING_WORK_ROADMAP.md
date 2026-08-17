@@ -68,6 +68,7 @@ MEDIUM_GAPS_CLOSED=6/6
 [x] EmptyState
 [x] ErrorState
 [x] Skeleton
+[x] DegradationBanner
 ```
 
 ## Fase A — Estrutura
@@ -182,11 +183,11 @@ PHASE_D_COMPONENT_REVIEW=COMPLETE
 [x] E1 EmptyState
 [x] E2 ErrorState
 [x] E3 Skeleton
-[ ] E4 DegradationBanner
+[x] E4 DegradationBanner
 [~] E5 Toast — revisão de integração/coerência
 ```
 
-Guardrails congelados para E1–E3:
+Guardrails congelados para E1–E4:
 
 ```text
 EMPTY_STATE != DATA_ENGINE
@@ -233,9 +234,31 @@ REDUCED_MOTION => NO_REQUIRED_ANIMATION
 SKELETON_SHAPES_NOT_IN_A11Y_TREE
 USE_SKELETON_WHEN_FINAL_STRUCTURE_PREDICTABLE
 AVOID_SKELETON_FLASH
+DEGRADATION_BANNER != ERROR_STATE
+DEGRADATION_BANNER != TOAST
+DEGRADATION_BANNER != STATUS_BADGE
+DEGRADATION_BANNER != HEALTH_ENGINE
+DEGRADED != DOWN
+DEGRADED != ERROR
+OFFLINE != ERROR
+NO_SAFE_CONTINUATION => BLOCKING_STATE
+REFRESH_ERROR != NO_USABLE_DATA
+STALE_DATA != CURRENT_DATA
+LAST_UPDATED_PRESERVED_DURING_DEGRADATION
+NO_CONFIRMED_QUEUE => NO_SYNC_PROMISE
+IMPACT_SCOPE => BANNER_SCOPE
+GLOBAL_BANNER_FOR_LOCAL_FAILURE => PROHIBITED
+DEGRADATION_ACTIVE => BANNER_VISIBLE
+TIMER_EXPIRY != RECOVERY
+RETRY_STARTED != RECOVERED
+VERIFIED_RECOVERY => REMOVE_BANNER
+CRITICAL_OPERATIONAL_DEGRADATION => NOT_DISMISSIBLE_BY_DEFAULT
+FALLBACK => CAPABILITY_STATE + PERMISSION + POLICY
+TELEMETRY_UNAVAILABLE != SUCCESS
+POLLING_CONFIRMING_SAME_STATE => NO_ANNOUNCEMENT_STORM
 ```
 
-**Próxima ação oficial:** `E4 — revisar DegradationBanner como componente`, sem aplicar visualmente às telas.
+**Próxima ação oficial:** `E5 — revisar Toast em integração/coerência`, sem aplicar visualmente às telas.
 
 ## Fase F — Overlays, confirmação e histórico
 
@@ -322,6 +345,6 @@ DO_NOT_EDIT_DECISOES_CONGELADAS_MD
 Ler decisões canônicas, este roadmap, closeout, catálogo, especificação Novo Funcionário V2, checkpoints individuais recentes e PR #32/HEAD atual; depois continuar pelo primeiro item não concluído.
 
 ```text
-NEXT_OFFICIAL_ITEM=E4_DEGRADATION_BANNER_COMPONENT_REVIEW
+NEXT_OFFICIAL_ITEM=E5_TOAST_INTEGRATION_COHERENCE_REVIEW
 VISUAL_IMPLEMENTATION=NOT_YET
 ```
