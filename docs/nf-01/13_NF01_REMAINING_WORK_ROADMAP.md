@@ -28,6 +28,15 @@ I9_PHASE_I_APPSHELL_CLOSEOUT=COMPLETE
 PHASE_I_CLOSEOUT_BASIS=SOURCE_LEVEL
 UNRESOLVED_PHASE_I_STRUCTURAL_GAPS=0
 
+PHASE_J_DASHBOARD_RECONCILIATION=IN_PROGRESS
+J1_DASHBOARD_CANONICAL_GAP_AUDIT=COMPLETE
+J1_AUDIT_RESULT=GAPS_FOUND
+J1_CRITICAL_GAPS=0
+J1_HIGH_GAP_THEMES=6
+J1_MEDIUM_GAP_THEMES=5
+J1_LOW_DEFERRED_OBSERVATIONS=2
+DASHBOARD_VISUAL_CHANGE_IN_J1=NO
+
 CANONICAL_APPSHELL=ONE
 CURRENT_APPSHELL_OWNER=docs/nf-01/prototype/assets/app-shell.css+app-shell.js
 CURRENT_APPSHELL_VERSION=i8
@@ -66,6 +75,74 @@ FULL_VISUAL_ACCEPTANCE=DEFERRED
 FULL_ACCESSIBILITY_ACCEPTANCE=DEFERRED
 AUTOMATED_ACCEPTANCE=DEFERRED
 DEFERRED_TO=PHASE_N
+```
+
+## Fase J — Dashboard
+
+```text
+[x] J1 — auditoria Current × Canonical, sem mudança visual
+[ ] J2 — reconciliação canônica do Dashboard no Design Lab
+[ ] J3+ — incrementos posteriores da Fase J ainda não executados
+```
+
+### Resultado J1
+
+```text
+J1_OUTPUT=docs/nf-01/56_NF01_PHASE_J_J1_DASHBOARD_CANONICAL_GAP_AUDIT_2026-08-17.md
+J1_IMPLEMENTATION=DOCUMENTAL_AUDIT_ONLY
+J1_DASHBOARD_HTML_CHANGED=NO
+J1_DASHBOARD_CSS_CHANGED=NO
+
+J1_PRESERVE_ITEMS=6
+J1_RECONCILE_ITEMS=12
+J1_REMOVE_ITEMS=2
+J1_DEFER_ITEMS=4
+```
+
+### Gaps prioritários J1
+
+```text
+J1-H1 MetricCards sem contrato completo de estado/origem
+J1-H2 tendência +2 no mês sem fonte canônica declarada
+J1-H3 Atividade recente sem variantes de estado
+J1-H4 “Sem outras pendências” não pode virar falso verde
+J1-H5 Cadastrar biometria genérico sem entidade/contexto
+J1-H6 RBAC não materializado nas variantes do Dashboard
+```
+
+### Direção proposta para J2
+
+```text
+TARGETS=
+  docs/nf-01/prototype/screens/02.01-dashboard.html
+  docs/nf-01/prototype/assets/dashboard-v3.css
+
+PRESERVE=
+  AppShell
+  PageHeader
+  three canonical KPI concepts
+  Activity recent concept
+  Attention concept
+  demo-data notice
+  no AI/PREDIX primary card
+  /punch outside admin Dashboard
+
+RECONCILE=
+  MetricCard states/origin
+  Activity states
+  Attention false-green protection
+  one clear records action
+  RBAC variants
+  local responsive/dimensioning policy
+
+REMOVE_FROM_DASHBOARD_PRIMARY_QUICK_ACTIONS=
+  Cadastrar funcionário
+  Cadastrar biometria
+
+DEFER=
+  live Saúde operacional until real surface/source exists
+  global px debt in components.css
+  full a11y/responsive validation to Phase N
 ```
 
 ### Guardrails I6
@@ -121,7 +198,7 @@ UNRESOLVED_PHASE_I_STRUCTURAL_GAPS=0
 PRODUCTION_READY=NO
 ```
 
-Validação source-level:
+Validação source-level já preservada:
 
 ```text
 DASHBOARD_SHARED_APPSHELL=PASS
@@ -152,7 +229,7 @@ PRODUCTION_E2E=NO
 ## Fases posteriores
 
 ```text
-J Dashboard................ NOT_STARTED
+J Dashboard................ IN_PROGRESS
 K Funcionários............. NOT_STARTED
 L Novo Funcionário V2...... NOT_STARTED
 M Coerência entre telas.... NOT_STARTED
@@ -160,7 +237,7 @@ N Validação Design Lab..... NOT_STARTED
 O Evidências/fechamento.... NOT_STARTED
 ```
 
-I4/I5/I6 trocaram somente os cascos estruturais; I7 isolou o casco histórico; I8 auditou e endureceu apenas o contrato estrutural; I9 fechou a Fase I em base source-level. Nenhum desses gates consumiu as fases J/K/L.
+I4/I5/I6 trocaram somente os cascos estruturais; I7 isolou o casco histórico; I8 auditou e endureceu apenas o contrato estrutural; I9 fechou a Fase I em base source-level. J1 iniciou a Fase J somente com auditoria documental e não alterou o Dashboard visual.
 
 ## Continuidade canônica
 
@@ -190,6 +267,8 @@ DECISOES_CONGELADAS.md
 54_* I8
 ↓
 55_* I9
+↓
+56_* J1
 ```
 
 ## Guardrails permanentes
@@ -209,6 +288,6 @@ DO_NOT_EDIT_DECISOES_CONGELADAS_MD
 
 ```text
 NEXT_OFFICIAL_PHASE=J_DASHBOARD_RECONCILIATION
-NEXT_OFFICIAL_ITEM=J1_DEFINITION_GATE
+NEXT_OFFICIAL_ITEM=J2_DASHBOARD_CANONICAL_RECONCILIATION_GATE
 VISUAL_IMPLEMENTATION=DESIGN_LAB_ONLY
 ```
