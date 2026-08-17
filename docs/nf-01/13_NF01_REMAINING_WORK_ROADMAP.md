@@ -7,7 +7,7 @@
 **Produção:** inalterada  
 **NF-02:** não iniciada  
 **Merge:** não autorizado  
-**Gate humano final:** LEANDRO  
+**Gate humano final:** LEANDRO
 
 ---
 
@@ -34,8 +34,6 @@ HIGH_GAPS_CLOSED=9/9
 MEDIUM_GAPS_CLOSED=6/6
 ```
 
----
-
 ## Componentes congelados
 
 ```text
@@ -59,8 +57,6 @@ MEDIUM_GAPS_CLOSED=6/6
 [x] StatusBadge
 [x] MetricCard
 ```
-
----
 
 ## Fase A — Estrutura
 
@@ -100,8 +96,6 @@ NO_SOURCE => NO_METRIC
 ```
 
 **Próxima ação oficial:** `C3 — revisar HealthCard como componente`, sem aplicar visualmente às telas.
-
----
 
 ## Fase D — Busca, filtros e dados tabulares
 
@@ -186,8 +180,6 @@ TESTES FUTUROS: UNITÁRIOS / INTEGRAÇÃO / REGRESSÃO / RESPONSIVO / A11Y / SEG
 ```text
 [ ] O1–O10 evidências, revisão independente, PR e Gate humano final
 ```
-
----
 
 ## Guardrails permanentes
 
