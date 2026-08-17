@@ -21,7 +21,7 @@ NF02_STARTED=NO
 PR32_MERGED=NO
 FINAL_HUMAN_GATE=NOT_READY
 COMPONENT_CATALOG_BASELINE=FROZEN
-COMPONENT_INDIVIDUAL_REVIEW=COMPLETE
+COMPONENT_INDIVIDUAL_REVIEW=REOPENED_FOR_H1_GAP
 PHASE_A_COMPONENT_REVIEW=COMPLETE
 PHASE_B_COMPONENT_REVIEW=COMPLETE
 PHASE_C_COMPONENT_REVIEW=COMPLETE
@@ -30,6 +30,9 @@ PHASE_E_COMPONENT_REVIEW=COMPLETE
 PHASE_F_COMPONENT_REVIEW=COMPLETE
 PHASE_G_COMPONENT_REVIEW=COMPLETE
 PHASE_H_CATALOG_COMPLETENESS_RC=IN_PROGRESS
+H1_CATALOG_INVENTORY=COMPLETE_WITH_GAP
+CATALOG_GAP_COUNT=1
+CATALOG_GAP_H1_01=ERROR_SUMMARY
 ```
 
 ### RC transversal
@@ -40,7 +43,7 @@ HIGH_GAPS_CLOSED=9/9
 MEDIUM_GAPS_CLOSED=6/6
 ```
 
-## Componentes congelados
+## Componentes congelados e gap H1
 
 ```text
 [x] CollapsibleSidebar
@@ -78,6 +81,7 @@ MEDIUM_GAPS_CLOSED=6/6
 [x] EventTimeline
 [x] CameraPanel
 [x] PunchResult
+[ ] ErrorSummary — gap detectado em H1; revisão H1A pendente
 ```
 
 ## Fase A — Estrutura
@@ -477,15 +481,16 @@ FAILURE != RED_ONLY
 
 ```text
 PHASE_G_COMPONENT_REVIEW=COMPLETE
-COMPONENT_INDIVIDUAL_REVIEW=COMPLETE
+COMPONENT_INDIVIDUAL_REVIEW=REOPENED_FOR_H1_GAP
 ```
 
-**Próxima ação oficial:** `H1 — iniciar RC transversal de completude do catálogo`, sem aplicar visualmente às telas.
+**Próxima ação oficial:** `H1A — revisar ErrorSummary como componente`, sem aplicar visualmente às telas.
 
 ## Fase H — RC de completude do catálogo
 
 ```text
-[ ] H1 — inventário e cobertura canônica do catálogo
+[x] H1 — inventário e cobertura canônica do catálogo — COMPLETE_WITH_GAP
+[ ] H1A — revisão individual de ErrorSummary
 [ ] H2 — coerência de estados semânticos globais
 [ ] H3 — coerência de RBAC, tenant e mínimo necessário
 [ ] H4 — coerência de loading/empty/error/degraded/offline
@@ -495,6 +500,18 @@ COMPONENT_INDIVIDUAL_REVIEW=COMPLETE
 [ ] H8 — coerência temporal, concorrência e stale responses
 [ ] H9 — coerência entre componentes e superfícies
 [ ] H10 — fechamento da RC de completude do catálogo
+```
+
+Guardrails H1:
+
+```text
+H1_RESULT=ONE_COMPONENT_GAP
+CATALOG_GAP_H1_01=ERROR_SUMMARY
+ERROR_SUMMARY != ERROR_STATE
+ERROR_SUMMARY != VALIDATION_MESSAGE
+REOPEN_ALL_PREVIOUS_COMPONENTS=NO
+ADD_UNDEFINED_COMPONENTS_BY_INFERENCE=NO
+COMPONENT_INDIVIDUAL_REVIEW_COMPLETE=NO_UNTIL_H1A
 ```
 
 ```text
@@ -565,6 +582,6 @@ DO_NOT_EDIT_DECISOES_CONGELADAS_MD
 Ler decisões canônicas, este roadmap, closeout, catálogo, especificação Novo Funcionário V2, checkpoints individuais recentes e PR #32/HEAD atual; depois continuar pelo primeiro item não concluído.
 
 ```text
-NEXT_OFFICIAL_ITEM=H1_CATALOG_COMPLETENESS_RC
+NEXT_OFFICIAL_ITEM=H1A_ERROR_SUMMARY_COMPONENT_REVIEW
 VISUAL_IMPLEMENTATION=NOT_YET
 ```
