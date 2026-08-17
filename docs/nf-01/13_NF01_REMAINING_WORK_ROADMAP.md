@@ -56,6 +56,7 @@ MEDIUM_GAPS_CLOSED=6/6
 [x] Tabs
 [x] StatusBadge
 [x] MetricCard
+[x] HealthCard
 ```
 
 ## Fase A — Estrutura
@@ -81,7 +82,7 @@ MEDIUM_GAPS_CLOSED=6/6
 ```text
 [x] C1 StatusBadge
 [x] C2 MetricCard
-[ ] C3 HealthCard
+[x] C3 HealthCard
 [ ] C4 LastUpdated
 ```
 
@@ -93,9 +94,12 @@ TELEMETRY_UNAVAILABLE != SUCCESS
 NO_SOURCE => NO_INVENTED_STATUS
 NO_DATA != ZERO
 NO_SOURCE => NO_METRIC
+CHECK_ERROR != TARGET_DOWN
+OFFLINE != ERROR
+STALE_DATA != CURRENT_DATA
 ```
 
-**Próxima ação oficial:** `C3 — revisar HealthCard como componente`, sem aplicar visualmente às telas.
+**Próxima ação oficial:** `C4 — revisar LastUpdated como componente`, sem aplicar visualmente às telas.
 
 ## Fase D — Busca, filtros e dados tabulares
 
@@ -201,6 +205,6 @@ DO_NOT_EDIT_DECISOES_CONGELADAS_MD
 Ler decisões canônicas, este roadmap, closeout, catálogo, especificação Novo Funcionário V2, checkpoints individuais recentes e PR #32/HEAD atual; depois continuar pelo primeiro item não concluído.
 
 ```text
-NEXT_OFFICIAL_ITEM=C3_HEALTH_CARD_COMPONENT_REVIEW
+NEXT_OFFICIAL_ITEM=C4_LAST_UPDATED_COMPONENT_REVIEW
 VISUAL_IMPLEMENTATION=NOT_YET
 ```
