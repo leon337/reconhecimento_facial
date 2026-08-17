@@ -85,7 +85,8 @@ DEFERRED_TO=PHASE_N
 ```text
 [x] J1 — auditoria Current × Canonical, sem mudança visual
 [x] J2 — reconciliação canônica do Dashboard no Design Lab
-[ ] J3+ — incrementos posteriores da Fase J ainda não executados
+[ ] J3 — definição do próximo incremento/aceite da Fase J
+[ ] J4+ — incrementos posteriores ainda não executados
 ```
 
 ### Resultado J1
