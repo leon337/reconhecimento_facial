@@ -20,6 +20,7 @@ PRODUCTION_CODE_CHANGED=NO
 NF02_STARTED=NO
 PR32_MERGED=NO
 FINAL_HUMAN_GATE=NOT_READY
+
 COMPONENT_CATALOG_BASELINE=FROZEN
 COMPONENT_INDIVIDUAL_REVIEW=COMPLETE
 PHASE_A_COMPONENT_REVIEW=COMPLETE
@@ -30,12 +31,13 @@ PHASE_E_COMPONENT_REVIEW=COMPLETE
 PHASE_F_COMPONENT_REVIEW=COMPLETE
 PHASE_G_COMPONENT_REVIEW=COMPLETE
 PHASE_H_CATALOG_COMPLETENESS_RC=COMPLETE
+CATALOG_COMPLETENESS_RC=PASS_DOCUMENTAL
+CURRENT_CATALOG_GAP_COUNT=0
+NEW_COMPONENT_GAP_COUNT=0
+
 H1_CATALOG_INVENTORY=COMPLETE_WITH_GAP
-H1_CATALOG_GAP_COUNT=1
-CATALOG_GAP_H1_01=ERROR_SUMMARY
 H1A_ERROR_SUMMARY=COMPLETE
 H1_GAP_RESOLVED=YES
-CURRENT_CATALOG_GAP_COUNT=0
 H2_GLOBAL_SEMANTIC_STATE_COHERENCE=COMPLETE
 H3_RBAC_TENANT_MINIMUM_NECESSARY_COHERENCE=COMPLETE
 H4_OPERATIONAL_STATE_COHERENCE=COMPLETE
@@ -45,24 +47,27 @@ H7_RESPONSIVE_DIMENSIONAL_COHERENCE=COMPLETE
 H8_TEMPORAL_CONCURRENCY_STALE_RESPONSE_COHERENCE=COMPLETE
 H9_COMPONENT_SURFACE_COHERENCE=COMPLETE
 H10_CATALOG_COMPLETENESS_RC_CLOSEOUT=COMPLETE
-CATALOG_COMPLETENESS_RC=PASS_DOCUMENTAL
-NEW_COMPONENT_GAP_COUNT=0
+
 PHASE_I_DESIGN_LAB_APPSHELL=IN_PROGRESS
 I1_DESIGN_LAB_APPSHELL=COMPLETE
 I2_APPSHELL_ADOPTION_CONTRACT=COMPLETE
 I3_SHARED_APPSHELL_SUBSTRATE=COMPLETE
 I4_DASHBOARD_SHARED_APPSHELL_ADOPTION=COMPLETE
 I5_EMPLOYEES_SHARED_APPSHELL_ADOPTION=COMPLETE
+I6_ONBOARDING_V2_SHARED_APPSHELL_ADOPTION=COMPLETE
+
 CANONICAL_APPSHELL=ONE
 LEGACY_APP_SHELL=SUPERSEDED_FOR_NEW_WORK
 SHARED_APPSHELL_SUBSTRATE=docs/nf-01/prototype/assets/app-shell.css+app-shell.js
 DASHBOARD_SHARED_APPSHELL=YES
 EMPLOYEES_SHARED_APPSHELL=YES
+ONBOARDING_SHARED_APPSHELL=YES
 DASHBOARD_CONTENT_REDESIGN_IN_I4=NO
 EMPLOYEES_CONTENT_REDESIGN_IN_I5=NO
+ONBOARDING_CONTENT_REDESIGN_IN_I6=NO
 DASHBOARD_RECONCILED_WITH_CANONICAL_APPSHELL=NO
 EMPLOYEES_RECONCILED_WITH_CANONICAL_APPSHELL=NO
-ONBOARDING_RECONCILED_WITH_CANONICAL_APPSHELL=NO
+ONBOARDING_RECONCILED_WITH_CANONICAL_LAYOUT=NO
 ```
 
 ### RC transversal
@@ -75,8 +80,6 @@ MEDIUM_GAPS_CLOSED=6/6
 
 ## Registro de fases concluídas
 
-As decisões detalhadas e guardrails de A–H permanecem nas fontes canônicas e checkpoints individuais `15_*`–`46_*`. Este roadmap funciona como índice operacional e não substitui esses contratos.
-
 ```text
 [x] Fase A — Estrutura
 [x] Fase B — Ações, navegação local e ajuda
@@ -88,45 +91,47 @@ As decisões detalhadas e guardrails de A–H permanecem nas fontes canônicas e
 [x] Fase H — RC de completude do catálogo — PASS_DOCUMENTAL
 ```
 
+As decisões detalhadas de A–H permanecem nas fontes canônicas e checkpoints `15_*`–`46_*`.
+
 ## Componentes congelados
 
 ```text
-[x] CollapsibleSidebar
-[x] HorizontalStepper
-[x] ContextDrawer
-[x] StickyFormActions
-[x] ResponsiveFormGrid
-[x] FormSection + Progressive Disclosure
-[x] FieldGroup / InlineHelp / ValidationMessage
-[x] SearchableCombobox / EntityPicker
-[x] Date / Time / Period Picker
-[x] AppShell
-[x] TopHeader
-[x] Breadcrumb
-[x] PageHeader
-[x] Button
-[x] IconButton
-[x] Tooltip
-[x] Tabs
-[x] StatusBadge
-[x] MetricCard
-[x] HealthCard
-[x] LastUpdated
-[x] Search
-[x] FilterBar
-[x] DataTable
-[x] Pagination
-[x] EmptyState
-[x] ErrorState
-[x] ErrorSummary
-[x] Skeleton
-[x] DegradationBanner
-[x] Toast
-[x] DetailDrawer
-[x] ConfirmationModal
-[x] EventTimeline
-[x] CameraPanel
-[x] PunchResult
+CollapsibleSidebar
+HorizontalStepper
+ContextDrawer
+StickyFormActions
+ResponsiveFormGrid
+FormSection + Progressive Disclosure
+FieldGroup / InlineHelp / ValidationMessage
+SearchableCombobox / EntityPicker
+Date / Time / Period Picker
+AppShell
+TopHeader
+Breadcrumb
+PageHeader
+Button
+IconButton
+Tooltip
+Tabs
+StatusBadge
+MetricCard
+HealthCard
+LastUpdated
+Search
+FilterBar
+DataTable
+Pagination
+EmptyState
+ErrorState
+ErrorSummary
+Skeleton
+DegradationBanner
+Toast
+DetailDrawer
+ConfirmationModal
+EventTimeline
+CameraPanel
+PunchResult
 ```
 
 ## Fase H — fechamento preservado
@@ -145,25 +150,20 @@ H9 — componentes/superfícies................ COMPLETE
 H10 — closeout............................... PASS_DOCUMENTAL
 ```
 
-```text
-CURRENT_CATALOG_GAP_COUNT=0
-NEW_COMPONENT_GAP_COUNT=0
-PHASE_H_CATALOG_COMPLETENESS_RC=COMPLETE
-```
-
 ## Fase I — Design Lab / AppShell
 
 ```text
 [x] I1 — baseline canônica do AppShell no Design Lab
 [x] I2 — contrato de adoção/reuso do AppShell
 [x] I3 — substrato compartilhado do AppShell
-[x] I4 — Dashboard como primeiro consumidor incremental do AppShell
-[x] I5 — Funcionários como segundo consumidor incremental do AppShell
-[ ] I6 — próximo incremento de adoção/validação do AppShell
-[ ] I7–I9 — adoção/reconciliação e validação incremental do AppShell
+[x] I4 — Dashboard como primeiro consumidor incremental
+[x] I5 — Funcionários como segundo consumidor incremental
+[x] I6 — Novo Funcionário V2 como terceiro consumidor incremental
+[ ] I7 — próximo incremento de adoção/validação do AppShell
+[ ] I8–I9 — adoção/reconciliação e validação incremental do AppShell
 ```
 
-Guardrails I1–I5:
+### Guardrails I1–I6
 
 ```text
 I1_REFERENCE_SCREEN=docs/nf-01/prototype/screens/01.01-app-shell.html
@@ -174,7 +174,6 @@ SHARED_APPSHELL_BEHAVIOR=REQUIRED
 COPY_PASTE_SHELL_PER_SCREEN=PROHIBITED
 SCREEN_LOCAL_SHELL_FORK=PROHIBITED_FOR_NEW_WORK
 LEGACY_APP_SHELL=SUPERSEDED_FOR_NEW_WORK
-LEGACY_SCREEN_CONTENT=PRESERVED_FOR_RECONCILIATION
 I1_CLASS_NAMES_AS_PERMANENT_PUBLIC_API=NO
 SHARED_APPSHELL_CSS=docs/nf-01/prototype/assets/app-shell.css
 SHARED_APPSHELL_JS=docs/nf-01/prototype/assets/app-shell.js
@@ -183,8 +182,14 @@ PAGE_OWNS_GLOBAL_SHELL=NO
 PAGE_OWNS_PAGE_CONTENT=YES
 SINGLE_MAIN=REQUIRED
 DOUBLE_MOUNT_DUPLICATES_SHELL=NO
-I1_RUNTIME_ASSETS=REMOVED_AFTER_REFERENCE_MIGRATION
+PUNCH_ROUTE => OUTSIDE_ADMIN_APPSHELL
+MASS_SCREEN_REWRITE=NO
+BIG_BANG_MIGRATION=NO
+```
 
+### I4 — Dashboard
+
+```text
 I4_TARGET=docs/nf-01/prototype/screens/02.01-dashboard.html
 DASHBOARD_SHARED_APPSHELL=YES
 DASHBOARD_LOCAL_SIDEBAR_MARKUP=NO
@@ -192,9 +197,12 @@ DASHBOARD_LOCAL_TOPHEADER_MARKUP=NO
 DASHBOARD_LOCAL_SHELL_CSS=REMOVED
 DASHBOARD_CONTENT_PRESERVED=YES
 DASHBOARD_CONTENT_REDESIGN_IN_I4=NO
-DASHBOARD_RECONCILED_WITH_CANONICAL_APPSHELL=NO
 PHASE_J_DASHBOARD_RECONCILIATION=NOT_STARTED
+```
 
+### I5 — Funcionários
+
+```text
 I5_TARGET=docs/nf-01/prototype/screens/03.01-funcionarios.html
 EMPLOYEES_SHARED_APPSHELL=YES
 EMPLOYEES_LOCAL_SIDEBAR_MARKUP=NO
@@ -203,18 +211,30 @@ EMPLOYEES_LOCAL_SHELL_CSS=REMOVED
 EMPLOYEES_CONTENT_PRESERVED=YES
 EMPLOYEES_FILTER_SCRIPT_PRESERVED=YES
 EMPLOYEES_CONTENT_REDESIGN_IN_I5=NO
-EMPLOYEES_RECONCILED_WITH_CANONICAL_APPSHELL=NO
 PHASE_K_EMPLOYEES_RECONCILIATION=NOT_STARTED
-
-GLOBAL_LEGACY_SHELL_CSS_REMOVAL=NO
-GLOBAL_INTERACTIONS_CLEANUP=NO
-ONBOARDING_RECONCILED_WITH_CANONICAL_APPSHELL=NO
-PUNCH_ROUTE => OUTSIDE_ADMIN_APPSHELL
-MASS_SCREEN_REWRITE=NO
-BIG_BANG_MIGRATION=NO
 ```
 
-Validação source-level de I4–I5:
+### I6 — Novo Funcionário V2
+
+```text
+I6_TARGET=docs/nf-01/prototype/screens/03.04-novo-funcionario-v2.html
+ONBOARDING_SHARED_APPSHELL=YES
+ACTIVE_NAV=employees
+ONBOARDING_IS_SUBFLOW_OF_EMPLOYEES=YES
+ONBOARDING_LOCAL_SIDEBAR_MARKUP=NO
+ONBOARDING_LOCAL_TOPHEADER_MARKUP=NO
+DASHBOARD_V3_CSS_DEPENDENCY=REMOVED
+ONBOARDING_WIZARD_CONTENT_PRESERVED=YES
+ONBOARDING_V2_SCRIPT_PRESERVED=YES
+ONBOARDING_CONTENT_REDESIGN_IN_I6=NO
+PHASE_L_ONBOARDING_RECONCILIATION=NOT_STARTED
+VERTICAL_WIZARD_RAIL_REMOVED_IN_I6=NO
+HORIZONTAL_STEPPER_IMPLEMENTED_IN_I6=NO
+CONTEXT_DRAWER_IMPLEMENTED_IN_I6=NO
+STICKY_ACTIONS_REDESIGNED_IN_I6=NO
+```
+
+### Validação source-level I4–I6
 
 ```text
 DASHBOARD_IMPORTS_SHARED_APP_SHELL_CSS=PASS
@@ -223,8 +243,6 @@ DASHBOARD_ACTIVE_NAV_METADATA=PASS
 DASHBOARD_HAS_ONE_DECLARED_MAIN=PASS
 DASHBOARD_LOCAL_SIDEBAR_MARKUP_REMOVED=PASS
 DASHBOARD_LOCAL_TOPHEADER_MARKUP_REMOVED=PASS
-DASHBOARD_CONTENT_BLOCKS_PRESERVED=PASS
-DASHBOARD_V3_SHELL_RULES_REMOVED=PASS
 
 EMPLOYEES_IMPORTS_SHARED_APP_SHELL_CSS=PASS
 EMPLOYEES_IMPORTS_SHARED_APP_SHELL_JS=PASS
@@ -232,12 +250,20 @@ EMPLOYEES_ACTIVE_NAV_METADATA=PASS
 EMPLOYEES_HAS_ONE_DECLARED_MAIN=PASS
 EMPLOYEES_LOCAL_SIDEBAR_MARKUP_REMOVED=PASS
 EMPLOYEES_LOCAL_TOPHEADER_MARKUP_REMOVED=PASS
-EMPLOYEES_CONTENT_BLOCKS_PRESERVED=PASS
-EMPLOYEES_V1_SHELL_RULES_REMOVED=PASS
 EMPLOYEES_FILTER_SCRIPT_PRESERVED=PASS
+
+ONBOARDING_IMPORTS_SHARED_APP_SHELL_CSS=PASS
+ONBOARDING_IMPORTS_SHARED_APP_SHELL_JS=PASS
+ONBOARDING_ACTIVE_NAV_METADATA=PASS
+ONBOARDING_HAS_ONE_DECLARED_MAIN=PASS
+ONBOARDING_LOCAL_SIDEBAR_MARKUP_REMOVED=PASS
+ONBOARDING_LOCAL_TOPHEADER_MARKUP_REMOVED=PASS
+DASHBOARD_V3_CSS_DEPENDENCY_REMOVED=PASS
+ONBOARDING_WIZARD_CONTENT_PRESERVED=PASS
+ONBOARDING_V2_SCRIPT_PRESERVED=PASS
 ```
 
-Validação ainda pendente para fases posteriores:
+### Validação ainda pendente
 
 ```text
 BROWSER_VISUAL_MATRIX_360_768_1024_1440=NO
@@ -256,7 +282,7 @@ PRODUCTION_E2E=NO
 [ ] J1–J8 reconciliação visual/semântica
 ```
 
-I4 não consome nenhuma etapa da Fase J; apenas troca o casco estrutural do Dashboard pelo AppShell compartilhado.
+I4 não consome a Fase J; trocou apenas o casco estrutural.
 
 ## Fase K — Funcionários
 
@@ -264,13 +290,15 @@ I4 não consome nenhuma etapa da Fase J; apenas troca o casco estrutural do Dash
 [ ] K1–K9 reconciliação visual/semântica
 ```
 
-I5 não consome nenhuma etapa da Fase K; apenas troca o casco estrutural de Funcionários pelo mesmo AppShell compartilhado.
+I5 não consome a Fase K; trocou apenas o casco estrutural.
 
 ## Fase L — Novo Funcionário V2
 
 ```text
 [ ] L1–L17 reconciliação do onboarding de 8 etapas
 ```
+
+I6 não consome a Fase L; o rail vertical, painel lateral e demais decisões espaciais históricas permanecem para reconciliação posterior.
 
 ## Fase M — Coerência entre telas
 
@@ -314,6 +342,8 @@ DECISOES_CONGELADAS.md
 50_NF01_DESIGN_LAB_I4_DASHBOARD_APPSHELL_ADOPTION_2026-08-17.md
 ↓
 51_NF01_DESIGN_LAB_I5_EMPLOYEES_APPSHELL_ADOPTION_2026-08-17.md
+↓
+52_NF01_DESIGN_LAB_I6_ONBOARDING_V2_APPSHELL_ADOPTION_2026-08-17.md
 ```
 
 ## Guardrails permanentes
@@ -333,10 +363,10 @@ DO_NOT_EDIT_DECISOES_CONGELADAS_MD
 
 ## Ponte para novo chat
 
-Ler decisões canônicas, este roadmap, closeout da Fase H, checkpoints `47_*`–`51_*`, catálogo, especificação Novo Funcionário V2 e PR #32/HEAD atual; depois continuar pelo primeiro item não concluído.
+Ler decisões canônicas, este roadmap, closeout da Fase H, checkpoints `47_*`–`52_*`, catálogo, especificação Novo Funcionário V2 e PR #32/HEAD atual; depois continuar pelo primeiro item não concluído.
 
 ```text
 NEXT_OFFICIAL_PHASE=I_DESIGN_LAB_APPSHELL
-NEXT_OFFICIAL_ITEM=I6_DEFINITION_GATE
+NEXT_OFFICIAL_ITEM=I7_DEFINITION_GATE
 VISUAL_IMPLEMENTATION=DESIGN_LAB_ONLY
 ```
