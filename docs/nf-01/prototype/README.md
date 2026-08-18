@@ -16,20 +16,22 @@ PHASE_J_DASHBOARD_RECONCILIATION=COMPLETE_SOURCE_LEVEL
 PHASE_K_EMPLOYEES_RECONCILIATION=COMPLETE_SOURCE_LEVEL
 PHASE_L_ONBOARDING_RECONCILIATION=COMPLETE_SOURCE_LEVEL
 PHASE_M_CROSS_SCREEN_COHERENCE=COMPLETE_SOURCE_LEVEL
+PHASE_N_DESIGN_LAB_VALIDATION=IN_PROGRESS
 
 M1_CROSS_SCREEN_COHERENCE_AUDIT=COMPLETE
 M1_OUTPUT=../65_NF01_PHASE_M_M1_CROSS_SCREEN_COHERENCE_AUDIT_2026-08-18.md
-M1_AUDIT_RESULT=GAPS_FOUND
-M1_HIGH_GAP_THEMES=5
 M2_CROSS_SCREEN_COHERENCE_RECONCILIATION=COMPLETE
 M2_OUTPUT=../66_NF01_PHASE_M_M2_CROSS_SCREEN_COHERENCE_RECONCILIATION_2026-08-18.md
-M2_ACCEPTANCE=PASS_SOURCE_LEVEL
-M1_HIGH_GAPS_RECONCILED_SOURCE_LEVEL=5/5
 M3_CROSS_SCREEN_POST_RECONCILIATION_ACCEPTANCE=COMPLETE
 M3_OUTPUT=../67_NF01_PHASE_M_M3_CROSS_SCREEN_POST_RECONCILIATION_ACCEPTANCE_2026-08-18.md
-M3_ACCEPTANCE=PASS_SOURCE_LEVEL_WITH_TWO_CONTINUITY_FIXES
 UNRESOLVED_CROSS_SCREEN_BLOCKING_GAPS=0
-M4_REQUIRED=NO
+
+N1_DESIGN_LAB_VALIDATION_DEFINITION=COMPLETE
+N1_OUTPUT=../68_NF01_PHASE_N_N1_DESIGN_LAB_VALIDATION_DEFINITION_2026-08-18.md
+N1_IMPLEMENTATION=VALIDATION_PLAN_ONLY
+N2_BROWSER_RESPONSIVE_VISUAL_VALIDATION=NOT_APPROVED
+N3_ACCESSIBILITY_INTERACTION_STATE_RBAC_VALIDATION=NOT_APPROVED
+N4_PHASE_N_CONSOLIDATED_ACCEPTANCE=NOT_APPROVED
 
 CROSS_SCREEN_SHARED_CONTEXT=Potiguar_Locacoes|Galpao_principal
 CROSS_SCREEN_SHARED_PROFILE=Administrador_Demo|admin
@@ -45,8 +47,8 @@ HISTORICAL_V1_PRESERVED=YES
 HISTORICAL_V1_MIGRATED=NO
 
 NEXT_OFFICIAL_PHASE=N_DESIGN_LAB_VALIDATION
-NEXT_OFFICIAL_ITEM=N1_DESIGN_LAB_VALIDATION_DEFINITION_GATE
-N1_APPROVAL_INFERRED=NO
+NEXT_OFFICIAL_ITEM=N2_BROWSER_RESPONSIVE_VISUAL_VALIDATION_GATE
+N2_APPROVAL_INFERRED=NO
 PRODUCTION_CHANGE=NO
 NF02_STARTED=NO
 PR_MERGE=NOT_AUTHORIZED
@@ -56,46 +58,72 @@ PR_MERGE=NOT_AUTHORIZED
 
 ### Dashboard
 
-`screens/02.01-dashboard.html` preserva o contrato canônico de J2/J3 e, em M2/M3, permanece reconciliado com a amostra local de Funcionários:
+`screens/02.01-dashboard.html` permanece reconciliado com a amostra local compartilhada:
 
-- `Funcionários cadastrados = 6` para a mesma amostra local;
+- `Funcionários cadastrados = 6`;
 - João Souza = matrícula `00124`;
 - Maria Silva = matrícula `00123`;
 - Lucas Santos = matrícula `00131`;
 - Ana Paula = matrícula `00142`;
-- unidade demonstrativa das linhas de atividade = `Galpão principal`;
+- unidade demonstrativa = `Galpão principal`;
 - origem compartilhada = `fixture:employees-k2`;
 - `2 biometrias pendentes` deriva da mesma amostra;
 - `Ver funcionários filtrados` navega para `03.01-funcionarios.html?biometric=missing&source=dashboard`.
 
-`Registros hoje` continua uma fixture separada de registros e não é apresentado como derivação da lista local de Funcionários.
+`Registros hoje` continua uma fixture separada de registros.
 
 ### Funcionários
 
-`screens/03.01-funcionarios.html` preserva os contratos fechados em K3. A integração cruzada de M2 continua em `assets/employees-v1.js`:
+`screens/03.01-funcionarios.html` preserva os contratos fechados em K3/M3:
 
-- query string explícita pode aplicar `q`, `biometric` e `function`;
+- query explícita pode aplicar `q`, `biometric` e `function`;
 - handoff do Dashboard aplica `biometric=missing`;
-- busca e filtros são preservados em `sessionStorage` escopado ao contexto demonstrativo;
+- busca e filtros são preservados em `sessionStorage` escopado ao contexto;
 - handoff explícito tem precedência sobre estado restaurado;
-- retorno do onboarding reutiliza o estado anterior da lista na mesma sessão;
+- retorno do onboarding reutiliza o estado anterior na mesma sessão;
 - `FILTER_NO_RESULTS` permanece diferente de `EMPTY_DATASET` e `ERROR`.
 
 ### Novo Funcionário
 
-A estrutura funcional do onboarding permanece a fechada em L3. M2 usa `assets/interactions.js` como pequeno substrato compartilhado do Design Lab para manter:
+A estrutura funcional permanece a fechada em L3/M3:
 
 - contexto visível `Potiguar Locações / Galpão principal`;
 - principal `Administrador Demo / Admin`;
-- conjunto demonstrativo padrão `users:view users:create biometrics:manage punch:view punch:create`;
-- `aria-label` do contexto coerente após montagem do AppShell;
-- nome visível `Novo Funcionário`, mantendo `V2` somente como detalhe técnico do arquivo;
-- breadcrumb sem o primeiro nível redundante `Gestão`;
-- painel de sucesso explícito: a demonstração não altera a lista de Funcionários.
+- permissões demonstrativas padrão `users:view users:create biometrics:manage punch:view punch:create`;
+- nome visível `Novo Funcionário`, mantendo `V2` somente no nome técnico do arquivo;
+- breadcrumb deduplicado em runtime;
+- conclusão demo não altera a lista real de Funcionários.
 
-O seletor de perfil do ContextDrawer permanece uma simulação explícita de variante do fluxo; não representa mudança silenciosa do principal real.
+## Fase N — matriz definida em N1
 
-M3 corrigiu também o índice do Design Lab, removendo `V2` da rotulagem visível do tile ativo sem renomear o arquivo técnico.
+N1 não alterou HTML/CSS/JS. Ele definiu a inspeção que os próximos gates deverão executar.
+
+### N2 — visual/responsivo
+
+```text
+CANONICAL_VIEWPORTS=360|768|1024|1440
+INTERMEDIATE_VIEWPORTS=480|900|1280
+CONTAINER_FIRST_VALIDATION=REQUIRED
+ZOOM_200_MANUAL_TEST=REQUIRED
+```
+
+Cobertura: AppShell, Dashboard, Funcionários, Novo Funcionário e handoffs cross-screen.
+
+### N3 — acessibilidade/interação/estados/RBAC
+
+```text
+KEYBOARD_CRITICAL_JOURNEY=REQUIRED
+SCREEN_READER_CRITICAL_JOURNEY=REQUIRED
+AUTOMATED_A11Y_SCAN=IF_TOOLING_AVAILABLE
+RBAC_VISUAL_MATRIX=REQUIRED
+STATE_MATRIX=REQUIRED
+```
+
+Se ferramenta necessária não estiver disponível, o resultado deve ser `BLOCKED_TOOLING`; PASS não pode ser inferido.
+
+### N4 — aceite consolidado
+
+N4 somente pode fechar a Fase N com zero BLOCKER/HIGH aberto e evidência explícita dos casos exigidos por N1.
 
 ## Continuidade
 
@@ -111,11 +139,11 @@ M3 corrigiu também o índice do Design Lab, removendo `V2` da rotulagem visíve
 66_* M2
 ↓
 67_* M3
+↓
+68_* N1
 ```
 
-O `13_NF01_REMAINING_WORK_ROADMAP.md` foi sincronizado em M3 e agora registra a Fase M como `COMPLETE_SOURCE_LEVEL`, sem gaps cross-screen bloqueantes conhecidos em base source-level.
-
-## Validação ainda diferida
+## Validação ainda não executada
 
 ```text
 BROWSER_VISUAL_MATRIX_360_768_1024_1440=NO
@@ -128,7 +156,7 @@ NEW_DESIGN_INTEGRATION_TESTS_EXECUTED=NO
 PRODUCTION_E2E_EXECUTED=NO
 ```
 
-O workflow geral do repositório pode validar sintaxe e regressão existente, mas isso não substitui os testes específicos de aceitação do Design Lab previstos para a Fase N.
+O contrato canônico da NF-01 mantém novos testes unitários/de integração como não executados; a Fase N revisa sua cobertura documental, mas não os declara PASS.
 
 ## Guardrails
 
