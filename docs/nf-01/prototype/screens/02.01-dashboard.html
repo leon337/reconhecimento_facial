@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
-  <title>Dashboard Canônico J2 — NF-01 Design Lab</title>
+  <title>Dashboard Canônico M2 — NF-01 Design Lab</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -45,22 +45,22 @@
 
     <div class="demo-notice" role="note">
       <svg class="icon" aria-hidden="true"><use href="#i-info"/></svg>
-      <span><strong>Dados demonstrativos.</strong> Os números abaixo são fixtures do Design Lab. J2 explicita origem, estado e permissão; produção só poderá renderizar valores após fonte válida e escopada.</span>
+      <span><strong>Dados demonstrativos.</strong> M2 usa a mesma amostra local de Funcionários para identidade, unidade e pendências. Produção só poderá renderizar valores após fonte válida e escopada.</span>
     </div>
 
     <section class="kpi-grid" aria-label="Indicadores principais">
-      <article class="kpi-card" data-dashboard-metric="employees" data-state="ready" data-source="design-lab.users">
+      <article class="kpi-card" data-dashboard-metric="employees" data-state="ready" data-source="fixture:employees-k2">
         <div class="kpi-card__top">
           <div class="kpi-card__identity">
             <div class="icon-chip icon-chip--brand"><svg class="icon icon--lg" aria-hidden="true"><use href="#i-users"/></svg></div>
-            <div><p class="kpi-card__label">Funcionários cadastrados</p><p class="kpi-card__value">24</p></div>
+            <div><p class="kpi-card__label">Funcionários cadastrados</p><p class="kpi-card__value">6</p></div>
           </div>
           <span class="metric-state">READY · demo</span>
         </div>
-        <p class="kpi-card__help">Pessoas vinculadas ao contexto demonstrativo atual.</p>
+        <p class="kpi-card__help">Pessoas na amostra compartilhada do contexto demonstrativo atual.</p>
         <div class="metric-card__meta">
-          <span>Origem: fixture Funcionários</span>
-          <span>Escopo: contexto atual</span>
+          <span>Origem: fixture:employees-k2 · 6 pessoas</span>
+          <span>Escopo: Galpão principal</span>
         </div>
       </article>
 
@@ -79,7 +79,7 @@
         </div>
       </article>
 
-      <article class="kpi-card" data-dashboard-metric="biometrics-pending" data-state="warning" data-source="design-lab.biometrics">
+      <article class="kpi-card" data-dashboard-metric="biometrics-pending" data-state="warning" data-source="fixture:employees-k2">
         <div class="kpi-card__top">
           <div class="kpi-card__identity">
             <div class="icon-chip icon-chip--warning"><svg class="icon icon--lg" aria-hidden="true"><use href="#i-scan"/></svg></div>
@@ -87,9 +87,9 @@
           </div>
           <span class="status-pill status-pill--warning">Requer atenção · demo</span>
         </div>
-        <p class="kpi-card__help">Funcionários demonstrativos ainda sem biometria facial ativa.</p>
+        <p class="kpi-card__help">Duas pessoas da mesma amostra compartilhada ainda não possuem biometria ativa.</p>
         <div class="metric-card__meta">
-          <span>Origem: fixture Biometria</span>
+          <span>Origem: fixture:employees-k2</span>
           <span>Estado: WARNING</span>
         </div>
       </article>
@@ -111,18 +111,18 @@
           </div>
 
           <div class="activity-row" role="row">
-            <div class="person" role="cell"><span class="person__avatar">JS</span><span><span class="person__name">João Souza</span><span class="person__meta">Matrícula 00123</span></span></div>
+            <div class="person" role="cell"><span class="person__avatar">JS</span><span><span class="person__name">João Souza</span><span class="person__meta">Matrícula 00124</span></span></div>
             <div class="activity-cell cell-type" role="cell"><span class="status-pill status-pill--success">Entrada</span></div>
             <div class="activity-cell cell-time" role="cell">08:02</div>
-            <div class="activity-cell cell-unit" role="cell">Galpão</div>
+            <div class="activity-cell cell-unit" role="cell">Galpão principal</div>
             <div class="activity-cell cell-status" role="cell"><span class="status-pill status-pill--success"><span class="status-pill__dot"></span>Confirmado</span></div>
           </div>
 
           <div class="activity-row" role="row">
-            <div class="person" role="cell"><span class="person__avatar">MS</span><span><span class="person__name">Maria Silva</span><span class="person__meta">Matrícula 00124</span></span></div>
+            <div class="person" role="cell"><span class="person__avatar">MS</span><span><span class="person__name">Maria Silva</span><span class="person__meta">Matrícula 00123</span></span></div>
             <div class="activity-cell cell-type" role="cell"><span class="status-pill status-pill--success">Entrada</span></div>
             <div class="activity-cell cell-time" role="cell">08:05</div>
-            <div class="activity-cell cell-unit" role="cell">Galpão</div>
+            <div class="activity-cell cell-unit" role="cell">Galpão principal</div>
             <div class="activity-cell cell-status" role="cell"><span class="status-pill status-pill--success"><span class="status-pill__dot"></span>Confirmado</span></div>
           </div>
 
@@ -130,7 +130,7 @@
             <div class="person" role="cell"><span class="person__avatar">LS</span><span><span class="person__name">Lucas Santos</span><span class="person__meta">Matrícula 00131</span></span></div>
             <div class="activity-cell cell-type" role="cell"><span class="status-pill status-pill--info">Saída</span></div>
             <div class="activity-cell cell-time" role="cell">12:01</div>
-            <div class="activity-cell cell-unit" role="cell">Galpão</div>
+            <div class="activity-cell cell-unit" role="cell">Galpão principal</div>
             <div class="activity-cell cell-status" role="cell"><span class="status-pill status-pill--success"><span class="status-pill__dot"></span>Confirmado</span></div>
           </div>
 
@@ -138,12 +138,12 @@
             <div class="person" role="cell"><span class="person__avatar">AP</span><span><span class="person__name">Ana Paula</span><span class="person__meta">Matrícula 00142</span></span></div>
             <div class="activity-cell cell-type" role="cell"><span class="status-pill status-pill--info">Saída</span></div>
             <div class="activity-cell cell-time" role="cell">12:04</div>
-            <div class="activity-cell cell-unit" role="cell">Obra 02</div>
+            <div class="activity-cell cell-unit" role="cell">Galpão principal</div>
             <div class="activity-cell cell-status" role="cell"><span class="status-pill status-pill--success"><span class="status-pill__dot"></span>Confirmado</span></div>
           </div>
 
           <div class="activity-footer">
-            <span>4 registros demonstrativos · origem: fixture Design Lab</span>
+            <span>4 registros demonstrativos · pessoas da fixture:employees-k2</span>
           </div>
         </div>
       </section>
@@ -157,11 +157,11 @@
             </div>
           </header>
           <div class="attention-list">
-            <button class="attention-item attention-item--warning" type="button" data-required-permission="users:view" data-demo-action="Ver funcionários com biometria pendente">
+            <a class="attention-item attention-item--warning" href="03.01-funcionarios.html?biometric=missing&amp;source=dashboard" data-required-permission="users:view" data-cross-screen-handoff="biometric-missing">
               <span class="attention-icon"><svg class="icon" aria-hidden="true"><use href="#i-scan"/></svg></span>
-              <span class="attention-copy"><strong>2 biometrias pendentes</strong><p>Fixture demonstrativa de funcionários ainda sem biometria facial ativa.</p><span class="attention-link">Ver funcionários</span></span>
+              <span class="attention-copy"><strong>2 biometrias pendentes</strong><p>A mesma amostra compartilhada possui duas pessoas sem biometria ativa.</p><span class="attention-link">Ver funcionários filtrados</span></span>
               <svg class="icon icon--sm attention-chevron" aria-hidden="true"><use href="#i-chevron"/></svg>
-            </button>
+            </a>
 
             <div class="attention-policy" role="note">
               <svg class="icon icon--sm" aria-hidden="true"><use href="#i-info"/></svg>
@@ -200,7 +200,7 @@
     <template data-dashboard-state-template="dashboard-no-permission"><section class="dashboard-state" data-state="no_permission"><h2>Acesso insuficiente</h2><p>Este perfil não possui acesso ao Dashboard administrativo.</p></section></template>
 
     <!-- Contrato RBAC do mock: admin/super_admin = leitura + mutações permitidas pelo backend; manager = leitura/usuários sem biometria; auditor = leitura; operator = sem shell administrativo. -->
-    <p class="page-footnote">NF-01 · Design Lab HTML-first · Dashboard J2 reconciliado · estados/origem/RBAC explícitos · sem backend de produção.</p>
+    <p class="page-footnote">NF-01 · Design Lab HTML-first · Dashboard M2 coerente com Funcionários · estados/origem/RBAC explícitos · sem backend de produção.</p>
   </main>
 
   <div class="toast" role="status" aria-live="polite" data-toast></div>
