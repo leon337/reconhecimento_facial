@@ -9,7 +9,7 @@
 **Merge:** não autorizado  
 **Gate humano final:** LEANDRO
 
-> Este arquivo é o índice canônico de estado e trabalho restante. Evidências, matrizes PRESERVE/RECONCILE/REMOVE/DEFER e decisões detalhadas permanecem nos checkpoints numerados da NF-01; a sincronização M3 não apaga nem substitui esses registros.
+> Este arquivo é o índice canônico de estado e trabalho restante. Evidências, matrizes e decisões detalhadas permanecem nos checkpoints numerados da NF-01.
 
 ## Estado canônico resumido
 
@@ -19,99 +19,78 @@ CATALOG_COMPLETENESS_RC=PASS_DOCUMENTAL
 CURRENT_CATALOG_GAP_COUNT=0
 
 PHASE_I_DESIGN_LAB_APPSHELL=COMPLETE
-I1_DESIGN_LAB_APPSHELL=COMPLETE
-I2_APPSHELL_ADOPTION_CONTRACT=COMPLETE
-I3_SHARED_APPSHELL_SUBSTRATE=COMPLETE
-I4_DASHBOARD_SHARED_APPSHELL_ADOPTION=COMPLETE
-I5_EMPLOYEES_SHARED_APPSHELL_ADOPTION=COMPLETE
-I6_ONBOARDING_V2_SHARED_APPSHELL_ADOPTION=COMPLETE
-I7_LEGACY_SHELL_QUARANTINE=COMPLETE
-I8_APPSHELL_STRUCTURAL_ACCEPTANCE=COMPLETE
+I1=COMPLETE
+I2=COMPLETE
+I3=COMPLETE
+I4=COMPLETE
+I5=COMPLETE
+I6=COMPLETE
+I7=COMPLETE
+I8=COMPLETE
 I8_ACCEPTANCE=PASS_SOURCE_LEVEL_WITH_HARDENING
-I9_PHASE_I_APPSHELL_CLOSEOUT=COMPLETE
+I9=COMPLETE
 PHASE_I_CLOSEOUT_BASIS=SOURCE_LEVEL
-UNRESOLVED_PHASE_I_STRUCTURAL_GAPS=0
 
 PHASE_J_DASHBOARD_RECONCILIATION=COMPLETE
-J1_DASHBOARD_CANONICAL_GAP_AUDIT=COMPLETE
+J1=COMPLETE
 J1_AUDIT_RESULT=GAPS_FOUND
-J1_CRITICAL_GAPS=0
 J1_HIGH_GAP_THEMES=6
-J1_MEDIUM_GAP_THEMES=5
-J1_LOW_DEFERRED_OBSERVATIONS=2
-J2_DASHBOARD_CANONICAL_RECONCILIATION=COMPLETE
+J2=COMPLETE
 J2_HIGH_GAPS_RECONCILED_SOURCE_LEVEL=6/6
-J3_DASHBOARD_POST_RECONCILIATION_ACCEPTANCE=COMPLETE
+J3=COMPLETE
 J3_ACCEPTANCE=PASS_SOURCE_LEVEL_WITH_ONE_CONTINUITY_FIX
-PHASE_J_CLOSEOUT_BASIS=SOURCE_LEVEL
 UNRESOLVED_DASHBOARD_CANONICAL_GAPS=0
 J4_REQUIRED=NO
 
 PHASE_K_EMPLOYEES_RECONCILIATION=COMPLETE
-K1_EMPLOYEES_CANONICAL_GAP_AUDIT=COMPLETE
+K1=COMPLETE
 K1_AUDIT_RESULT=GAPS_FOUND
-K1_CRITICAL_GAPS=0
 K1_HIGH_GAP_THEMES=7
-K1_MEDIUM_GAP_THEMES=6
-K1_LOW_DEFERRED_OBSERVATIONS=2
-K2_EMPLOYEES_CANONICAL_RECONCILIATION=COMPLETE
+K2=COMPLETE
 K2_ACCEPTANCE=PASS_SOURCE_LEVEL
 K2_HIGH_GAPS_RECONCILED_SOURCE_LEVEL=7/7
-K3_EMPLOYEES_POST_RECONCILIATION_ACCEPTANCE=COMPLETE
+K3=COMPLETE
 K3_ACCEPTANCE=PASS_SOURCE_LEVEL_WITH_ONE_CONTINUITY_FIX
-PHASE_K_CLOSEOUT_BASIS=SOURCE_LEVEL
 UNRESOLVED_EMPLOYEES_CANONICAL_GAPS=0
 K4_REQUIRED=NO
 
 PHASE_L_ONBOARDING_RECONCILIATION=COMPLETE
-L1_ONBOARDING_CANONICAL_GAP_AUDIT=COMPLETE
+L1=COMPLETE
 L1_AUDIT_RESULT=GAPS_FOUND
-L1_CRITICAL_GAPS=0
 L1_HIGH_GAP_THEMES=9
-L1_MEDIUM_GAP_THEMES=7
-L1_LOW_DEFERRED_OBSERVATIONS=3
-L2_ONBOARDING_CANONICAL_RECONCILIATION=COMPLETE
+L2=COMPLETE
 L2_ACCEPTANCE=PASS_SOURCE_LEVEL
 L2_HIGH_GAPS_RECONCILED_SOURCE_LEVEL=9/9
-L3_ONBOARDING_POST_RECONCILIATION_ACCEPTANCE=COMPLETE
+L3=COMPLETE
 L3_ACCEPTANCE=PASS_SOURCE_LEVEL_WITH_TWO_HARDENING_FIXES_AND_ONE_CONTINUITY_FIX
-L3_BLOCKING_GAPS_FOUND=2
-L3_BLOCKING_GAPS_FIXED=2
-L3_CONTINUITY_DRIFT_FOUND=1
-L3_CONTINUITY_DRIFT_FIXED=1
-PHASE_L_CLOSEOUT_BASIS=SOURCE_LEVEL
 UNRESOLVED_ONBOARDING_BLOCKING_GAPS=0
 L4_REQUIRED=NO
 
 PHASE_M_CROSS_SCREEN_COHERENCE=COMPLETE
-M1_CROSS_SCREEN_COHERENCE_AUDIT=COMPLETE
+M1=COMPLETE
 M1_AUDIT_RESULT=GAPS_FOUND
-M1_CRITICAL_GAPS=0
 M1_HIGH_GAP_THEMES=5
-M1_MEDIUM_GAP_THEMES=5
-M1_LOW_DEFERRED_OBSERVATIONS=3
-M2_CROSS_SCREEN_COHERENCE_RECONCILIATION=COMPLETE
+M2=COMPLETE
 M2_ACCEPTANCE=PASS_SOURCE_LEVEL
 M1_HIGH_GAPS_RECONCILED_SOURCE_LEVEL=5/5
-M3_CROSS_SCREEN_POST_RECONCILIATION_ACCEPTANCE=COMPLETE
+M3=COMPLETE
 M3_ACCEPTANCE=PASS_SOURCE_LEVEL_WITH_TWO_CONTINUITY_FIXES
-M3_BLOCKING_GAPS_FOUND=0
-M3_CONTINUITY_DRIFT_FOUND=2
-M3_CONTINUITY_DRIFT_FIXED=2
-PHASE_M_CLOSEOUT_BASIS=SOURCE_LEVEL
 UNRESOLVED_CROSS_SCREEN_BLOCKING_GAPS=0
 M4_REQUIRED=NO
+
+PHASE_N_DESIGN_LAB_VALIDATION=IN_PROGRESS
+N1_DESIGN_LAB_VALIDATION_DEFINITION=COMPLETE
+N1_OUTPUT=docs/nf-01/68_NF01_PHASE_N_N1_DESIGN_LAB_VALIDATION_DEFINITION_2026-08-18.md
+N1_IMPLEMENTATION=VALIDATION_PLAN_ONLY
+N2_BROWSER_RESPONSIVE_VISUAL_VALIDATION=NOT_APPROVED
+N3_ACCESSIBILITY_INTERACTION_STATE_RBAC_VALIDATION=NOT_APPROVED
+N4_PHASE_N_CONSOLIDATED_ACCEPTANCE=NOT_APPROVED
 
 CANONICAL_APPSHELL=ONE
 CURRENT_APPSHELL_OWNER=docs/nf-01/prototype/assets/app-shell.css+app-shell.js
 CURRENT_APPSHELL_VERSION=i8
-LEGACY_SHELL_OWNER=docs/nf-01/prototype/assets/legacy-shell.css+legacy-shell.js
-DASHBOARD_SHARED_APPSHELL=YES
-EMPLOYEES_SHARED_APPSHELL=YES
-ONBOARDING_SHARED_APPSHELL=YES
 ACTIVE_SURFACE_LEGACY_SHELL_DEPENDENCY=0
 HISTORICAL_V1_PRESERVED=YES
-HISTORICAL_V1_MIGRATED=NO
 
 PRODUCTION_CODE_CHANGED=NO
 NF02_STARTED=NO
@@ -119,219 +98,120 @@ PR32_MERGED=NO
 FINAL_HUMAN_GATE=NOT_READY
 ```
 
-## Fases concluídas em base source-level
-
-### Fase I — AppShell
+## Linha de montagem atual
 
 ```text
-[x] I1 — baseline AppShell
-[x] I2 — contrato de adoção
-[x] I3 — substrato compartilhado
-[x] I4 — Dashboard adota AppShell
-[x] I5 — Funcionários adota AppShell
-[x] I6 — Novo Funcionário V2 adota AppShell
-[x] I7 — quarentena do shell legado
-[x] I8 — aceite estrutural source-level + hardening
-[x] I9 — fechamento incremental da Fase I
+I AppShell...................... COMPLETE_SOURCE_LEVEL
+  ↓
+J Dashboard..................... COMPLETE_SOURCE_LEVEL
+  ↓
+K Funcionários.................. COMPLETE_SOURCE_LEVEL
+  ↓
+L Novo Funcionário.............. COMPLETE_SOURCE_LEVEL
+  ↓
+M Coerência entre telas......... COMPLETE_SOURCE_LEVEL
+  ↓
+N Validação Design Lab.......... IN_PROGRESS
+  ├── N1 definição.............. COMPLETE
+  ├── N2 visual/responsivo...... NOT_APPROVED
+  ├── N3 a11y/interação/RBAC.... NOT_APPROVED
+  └── N4 aceite consolidado..... NOT_APPROVED
+  ↓
+O Evidências/fechamento......... NOT_STARTED
 ```
 
-Checkpoint final: `docs/nf-01/55_NF01_DESIGN_LAB_I9_PHASE_I_APPSHELL_CLOSEOUT_2026-08-17.md`.
-
-### Fase J — Dashboard
+## Checkpoints de fechamento já preservados
 
 ```text
-[x] J1 — auditoria Current × Canonical
-[x] J2 — reconciliação canônica no Design Lab
-[x] J3 — aceite pós-J2 e fechamento source-level
+55_* I9
+58_* J3
+61_* K3
+64_* L3
+67_* M3
+68_* N1
 ```
 
+Os checkpoints intermediários `56_*–66_*` preservam as auditorias e reconciliações J/K/L/M.
+
+## Fase N — contrato aprovado em N1
+
+### N1 — definição
+
 ```text
-J1_HIGH_GAP_THEMES=6
-J2_HIGH_GAPS_RECONCILED_SOURCE_LEVEL=6/6
-J3_ACCEPTANCE=PASS_SOURCE_LEVEL_WITH_ONE_CONTINUITY_FIX
-UNRESOLVED_DASHBOARD_CANONICAL_GAPS=0
+[x] N1 — definir matriz verificável de homologação do Design Lab
 ```
 
-Checkpoints: `56_* J1` → `57_* J2` → `58_* J3`.
-
-### Fase K — Funcionários
+O checkpoint 68 define:
 
 ```text
-[x] K1 — auditoria Current × Canonical
-[x] K2 — reconciliação canônica no Design Lab
-[x] K3 — aceite pós-K2 e fechamento source-level
+ACTIVE_SURFACES=
+  01.01 AppShell
+  02.01 Dashboard
+  03.01 Funcionários
+  03.04 Novo Funcionário
+
+CANONICAL_VIEWPORTS=360|768|1024|1440
+INTERMEDIATE_VIEWPORTS=480|900|1280
+CONTAINER_FIRST_VALIDATION=REQUIRED
+ZOOM_200_MANUAL_TEST=REQUIRED_IN_N2
+KEYBOARD_CRITICAL_JOURNEY=REQUIRED_IN_N3
+SCREEN_READER_CRITICAL_JOURNEY=REQUIRED_IN_N3
+AUTOMATED_A11Y_SCAN=PLANNED_IF_TOOLING_AVAILABLE
+RBAC_VISUAL_MATRIX=REQUIRED_IN_N3
+CROSS_SCREEN_CRITICAL_FLOWS=REQUIRED
 ```
 
+### N2 — próximo gate
+
 ```text
-K1_HIGH_GAP_THEMES=7
-K2_HIGH_GAPS_RECONCILED_SOURCE_LEVEL=7/7
-K3_ACCEPTANCE=PASS_SOURCE_LEVEL_WITH_ONE_CONTINUITY_FIX
-UNRESOLVED_EMPLOYEES_CANONICAL_GAPS=0
+N2_BROWSER_RESPONSIVE_VISUAL_VALIDATION=NOT_APPROVED
 ```
 
-Checkpoints: `59_* K1` → `60_* K2` → `61_* K3`.
+Escopo definido por N1:
 
-### Fase L — Novo Funcionário V2
+- 360 / 768 / 1024 / 1440;
+- 480 / 900 / 1280 e breakpoints problemáticos descobertos;
+- container-first;
+- zoom/reflow 200%;
+- AppShell, Dashboard, Funcionários e Novo Funcionário;
+- handoffs cross-screen visíveis;
+- registrar `PASS|FAIL|BLOCKED_TOOLING|NOT_APPLICABLE` com evidência.
+
+### N3 — gate futuro
 
 ```text
-[x] L1 — auditoria Current × Canonical
-[x] L2 — reconciliação canônica no Design Lab
-[x] L3 — aceite pós-L2 e fechamento source-level
+N3_ACCESSIBILITY_INTERACTION_STATE_RBAC_VALIDATION=NOT_APPROVED
 ```
 
+Cobertura prevista:
+
+- teclado e foco;
+- screen reader;
+- scan automatizado de a11y se houver ferramenta disponível;
+- estados críticos;
+- RBAC visual;
+- EntityPicker, HorizontalStepper, ContextDrawer, ErrorSummary e StickyFormActions;
+- jornada Dashboard → Funcionários → Novo Funcionário → Funcionários.
+
+### N4 — gate futuro
+
 ```text
-L1_HIGH_GAP_THEMES=9
-L2_HIGH_GAPS_RECONCILED_SOURCE_LEVEL=9/9
-L3_BLOCKING_GAPS_FOUND=2
-L3_BLOCKING_GAPS_FIXED=2
-L3_ACCEPTANCE=PASS_SOURCE_LEVEL_WITH_TWO_HARDENING_FIXES_AND_ONE_CONTINUITY_FIX
-UNRESOLVED_ONBOARDING_BLOCKING_GAPS=0
+N4_PHASE_N_CONSOLIDATED_ACCEPTANCE=NOT_APPROVED
 ```
 
-Checkpoints: `62_* L1` → `63_* L2` → `64_* L3`.
+N4 somente poderá fechar a Fase N com zero BLOCKER/HIGH aberto e sem converter `BLOCKED_TOOLING` em PASS por inferência.
 
-### Fase M — Coerência entre telas
+## Limite canônico dos testes automatizados da NF-01
 
-```text
-[x] M1 — auditoria Dashboard × Funcionários × Novo Funcionário
-[x] M2 — reconciliação cruzada no Design Lab
-[x] M3 — aceite pós-M2 e fechamento source-level da Fase M
-```
-
-#### Resultado M1
+O contrato de `09_TEST_AND_ACCEPTANCE_STRATEGY.md` permanece:
 
 ```text
-M1_OUTPUT=docs/nf-01/65_NF01_PHASE_M_M1_CROSS_SCREEN_COHERENCE_AUDIT_2026-08-18.md
-M1_IMPLEMENTATION=DOCUMENTAL_AUDIT_ONLY
-M1_AUDIT_RESULT=GAPS_FOUND
-M1_CRITICAL_GAPS=0
-M1_HIGH_GAP_THEMES=5
-M1_MEDIUM_GAP_THEMES=5
-M1_LOW_DEFERRED_OBSERVATIONS=3
-```
-
-Temas HIGH identificados:
-
-```text
-M1-H1 identidade das fixtures divergia entre telas
-M1-H2 contexto/unidade não permanecia coerente
-M1-H3 proveniência das fixtures era ambígua
-M1-H4 Dashboard -> Funcionários não realizava handoff real
-M1-H5 principal/permissões mudavam silenciosamente no onboarding
-```
-
-#### Resultado M2
-
-```text
-M2_OUTPUT=docs/nf-01/66_NF01_PHASE_M_M2_CROSS_SCREEN_COHERENCE_RECONCILIATION_2026-08-18.md
-M2_IMPLEMENTATION=DESIGN_LAB_ONLY
-M2_ACCEPTANCE=PASS_SOURCE_LEVEL
-M1_HIGH_GAPS_RECONCILED_SOURCE_LEVEL=5/5
-
-SHARED_EMPLOYEE_SAMPLE=fixture:employees-k2
-SHARED_EMPLOYEE_COUNT=6
-SHARED_PENDING_BIOMETRICS=2
-SHARED_APP_CONTEXT=Potiguar_Locacoes|Galpao_principal
-SHARED_DEMO_PROFILE=Administrador_Demo|admin
-DASHBOARD_TO_EMPLOYEES_HANDOFF=biometric=missing
-EMPLOYEES_LIST_STATE_RESTORE=sessionStorage_context_scoped
-ONBOARDING_DEMO_MUTATES_EMPLOYEE_LIST=NO
-```
-
-Identidade compartilhada da amostra:
-
-```text
-Maria Silva  = 00123
-João Souza   = 00124
-Lucas Santos = 00131
-Ana Paula    = 00142
-```
-
-Handoff source-level preservado:
-
-```text
-Dashboard
-→ 03.01-funcionarios.html?biometric=missing&source=dashboard
-→ Funcionários aplica biometric=missing
-→ estado da lista pode ser preservado/restaurado na mesma sessão
-→ Novo funcionário
-→ retorno à lista
-```
-
-#### Resultado M3
-
-```text
-M3_OUTPUT=docs/nf-01/67_NF01_PHASE_M_M3_CROSS_SCREEN_POST_RECONCILIATION_ACCEPTANCE_2026-08-18.md
-M3_IMPLEMENTATION=AUDIT_AND_CONTINUITY_FIXES_ONLY
-M3_BLOCKING_GAPS_FOUND=0
-M3_CONTINUITY_DRIFT_FOUND=2
-M3_CONTINUITY_DRIFT_FIXED=2
-M3_ACCEPTANCE=PASS_SOURCE_LEVEL_WITH_TWO_CONTINUITY_FIXES
-UNRESOLVED_CROSS_SCREEN_BLOCKING_GAPS=0
-M4_REQUIRED=NO
-
-M3_CONTINUITY_FIX_1=docs/nf-01/prototype/index.html_REMOVE_VISIBLE_V2_LABEL
-M3_CONTINUITY_FIX_2=docs/nf-01/13_NF01_REMAINING_WORK_ROADMAP.md_SYNC_PHASE_M
-```
-
-A reauditoria M3 preserva como PASS source-level:
-
-```text
-M3_SHARED_EMPLOYEE_IDENTITIES=PASS_SOURCE_LEVEL
-M3_SHARED_CONTEXT=PASS_SOURCE_LEVEL
-M3_SHARED_FIXTURE_PROVENANCE=PASS_SOURCE_LEVEL
-M3_DASHBOARD_TO_EMPLOYEES_HANDOFF=PASS_SOURCE_LEVEL
-M3_SHARED_DEMO_PRINCIPAL_AND_PERMISSIONS=PASS_SOURCE_LEVEL
-M3_EMPLOYEES_LIST_STATE_RESTORE=PASS_SOURCE_LEVEL
-M3_ONBOARDING_NO_REAL_LIST_MUTATION=PASS_SOURCE_LEVEL
-M3_VISIBLE_ONBOARDING_NAME_WITHOUT_V2=PASS_SOURCE_LEVEL_AFTER_INDEX_FIX
-```
-
-## Validação preservada / ainda não executada
-
-A Fase M completa em base source-level **não** equivale à homologação visual, acessível ou de produção.
-
-```text
-BROWSER_VISUAL_MATRIX_360_768_1024_1440=NO
-INTERMEDIATE_WIDTH_VISUAL_TEST=NO
-SCREEN_READER_MANUAL_TEST=NO
-ZOOM_200_MANUAL_TEST=NO
-AUTOMATED_A11Y_SCAN=NO
 NEW_DESIGN_UNIT_TESTS_EXECUTED=NO
 NEW_DESIGN_INTEGRATION_TESTS_EXECUTED=NO
 PRODUCTION_E2E=NO
 ```
 
-Testes unitários e de integração derivados nos checkpoints J/K/L/M permanecem requisitos de qualidade para a trilha de validação; nenhum falso verde é inferido a partir de análise source-level.
-
-## Fases posteriores
-
-```text
-J Dashboard................ COMPLETE_SOURCE_LEVEL
-K Funcionários............. COMPLETE_SOURCE_LEVEL
-L Novo Funcionário V2...... COMPLETE_SOURCE_LEVEL
-M Coerência entre telas.... COMPLETE_SOURCE_LEVEL
-N Validação Design Lab..... NOT_STARTED
-O Evidências/fechamento.... NOT_STARTED
-```
-
-Próxima linha de montagem:
-
-```text
-I AppShell
-  ↓
-J Dashboard
-  ↓
-K Funcionários
-  ↓
-L Novo Funcionário
-  ↓
-M Coerência entre telas
-  ↓
-N Validação Design Lab
-  ↓
-O Evidências / fechamento
-```
+A Fase N revisa a cobertura dos contratos de testes e observa o CI existente separadamente; não declara esses novos testes como executados.
 
 ## Continuidade canônica
 
@@ -342,49 +222,19 @@ DECISOES_CONGELADAS.md
 ↓
 13_NF01_REMAINING_WORK_ROADMAP.md
 ↓
-15_*–46_* revisões e Fase H
+15_*–46_* revisões/Fase H
 ↓
-47_* I1
+47_*–55_* Fase I
 ↓
-48_* I2
+56_*–58_* Fase J
 ↓
-49_* I3
+59_*–61_* Fase K
 ↓
-50_* I4
+62_*–64_* Fase L
 ↓
-51_* I5
+65_*–67_* Fase M
 ↓
-52_* I6
-↓
-53_* I7
-↓
-54_* I8
-↓
-55_* I9
-↓
-56_* J1
-↓
-57_* J2
-↓
-58_* J3
-↓
-59_* K1
-↓
-60_* K2
-↓
-61_* K3
-↓
-62_* L1
-↓
-63_* L2
-↓
-64_* L3
-↓
-65_* M1
-↓
-66_* M2
-↓
-67_* M3
+68_* N1
 ```
 
 ## Guardrails permanentes
@@ -404,7 +254,7 @@ DO_NOT_EDIT_DECISOES_CONGELADAS_MD
 
 ```text
 NEXT_OFFICIAL_PHASE=N_DESIGN_LAB_VALIDATION
-NEXT_OFFICIAL_ITEM=N1_DESIGN_LAB_VALIDATION_DEFINITION_GATE
-N1_APPROVAL_INFERRED=NO
+NEXT_OFFICIAL_ITEM=N2_BROWSER_RESPONSIVE_VISUAL_VALIDATION_GATE
+N2_APPROVAL_INFERRED=NO
 VISUAL_IMPLEMENTATION=DESIGN_LAB_ONLY
 ```
