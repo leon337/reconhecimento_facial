@@ -4,6 +4,14 @@
   const dateTargets = document.querySelectorAll('[data-current-date]');
   let toastTimer;
 
+  const ensureNativeHiddenContract = () => {
+    if (document.querySelector('[data-design-lab-hidden-contract]')) return;
+    const style = document.createElement('style');
+    style.dataset.designLabHiddenContract = 'true';
+    style.textContent = '[hidden] { display: none !important; }';
+    document.head.append(style);
+  };
+
   const crossScreenSession = {
     contextTitle: 'Potiguar Locações',
     contextSubtitle: 'Galpão principal · contexto demonstrativo',
@@ -21,18 +29,10 @@
 
     const shellRoot = document.querySelector('[data-app-shell-root]');
     if (shellRoot) {
-      shellRoot.querySelectorAll('[data-app-shell-context-title]').forEach((node) => {
-        node.textContent = crossScreenSession.contextTitle;
-      });
-      shellRoot.querySelectorAll('[data-app-shell-context-subtitle]').forEach((node) => {
-        node.textContent = crossScreenSession.contextSubtitle;
-      });
-      shellRoot.querySelectorAll('[data-app-shell-profile-name]').forEach((node) => {
-        node.textContent = crossScreenSession.profileName;
-      });
-      shellRoot.querySelectorAll('[data-app-shell-profile-role]').forEach((node) => {
-        node.textContent = crossScreenSession.profileRole;
-      });
+      shellRoot.querySelectorAll('[data-app-shell-context-title]').forEach((node) => { node.textContent = crossScreenSession.contextTitle; });
+      shellRoot.querySelectorAll('[data-app-shell-context-subtitle]').forEach((node) => { node.textContent = crossScreenSession.contextSubtitle; });
+      shellRoot.querySelectorAll('[data-app-shell-profile-name]').forEach((node) => { node.textContent = crossScreenSession.profileName; });
+      shellRoot.querySelectorAll('[data-app-shell-profile-role]').forEach((node) => { node.textContent = crossScreenSession.profileRole; });
       shellRoot.querySelectorAll('[data-app-shell-context]').forEach((node) => {
         node.setAttribute('aria-label', `Contexto atual: ${crossScreenSession.contextTitle}, ${crossScreenSession.contextSubtitle}. Demonstração; não altera dados do formulário.`);
       });
@@ -40,7 +40,6 @@
 
     const onboarding = document.querySelector('[data-onboarding-v2]');
     if (!onboarding) return;
-
     onboarding.dataset.demoPermissions = crossScreenSession.permissions;
     document.title = 'Novo Funcionário — NF-01 Design Lab';
 
@@ -63,19 +62,14 @@
     }
 
     const successCopy = onboarding.querySelector('[data-success-panel] .success-screen > p');
-    if (successCopy) {
-      successCopy.textContent = 'O comportamento visual da conclusão foi executado. Nenhum funcionário, matrícula, conta, dado bancário ou template biométrico foi enviado ao backend; a lista de Funcionários não é alterada por esta demonstração.';
-    }
+    if (successCopy) successCopy.textContent = 'O comportamento visual da conclusão foi executado. Nenhum funcionário, matrícula, conta, dado bancário ou template biométrico foi enviado ao backend; a lista de Funcionários não é alterada por esta demonstração.';
   };
 
+  ensureNativeHiddenContract();
   syncVisibleShell();
 
   if (dateTargets.length) {
-    const formatted = new Intl.DateTimeFormat('pt-BR', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric'
-    }).format(new Date());
+    const formatted = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }).format(new Date());
     dateTargets.forEach((node) => { node.textContent = formatted; });
   }
 
