@@ -1,0 +1,9 @@
+{
+  "name": "nf01-phase-n-validation",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@axe-core/playwright": "^4.10.0",
+    "playwright": "^1.55.0"
+  }
+}
