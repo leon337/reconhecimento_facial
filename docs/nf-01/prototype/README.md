@@ -49,12 +49,22 @@ PHASE_K_CLOSEOUT_BASIS=SOURCE_LEVEL
 UNRESOLVED_EMPLOYEES_CANONICAL_GAPS=0
 K4_REQUIRED=NO
 
+PHASE_L_ONBOARDING_RECONCILIATION=IN_PROGRESS
+L1_ONBOARDING_CANONICAL_GAP_AUDIT=COMPLETE
+L1_OUTPUT=../62_NF01_PHASE_L_L1_ONBOARDING_CANONICAL_GAP_AUDIT_2026-08-18.md
+L1_AUDIT_RESULT=GAPS_FOUND
+L1_CRITICAL_GAPS=0
+L1_HIGH_GAP_THEMES=9
+L1_MEDIUM_GAP_THEMES=7
+L1_LOW_DEFERRED_OBSERVATIONS=3
+ONBOARDING_VISUAL_CHANGE_IN_L1=NO
+
 ACTIVE_SURFACE_LEGACY_SHELL_DEPENDENCY=0
 HISTORICAL_V1=screens/03.03-novo-funcionario.html
 HISTORICAL_V1_PRESERVED=YES
 HISTORICAL_V1_MIGRATED=NO
 NEXT_OFFICIAL_PHASE=L_ONBOARDING_RECONCILIATION
-NEXT_OFFICIAL_ITEM=L1_DEFINITION_GATE
+NEXT_OFFICIAL_ITEM=L2_DEFINITION_GATE
 PRODUCTION_CHANGE=NO
 NF02_STARTED=NO
 PR_MERGE=NOT_AUTHORIZED
@@ -67,6 +77,8 @@ J1 auditou o Dashboard sem mudar o visual. J2 executou a reconciliação canôni
 K1 auditou `screens/03.01-funcionarios.html` + `assets/employees-v1.css` + `assets/employees-v1.js` sem alterar esses arquivos. K2 reconciliou os sete temas HIGH: métricas agora derivam das fixtures e não se confundem com resultados filtrados; o pseudo-KPI `Admin` foi removido; a tabela prioriza Nome/Matrícula, Unidade, Biometria e Status; `Novo funcionário` exige `users:create`; ações biométricas exigem `biometrics:manage`; os estados `LOADING`, `EMPTY_DATASET`, `READY`, `FILTER_NO_RESULTS`, `ERROR`, `OFFLINE` e `NO_PERMISSION` estão separados; e a paginação fictícia foi removida. O CSS local foi normalizado para `rem/fr/minmax` e container query.
 
 K3 reauditorou Funcionários pós-K2. Nenhum gap bloqueante foi encontrado; a única inconsistência objetiva estava no tile de `prototype/index.html`, que ainda descrevia Funcionários como etapa I5. O tile foi atualizado para K3/Fase K reconciliada, sem alterar novamente `03.01-funcionarios.html`, `employees-v1.css` ou `employees-v1.js`. A Fase K foi encerrada em base source-level.
+
+L1 auditou `screens/03.04-novo-funcionario-v2.html` + `assets/new-employee-v2.css` + `assets/new-employee-v2.js` sem alterá-los. O conteúdo funcional das oito etapas está amplamente alinhado, mas a arquitetura de interação ainda usa a direção anterior: stepper vertical, painel contextual permanente, StickyFormActions fragmentadas, ausência de variantes reais de `biometrics:manage`, ausência de `NEEDS_REVIEW`, ciclo de dados condicionais incompleto, estados críticos do wizard não materializados, semântica FieldGroup/ErrorSummary incompleta e cadastros mestres ainda representados por selects simples. L2 permanece necessário para a reconciliação canônica.
 
 A dívida transversal de `components.css`, a coerência cruzada entre telas e a validação completa de responsividade/acessibilidade permanecem diferidas para seus gates próprios.
 
