@@ -33,6 +33,7 @@
   const permissionProfile = root.querySelector('[data-demo-permission-profile]');
 
   if (!form) return;
+  if (stepList) stepList.tabIndex = -1;
 
   const steps = [
     { label: 'Tipo de relação', description: 'Defina a natureza operacional do cadastro. Essa escolha adapta as etapas seguintes.' },
@@ -71,6 +72,8 @@
   const structuralSnapshot = new Map();
 
   const scrollBehavior = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+  const hasPermission = (permission) => permissions.has(permission);
+  const namedFields = (name) => [...form.elements].filter((el) => el.name === name);
 
   const showToast = (message) => {
     if (!toast) return;
@@ -85,8 +88,6 @@
     liveRegion.textContent = '';
     window.setTimeout(() => { liveRegion.textContent = message; }, 20);
   };
-
-  const namedFields = (name) => [...form.elements].filter((el) => el.name === name);
 
   const rawValue = (name) => {
     const fields = namedFields(name);
@@ -110,11 +111,9 @@
     return String(first.value || '').trim() || fallback;
   };
 
-  const hasPermission = (permission) => permissions.has(permission);
-
   const fieldIsActive = (field) => {
     if (!field.name || field.disabled) return false;
-    if (field.closest('[hidden]')) return false;
+    if (field.closest('[data-data-lifecycle="HIDDEN_RETAINED"]')) return false;
     const permissionOwner = field.closest('[data-requires-permission]');
     if (permissionOwner && !hasPermission(permissionOwner.dataset.requiresPermission)) return false;
     return true;
@@ -165,6 +164,18 @@
     saveState.textContent = text;
   };
 
+  const setRuntimeState = (state) => {
+    runtimeState = state;
+    root.dataset.wizardRuntimeState = state;
+    root.querySelectorAll('[data-runtime-panel]').forEach((panel) => { panel.hidden = panel.dataset.runtimePanel !== state; });
+    if (state === 'SAVE_ERROR') updateSaveState('error', 'Falha ao salvar');
+    if (state === 'CONFLICT') updateSaveState('error', 'Conflito — autosave pausado');
+    if (state === 'OFFLINE') updateSaveState('dirty', 'Alterações locais — sem conexão');
+    if (state === 'READY' && !dirty) updateSaveState('saved', revision ? `Rascunho local salvo · r${revision}` : 'Pronto para editar');
+    updateActions();
+    announce(state === 'READY' ? 'Estado crítico encerrado.' : `Estado demonstrativo ${state} ativo.`);
+  };
+
   const persist = ({ quiet = false, force = false } = {}) => {
     if (!force && runtimeState === 'CONFLICT') {
       updateSaveState('error', 'Conflito — autosave pausado');
@@ -174,14 +185,12 @@
       updateSaveState('error', 'Falha ao salvar');
       return false;
     }
-
     revision += 1;
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(serialize()));
       dirty = false;
-      if (runtimeState === 'OFFLINE') {
-        updateSaveState('dirty', 'Alterações locais — sem conexão');
-      } else {
+      if (runtimeState === 'OFFLINE') updateSaveState('dirty', 'Alterações locais — sem conexão');
+      else {
         updateSaveState('saved', `Rascunho local salvo · r${revision}`);
         if (!quiet) showToast('Rascunho salvo neste navegador. Nenhum dado foi enviado ao backend.');
       }
@@ -189,7 +198,6 @@
     } catch (error) {
       revision = Math.max(0, revision - 1);
       setRuntimeState('SAVE_ERROR');
-      updateSaveState('error', 'Falha ao salvar');
       return false;
     }
   };
@@ -204,16 +212,12 @@
 
   const restore = () => {
     let draft;
-    try {
-      draft = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
-    } catch (error) {
-      return;
-    }
+    try { draft = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); }
+    catch (error) { return; }
     if (!draft?.draftData) return;
 
     Object.entries(draft.draftData).forEach(([name, value]) => {
-      const fields = namedFields(name);
-      fields.forEach((field) => {
+      namedFields(name).forEach((field) => {
         if (field.type === 'radio') field.checked = field.value === value;
         else if (field.type === 'checkbox') field.checked = Boolean(value);
         else field.value = value ?? '';
@@ -262,11 +266,10 @@
   const setFieldError = (field, message) => {
     if (!field) return;
     const wrapper = field.closest('.v2-field');
-    const shell = field.closest('.v2-control');
-    const error = wrapper?.querySelector('.v2-field__error');
     wrapper?.classList.add('has-error');
-    shell?.classList.add('is-invalid');
+    field.closest('.v2-control')?.classList.add('is-invalid');
     field.setAttribute('aria-invalid', 'true');
+    const error = wrapper?.querySelector('.v2-field__error');
     if (error && message) error.textContent = message;
   };
 
@@ -283,14 +286,12 @@
     }
     errorSummaryList.innerHTML = errors.map((item, index) => `<li><button type="button" data-error-target="${item.id}" data-error-index="${index}">${item.label}</button></li>`).join('');
     errorSummary.hidden = false;
-    errorSummary.querySelectorAll('[data-error-target]').forEach((button) => {
-      button.addEventListener('click', () => document.getElementById(button.dataset.errorTarget)?.focus());
-    });
+    errorSummary.querySelectorAll('[data-error-target]').forEach((button) => button.addEventListener('click', () => document.getElementById(button.dataset.errorTarget)?.focus()));
     errorSummary.focus({ preventScroll: true });
   };
 
   const requireNamed = (name, message, errors) => {
-    const fields = namedFields(name).filter((field) => fieldIsActive(field));
+    const fields = namedFields(name).filter(fieldIsActive);
     if (!fields.length) return true;
     const first = fields[0];
     const valid = first.type === 'radio' ? fields.some((field) => field.checked) : first.type === 'checkbox' ? first.checked : Boolean(String(first.value || '').trim());
@@ -305,13 +306,10 @@
   };
 
   const validateGenericRequired = (panel, errors) => {
-    const required = [...panel.querySelectorAll('[data-required]')].filter((field) => fieldIsActive(field));
+    const required = [...panel.querySelectorAll('[data-required]')].filter(fieldIsActive);
     const radioNames = new Set();
     required.forEach((field) => {
-      if (field.type === 'radio') {
-        radioNames.add(field.name);
-        return;
-      }
+      if (field.type === 'radio') { radioNames.add(field.name); return; }
       const valid = field.type === 'checkbox' ? field.checked : Boolean(String(field.value || '').trim());
       if (!valid) {
         setFieldError(field, 'Preencha este campo para continuar.');
@@ -330,7 +328,6 @@
       announce('A etapa não pode avançar enquanto o estado crítico demonstrativo estiver ativo.');
       return false;
     }
-
     const panel = panels[index];
     if (!panel) return true;
     const errors = [];
@@ -338,7 +335,6 @@
     validateGenericRequired(panel, errors);
 
     if (index === 0 && rawValue('relation_type') === 'Outros') requireNamed('other_relation', 'Selecione uma categoria cadastrada.', errors);
-
     if (index === 1) {
       const cpf = panel.querySelector('[name="cpf"]');
       if (cpf && cpf.value && cpf.value.replace(/\D/g, '').length !== 11) {
@@ -346,7 +342,6 @@
         errors.push({ id: cpf.id, label: 'CPF: use 11 dígitos.' });
       }
     }
-
     if (index === 2) {
       const country = rawValue('country');
       if (country === 'Brasil') {
@@ -369,7 +364,6 @@
         requireNamed('foreign_region', 'Informe a região/estado/província.', errors);
       }
     }
-
     if (index === 3) {
       const relation = rawValue('relation_type');
       if (relation === 'CLT comum') {
@@ -385,7 +379,6 @@
         requireNamed('relation_start', 'Informe a data de início da relação.', errors);
       }
     }
-
     if (index === 4) {
       const payment = rawValue('payment_method') || 'Conta bancária';
       if (payment === 'Conta bancária') {
@@ -405,17 +398,13 @@
         requireNamed('third_party_reason', 'Justifique a exceção.', errors);
       }
     }
-
     if (index === 5 && namedFields('has_system_access')[0]?.checked) {
       requireNamed('access_role', 'Selecione o perfil RBAC.', errors);
       requireNamed('access_login', 'Informe o login/e-mail.', errors);
       requireNamed('access_scope', 'Selecione o escopo de acesso.', errors);
     }
-
     if (index === 6 && rawValue('biometric_timing') === 'Agora') {
-      if (!hasPermission('biometrics:manage')) {
-        errors.push({ id: 'bio-later', label: 'Biometria: a ação “Cadastrar agora” não está disponível para este perfil.' });
-      }
+      if (!hasPermission('biometrics:manage')) errors.push({ id: 'bio-later', label: 'Biometria: “Cadastrar agora” não está disponível para este perfil.' });
       const notice = namedFields('biometric_notice_ack')[0];
       if (!notice?.checked) {
         setFieldError(notice, 'Confirme que as informações de transparência foram apresentadas.');
@@ -424,10 +413,7 @@
       }
       if (biometricMockState !== 'SUCESSO') errors.push({ id: 'bio-later', label: 'Biometria: simule uma captura válida ou escolha “Configurar depois”.' });
     }
-
-    if (index === 7 && needsReview.size) {
-      errors.push({ id: 'onboarding-step-list', label: `Revise ${needsReview.size} etapa(s) sinalizada(s) como NEEDS_REVIEW antes de concluir.` });
-    }
+    if (index === 7 && needsReview.size) errors.push({ id: 'onboarding-step-list', label: `Revise ${needsReview.size} etapa(s) sinalizada(s) como NEEDS_REVIEW antes de concluir.` });
 
     if (errors.length) {
       completedSteps.delete(index);
@@ -461,20 +447,6 @@
     return 'FUTURE';
   };
 
-  const updateStepNavigation = () => {
-    stepButtons.forEach((button, index) => {
-      const status = stepStatus(index);
-      button.dataset.stepStatus = status;
-      button.disabled = index > maxReached;
-      if (index === currentStep) button.setAttribute('aria-current', 'step');
-      else button.removeAttribute('aria-current');
-      const baseLabel = steps[index].label;
-      const suffix = status === 'NEEDS_REVIEW' ? ', precisa revisar' : status === 'COMPLETED' ? ', concluída' : status === 'CURRENT' ? ', atual' : ', futura';
-      button.setAttribute('aria-label', `Etapa ${index + 1}: ${baseLabel}${suffix}`);
-    });
-    renderStepList();
-  };
-
   const renderStepList = () => {
     if (!stepList) return;
     stepList.innerHTML = `<div class="step-list__grid">${steps.map((step, index) => {
@@ -483,9 +455,20 @@
       const current = index === currentStep ? ' aria-current="step"' : '';
       return `<button class="step-list__button" type="button" data-step-list-button="${index}" data-step-status="${status}"${current}${disabled}>${index + 1}. ${step.label}</button>`;
     }).join('')}</div>`;
-    stepList.querySelectorAll('[data-step-list-button]').forEach((button) => {
-      button.addEventListener('click', () => goToStep(Number(button.dataset.stepListButton)));
+    stepList.querySelectorAll('[data-step-list-button]').forEach((button) => button.addEventListener('click', () => goToStep(Number(button.dataset.stepListButton))));
+  };
+
+  const updateStepNavigation = () => {
+    stepButtons.forEach((button, index) => {
+      const status = stepStatus(index);
+      button.dataset.stepStatus = status;
+      button.disabled = index > maxReached;
+      if (index === currentStep) button.setAttribute('aria-current', 'step');
+      else button.removeAttribute('aria-current');
+      const suffix = status === 'NEEDS_REVIEW' ? ', precisa revisar' : status === 'COMPLETED' ? ', concluída' : status === 'CURRENT' ? ', atual' : ', futura';
+      button.setAttribute('aria-label', `Etapa ${index + 1}: ${steps[index].label}${suffix}`);
     });
+    renderStepList();
   };
 
   const updateHeader = () => {
@@ -504,7 +487,7 @@
     }
   };
 
-  const updateActions = () => {
+  function updateActions() {
     if (backButton) backButton.hidden = currentStep === 0;
     if (nextButton) {
       nextButton.hidden = currentStep === 7;
@@ -515,6 +498,66 @@
       completeButton.disabled = runtimeBlocksAdvance() || needsReview.size > 0;
     }
     if (saveExitButton) saveExitButton.disabled = ['CONFLICT', 'SAVE_ERROR'].includes(runtimeState);
+  }
+
+  const setConditionalVisibility = (node, visible) => {
+    if (!node) return;
+    node.hidden = !visible;
+    node.dataset.dataLifecycle = visible ? 'VISIBLE_ACTIVE' : 'HIDDEN_RETAINED';
+  };
+
+  const updateActivePayloadCount = () => {
+    const count = Object.keys(activePayloadPreview()).length;
+    const node = root.querySelector('[data-active-payload-count]');
+    if (node) node.textContent = `${count} campo${count === 1 ? '' : 's'}`;
+  };
+
+  const updateSideSummary = () => {
+    const map = {
+      '[data-side-relation]': fieldValue('relation_type', 'Não definido'),
+      '[data-side-name]': fieldValue('full_name', 'Nome ainda não informado'),
+      '[data-side-company]': fieldValue('company', 'Empresa não definida'),
+      '[data-side-unit]': fieldValue('unit', 'Unidade não definida'),
+      '[data-side-biometric]': biometricMockState === 'SUCESSO' ? 'Captura demonstrada' : fieldValue('biometric_timing', 'Depois')
+    };
+    Object.entries(map).forEach(([selector, value]) => {
+      const node = root.querySelector(selector);
+      if (node) node.textContent = value;
+    });
+  };
+
+  const updateDynamicUI = () => {
+    const relation = rawValue('relation_type');
+    root.querySelectorAll('[data-show-relation]').forEach((box) => setConditionalVisibility(box, box.dataset.showRelation.split(',').includes(relation)));
+    const country = rawValue('country') || 'Brasil';
+    root.querySelectorAll('[data-address-country]').forEach((box) => setConditionalVisibility(box, box.dataset.addressCountry === (country === 'Brasil' ? 'BR' : 'FOREIGN')));
+    const addressType = rawValue('address_type') || 'Urbano';
+    root.querySelectorAll('[data-address-type]').forEach((box) => setConditionalVisibility(box, box.dataset.addressType === addressType));
+    const payment = rawValue('payment_method') || 'Conta bancária';
+    root.querySelectorAll('[data-payment-type]').forEach((box) => setConditionalVisibility(box, box.dataset.paymentType === payment));
+    root.querySelectorAll('[data-third-party]').forEach((box) => setConditionalVisibility(box, Boolean(namedFields('third_party_holder')[0]?.checked)));
+    root.querySelectorAll('[data-access-details]').forEach((box) => setConditionalVisibility(box, Boolean(namedFields('has_system_access')[0]?.checked)));
+    root.querySelectorAll('[data-biometric-now]').forEach((box) => setConditionalVisibility(box, rawValue('biometric_timing') === 'Agora' && hasPermission('biometrics:manage')));
+    root.querySelectorAll('[data-emergency-extra]').forEach((box) => setConditionalVisibility(box, !namedFields('same_emergency_contact')[0]?.checked));
+    root.querySelectorAll('[data-dependents]').forEach((box) => setConditionalVisibility(box, rawValue('has_dependents') === 'Sim'));
+    root.querySelectorAll('[data-pcd]').forEach((box) => setConditionalVisibility(box, rawValue('pcd_record') === 'Sim'));
+
+    const numberField = namedFields('address_number')[0];
+    if (numberField) numberField.disabled = Boolean(namedFields('no_number')[0]?.checked);
+
+    root.querySelectorAll('[data-requires-permission]').forEach((node) => {
+      const allowed = hasPermission(node.dataset.requiresPermission);
+      node.hidden = !allowed;
+      node.dataset.permissionState = allowed ? 'ALLOWED' : 'NO_PERMISSION';
+    });
+
+    if (!hasPermission('biometrics:manage') && rawValue('biometric_timing') === 'Agora') {
+      const later = namedFields('biometric_timing').find((field) => field.value === 'Depois');
+      if (later) later.checked = true;
+    }
+
+    updateSideSummary();
+    updateActivePayloadCount();
   };
 
   const renderPanels = () => {
@@ -536,74 +579,6 @@
       window.scrollTo({ top: 0, behavior: scrollBehavior() });
     }
     announce(`Etapa ${currentStep + 1} de 8: ${steps[currentStep].label}.`);
-  };
-
-  const setConditionalVisibility = (node, visible) => {
-    if (!node) return;
-    node.hidden = !visible;
-    node.dataset.dataLifecycle = visible ? 'VISIBLE_ACTIVE' : 'HIDDEN_RETAINED';
-  };
-
-  const updateDynamicUI = () => {
-    const relation = rawValue('relation_type');
-    root.querySelectorAll('[data-show-relation]').forEach((box) => {
-      const accepted = box.dataset.showRelation.split(',');
-      setConditionalVisibility(box, accepted.includes(relation));
-    });
-
-    const country = rawValue('country') || 'Brasil';
-    root.querySelectorAll('[data-address-country]').forEach((box) => setConditionalVisibility(box, box.dataset.addressCountry === (country === 'Brasil' ? 'BR' : 'FOREIGN')));
-
-    const addressType = rawValue('address_type') || 'Urbano';
-    root.querySelectorAll('[data-address-type]').forEach((box) => setConditionalVisibility(box, box.dataset.addressType === addressType));
-
-    const payment = rawValue('payment_method') || 'Conta bancária';
-    root.querySelectorAll('[data-payment-type]').forEach((box) => setConditionalVisibility(box, box.dataset.paymentType === payment));
-
-    root.querySelectorAll('[data-third-party]').forEach((box) => setConditionalVisibility(box, Boolean(namedFields('third_party_holder')[0]?.checked)));
-    root.querySelectorAll('[data-access-details]').forEach((box) => setConditionalVisibility(box, Boolean(namedFields('has_system_access')[0]?.checked)));
-    root.querySelectorAll('[data-biometric-now]').forEach((box) => setConditionalVisibility(box, rawValue('biometric_timing') === 'Agora' && hasPermission('biometrics:manage')));
-    root.querySelectorAll('[data-emergency-extra]').forEach((box) => setConditionalVisibility(box, !namedFields('same_emergency_contact')[0]?.checked));
-    root.querySelectorAll('[data-dependents]').forEach((box) => setConditionalVisibility(box, rawValue('has_dependents') === 'Sim'));
-    root.querySelectorAll('[data-pcd]').forEach((box) => setConditionalVisibility(box, rawValue('pcd_record') === 'Sim'));
-
-    const noNumber = namedFields('no_number')[0]?.checked;
-    const numberField = namedFields('address_number')[0];
-    if (numberField) numberField.disabled = Boolean(noNumber);
-
-    root.querySelectorAll('[data-requires-permission]').forEach((node) => {
-      const allowed = hasPermission(node.dataset.requiresPermission);
-      node.hidden = !allowed;
-      node.dataset.permissionState = allowed ? 'ALLOWED' : 'NO_PERMISSION';
-    });
-
-    if (!hasPermission('biometrics:manage') && rawValue('biometric_timing') === 'Agora') {
-      const later = namedFields('biometric_timing').find((field) => field.value === 'Depois');
-      if (later) later.checked = true;
-    }
-
-    updateSideSummary();
-    updateActivePayloadCount();
-  };
-
-  const updateActivePayloadCount = () => {
-    const count = Object.keys(activePayloadPreview()).length;
-    const node = root.querySelector('[data-active-payload-count]');
-    if (node) node.textContent = `${count} campo${count === 1 ? '' : 's'}`;
-  };
-
-  const updateSideSummary = () => {
-    const map = {
-      '[data-side-relation]': fieldValue('relation_type', 'Não definido'),
-      '[data-side-name]': fieldValue('full_name', 'Nome ainda não informado'),
-      '[data-side-company]': fieldValue('company', 'Empresa não definida'),
-      '[data-side-unit]': fieldValue('unit', 'Unidade não definida'),
-      '[data-side-biometric]': biometricMockState === 'SUCESSO' ? 'Captura demonstrada' : fieldValue('biometric_timing', 'Depois')
-    };
-    Object.entries(map).forEach(([selector, value]) => {
-      const node = root.querySelector(selector);
-      if (node) node.textContent = value;
-    });
   };
 
   const markDependenciesForReview = (sourceName) => {
@@ -643,13 +618,12 @@
     return fieldValue('bank', 'Não informado');
   };
 
-  const buildReview = () => {
+  function buildReview() {
     const review = root.querySelector('[data-review-list]');
     if (!review) return;
     const access = namedFields('has_system_access')[0]?.checked;
     const biometricTiming = fieldValue('biometric_timing', 'Depois');
     const biometricStatus = biometricMockState === 'SUCESSO' ? 'Ativa (demonstração)' : biometricTiming === 'Agora' ? 'Pendente de captura' : 'Pendente — configurar depois';
-
     const sections = [
       { step: 0, title: 'Tipo de relação', values: [['Relação', fieldValue('relation_type')], ['Categoria complementar', fieldValue('other_relation', 'Não se aplica')]] },
       { step: 1, title: 'Dados pessoais', values: [['Nome', fieldValue('full_name')], ['CPF', maskCpf(rawValue('cpf'))], ['Nascimento', fieldValue('birth_date')], ['Telefone', fieldValue('phone')]] },
@@ -659,14 +633,11 @@
       { step: 5, title: 'Acesso ao sistema', values: access ? [['Acesso', 'Sim'], ['Perfil', fieldValue('access_role')], ['Escopo', fieldValue('access_scope')], ['Ativação', 'Convite pendente']] : [['Acesso', 'Não solicitado'], ['Conta', 'Não será criada']] },
       { step: 6, title: 'Biometria', values: [['Quando cadastrar', biometricTiming], ['Status', biometricStatus], ['Método', 'Câmera ao vivo / multiquadro'], ['Permissão', hasPermission('biometrics:manage') ? 'biometrics:manage disponível' : 'Configurar agora oculto']] }
     ];
-
     review.innerHTML = sections.map((section) => {
       const status = needsReview.has(section.step) ? '<span class="review-pending review-pending--critical">NEEDS_REVIEW</span>' : '';
       return `<article class="review-card"><header class="review-card__head"><strong>${section.title}</strong><span>${status}<button class="review-card__edit" type="button" data-edit-step="${section.step}">Editar</button></span></header><div class="review-card__body">${section.values.map(([label, value]) => `<div class="review-value"><span>${label}</span><strong>${value || '—'}</strong></div>`).join('')}</div></article>`;
     }).join('');
-
     review.querySelectorAll('[data-edit-step]').forEach((button) => button.addEventListener('click', () => goToStep(Number(button.dataset.editStep))));
-
     const pending = root.querySelector('[data-review-pending]');
     const pendingItems = [];
     if (!rawValue('manager')) pendingItems.push('Gestor responsável não definido');
@@ -674,7 +645,7 @@
     if (biometricMockState !== 'SUCESSO') pendingItems.push('Biometria pendente');
     needsReview.forEach((index) => pendingItems.push(`${steps[index].label}: NEEDS_REVIEW`));
     if (pending) pending.innerHTML = pendingItems.map((item) => `<span class="review-pending">${item}</span>`).join('');
-  };
+  }
 
   const setCameraState = (state) => {
     biometricMockState = state;
@@ -717,18 +688,6 @@
       schedulePersist();
       showToast('Captura biométrica marcada como sucesso somente no Design Lab.');
     }, 1200);
-  };
-
-  const setRuntimeState = (state) => {
-    runtimeState = state;
-    root.dataset.wizardRuntimeState = state;
-    root.querySelectorAll('[data-runtime-panel]').forEach((panel) => { panel.hidden = panel.dataset.runtimePanel !== state; });
-    if (state === 'SAVE_ERROR') updateSaveState('error', 'Falha ao salvar');
-    if (state === 'CONFLICT') updateSaveState('error', 'Conflito — autosave pausado');
-    if (state === 'OFFLINE') updateSaveState('dirty', 'Alterações locais — sem conexão');
-    if (state === 'READY' && !dirty) updateSaveState('saved', revision ? `Rascunho local salvo · r${revision}` : 'Pronto para editar');
-    updateActions();
-    announce(state === 'READY' ? 'Estado crítico encerrado.' : `Estado demonstrativo ${state} ativo.`);
   };
 
   const applyPermissionProfile = (profile) => {
@@ -801,13 +760,11 @@
       listbox.hidden = false;
       input.setAttribute('aria-expanded', 'true');
     };
-
     const close = () => {
       listbox.hidden = true;
       input.setAttribute('aria-expanded', 'false');
       activeIndex = -1;
     };
-
     const choose = (optionIndex) => {
       const option = filtered[optionIndex];
       if (!option) return;
@@ -817,11 +774,7 @@
       select.dispatchEvent(new Event('change', { bubbles: true }));
     };
 
-    input.addEventListener('focus', () => {
-      filtered = options;
-      open();
-    });
-
+    input.addEventListener('focus', () => { filtered = options; open(); });
     input.addEventListener('input', () => {
       const query = input.value.trim().toLocaleLowerCase('pt-BR');
       filtered = options.filter((option) => option.text.toLocaleLowerCase('pt-BR').includes(query));
@@ -829,24 +782,16 @@
       activeIndex = -1;
       open();
     });
-
     input.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape') {
-        close();
-        return;
-      }
+      if (event.key === 'Escape') { close(); return; }
       if (!['ArrowDown', 'ArrowUp', 'Enter'].includes(event.key)) return;
       event.preventDefault();
       if (listbox.hidden) open();
       if (event.key === 'ArrowDown') activeIndex = Math.min(activeIndex + 1, filtered.length - 1);
       if (event.key === 'ArrowUp') activeIndex = Math.max(activeIndex - 1, 0);
-      if (event.key === 'Enter' && activeIndex >= 0) {
-        choose(activeIndex);
-        return;
-      }
+      if (event.key === 'Enter' && activeIndex >= 0) { choose(activeIndex); return; }
       listbox.querySelectorAll('[data-option-index]').forEach((button, buttonIndex) => button.setAttribute('aria-selected', String(buttonIndex === activeIndex)));
     });
-
     input.addEventListener('blur', () => window.setTimeout(close, 120));
     select.addEventListener('change', () => {
       const option = select.selectedOptions[0];
@@ -855,6 +800,7 @@
   };
 
   const initializeEntityPickers = () => root.querySelectorAll('select[data-entity-picker]').forEach(enhanceEntityPicker);
+  const initializeStructuralSnapshot = () => Object.keys(dependencyMap).forEach((name) => structuralSnapshot.set(name, rawValue(name)));
 
   form.addEventListener('input', (event) => {
     if (!event.target.matches('input, textarea, select')) return;
@@ -882,12 +828,8 @@
     maxReached = Math.max(maxReached, currentStep + 1);
     goToStep(currentStep + 1);
   });
-
   backButton?.addEventListener('click', () => goToStep(currentStep - 1));
-
-  stepButtons.forEach((button, index) => button.addEventListener('click', () => {
-    if (index <= maxReached) goToStep(index);
-  }));
+  stepButtons.forEach((button, index) => button.addEventListener('click', () => { if (index <= maxReached) goToStep(index); }));
 
   root.querySelector('[data-toggle-step-list]')?.addEventListener('click', (event) => {
     const expanded = event.currentTarget.getAttribute('aria-expanded') === 'true';
@@ -913,8 +855,8 @@
     completedSteps = new Set();
     needsReview = new Set();
     dirty = false;
-    setRuntimeState('READY');
     structuralSnapshot.clear();
+    setRuntimeState('READY');
     renderPanels();
     initializeStructuralSnapshot();
     showToast('Rascunho local descartado.');
@@ -923,8 +865,7 @@
   root.querySelector('[data-capture-biometric]')?.addEventListener('click', demonstrateBiometricCapture);
 
   completeButton?.addEventListener('click', () => {
-    if (!validateStep(7)) return;
-    if (needsReview.size) return;
+    if (!validateStep(7) || needsReview.size) return;
     submissionId ||= `demo-${Date.now().toString(36)}`;
     persist({ quiet: true });
     completeButton.disabled = true;
@@ -942,16 +883,11 @@
 
   root.querySelector('[data-success-back]')?.addEventListener('click', () => { window.location.href = '03.01-funcionarios.html'; });
   root.querySelector('[data-success-new]')?.addEventListener('click', () => { window.location.reload(); });
-
   contextTrigger?.addEventListener('click', openContextDrawer);
   root.querySelector('[data-close-context]')?.addEventListener('click', closeContextDrawer);
   contextBackdrop?.addEventListener('click', closeContextDrawer);
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && contextDrawer && !contextDrawer.hidden) closeContextDrawer();
-  });
-
+  document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && contextDrawer && !contextDrawer.hidden) closeContextDrawer(); });
   permissionProfile?.addEventListener('change', () => applyPermissionProfile(permissionProfile.value));
-
   root.querySelectorAll('[data-simulate-state]').forEach((button) => button.addEventListener('click', () => setRuntimeState(button.dataset.simulateState)));
   root.querySelector('[data-resolve-conflict]')?.addEventListener('click', () => { setRuntimeState('READY'); persist({ quiet: true, force: true }); });
   root.querySelector('[data-retry-save]')?.addEventListener('click', () => { setRuntimeState('READY'); persist({ quiet: false, force: true }); });
@@ -963,18 +899,11 @@
     event.returnValue = '';
   });
 
-  const initializeStructuralSnapshot = () => Object.keys(dependencyMap).forEach((name) => structuralSnapshot.set(name, rawValue(name)));
-
   setupFieldSemantics();
   restore();
   initializeEntityPickers();
   initializeStructuralSnapshot();
-
-  if (permissionProfile) {
-    const profile = hasPermission('biometrics:manage') ? 'admin' : hasPermission('users:create') ? 'manager' : 'auditor';
-    permissionProfile.value = profile;
-  }
-
+  if (permissionProfile) permissionProfile.value = hasPermission('biometrics:manage') ? 'admin' : hasPermission('users:create') ? 'manager' : 'auditor';
   setRuntimeState(hasPermission('users:create') ? runtimeState : 'PERMISSION_ERROR');
   setCameraState(biometricMockState);
   renderPanels();
