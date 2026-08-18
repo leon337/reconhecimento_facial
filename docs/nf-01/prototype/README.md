@@ -86,7 +86,7 @@ K3 reauditorou Funcionários pós-K2. Nenhum gap bloqueante foi encontrado; a ú
 
 L1 auditou `screens/03.04-novo-funcionario-v2.html` + `assets/new-employee-v2.css` + `assets/new-employee-v2.js` sem alterá-los. L2 reconciliou os nove temas HIGH no Design Lab: stepper horizontal + `Ver etapas`, ContextDrawer sob demanda, StickyFormActions unificadas, affordances demonstrativas de `users:create`/`biometrics:manage`, `NEEDS_REVIEW`, ciclo `VISIBLE_ACTIVE/HIDDEN_RETAINED` separado de `activePayloadPreview`, estados persistentes `PERMISSION_ERROR/OFFLINE/CONFLICT/SAVE_ERROR/SUBMIT_OUTCOME_UNKNOWN`, FieldGroup/ErrorSummary source-level e seis EntityPickers locais demonstrativos. A implementação preserva as oito etapas, AppShell compartilhado e isolamento de produção.
 
-A primeira tentativa de L2 foi interrompida e havia substituído o roadmap por `PLACEHOLDER` e declarado o checkpoint 63 prematuramente. A recuperação restaurou o roadmap byte-a-byte antes da implementação real, corrigiu o checkpoint e manteve o histórico sem force-push ou reescrita.
+A primeira tentativa de L2 foi interrompida e deixou o roadmap substituído por `PLACEHOLDER` e o checkpoint 63 prematuramente marcado como concluído. A recuperação restaurou o roadmap byte-a-byte antes da implementação real, corrigiu o checkpoint e manteve o histórico sem force-push ou reescrita.
 
 A dívida transversal de `components.css`, a coerência cruzada entre telas e a validação completa de responsividade/acessibilidade permanecem diferidas para seus gates próprios.
 
