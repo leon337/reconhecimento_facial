@@ -8,6 +8,13 @@ on:
       - 'docs/nf-01/prototype/**'
       - 'docs/nf-01/validation/phase-n/**'
       - '.github/workflows/nf01-phase-n-validation.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'docs/nf-01/prototype/**'
+      - 'docs/nf-01/validation/phase-n/**'
+      - '.github/workflows/nf01-phase-n-validation.yml'
   workflow_dispatch:
 
 permissions:
