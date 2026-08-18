@@ -63,6 +63,15 @@ PHASE_K_CLOSEOUT_BASIS=SOURCE_LEVEL
 UNRESOLVED_EMPLOYEES_CANONICAL_GAPS=0
 K4_REQUIRED=NO
 
+PHASE_L_ONBOARDING_RECONCILIATION=IN_PROGRESS
+L1_ONBOARDING_CANONICAL_GAP_AUDIT=COMPLETE
+L1_AUDIT_RESULT=GAPS_FOUND
+L1_CRITICAL_GAPS=0
+L1_HIGH_GAP_THEMES=9
+L1_MEDIUM_GAP_THEMES=7
+L1_LOW_DEFERRED_OBSERVATIONS=3
+ONBOARDING_VISUAL_CHANGE_IN_L1=NO
+
 CANONICAL_APPSHELL=ONE
 CURRENT_APPSHELL_OWNER=docs/nf-01/prototype/assets/app-shell.css+app-shell.js
 CURRENT_APPSHELL_VERSION=i8
@@ -330,6 +339,88 @@ UNRESOLVED_EMPLOYEES_CANONICAL_GAPS=0
 K4_REQUIRED=NO
 ```
 
+## Fase L — Novo Funcionário V2
+
+```text
+[x] L1 — auditoria Current × Canonical, sem mudança visual
+[ ] L2 — reconciliação canônica do Novo Funcionário V2 no Design Lab
+[ ] L3 — aceite pós-L2 e fechamento source-level da Fase L
+```
+
+### Resultado L1
+
+```text
+L1_OUTPUT=docs/nf-01/62_NF01_PHASE_L_L1_ONBOARDING_CANONICAL_GAP_AUDIT_2026-08-18.md
+L1_IMPLEMENTATION=DOCUMENTAL_AUDIT_ONLY
+L1_ONBOARDING_HTML_CHANGED=NO
+L1_ONBOARDING_CSS_CHANGED=NO
+L1_ONBOARDING_JS_CHANGED=NO
+
+L1_AUDIT_RESULT=GAPS_FOUND
+L1_CRITICAL_GAPS=0
+L1_HIGH_GAP_THEMES=9
+L1_MEDIUM_GAP_THEMES=7
+L1_LOW_DEFERRED_OBSERVATIONS=3
+L1_PRESERVE_ITEMS=13
+L1_RECONCILE_ITEMS=17
+L1_REMOVE_ITEMS=3
+L1_DEFER_ITEMS=7
+```
+
+### Gaps prioritários L1
+
+```text
+L1-H1 stepper vertical conflita com HorizontalStepper congelado
+L1-H2 painel contextual permanente conflita com ContextDrawer
+L1-H3 StickyFormActions fragmentadas e ações desaparecem em responsivo
+L1-H4 biometria declara biometrics:manage sem variante real de affordance
+L1-H5 mudanças estruturais não marcam downstream NEEDS_REVIEW
+L1-H6 dados condicionais ocultos continuam serializados sem separação de payload ativo
+L1-H7 CONFLICT|OFFLINE|PERMISSION_ERROR|OUTCOME_UNKNOWN não estão materializados
+L1-H8 FieldGroup/ErrorSummary incompletos semanticamente
+L1-H9 cadastros mestres ainda usam selects simples em vez do contrato EntityPicker
+```
+
+### Direção proposta para L2
+
+```text
+PRESERVE=
+  shared AppShell
+  eight-stage functional sequence
+  relation/data/address/employment/payment/access/biometric/review content base
+  local draft demonstration
+  first-error focus and heading focus
+  demo isolation
+
+RECONCILE=
+  HorizontalStepper + Ver etapas
+  ContextDrawer
+  unified StickyFormActions
+  users/biometrics permission-aware affordances
+  NEEDS_REVIEW downstream invalidation
+  hidden-retained vs active-payload lifecycle
+  critical wizard state surfaces
+  FieldGroup semantics + ErrorSummary
+  local EntityPicker UX
+  local dimensioning/responsive behavior
+  reduced-motion-aware programmatic scrolling
+  CameraPanel state vocabulary
+
+REMOVE=
+  permanent vertical wizard rail
+  permanent right context column
+  hardcoded Admin permission sidecard
+
+DEFER=
+  backend draft/revision persistence
+  real transactional/idempotent submit
+  remote async EntityPicker integration
+  real camera/biometric storage
+  runtime backend RBAC enforcement
+  full responsive/a11y validation to Phase N
+  specialist legal/LGPD validation
+```
+
 ### Guardrails I6
 
 ```text
@@ -342,7 +433,7 @@ DASHBOARD_V3_CSS_DEPENDENCY=REMOVED
 ONBOARDING_WIZARD_CONTENT_PRESERVED=YES
 ONBOARDING_V2_SCRIPT_PRESERVED=YES
 ONBOARDING_CONTENT_REDESIGN_IN_I6=NO
-PHASE_L_ONBOARDING_RECONCILIATION=NOT_STARTED
+PHASE_L_ONBOARDING_RECONCILIATION=IN_PROGRESS
 ```
 
 ### Guardrails I7
@@ -409,6 +500,7 @@ K2_COLLECTION_STATE_CONTRACT=PASS_SOURCE_LEVEL
 K2_FAKE_PAGINATION_REMOVED=PASS_SOURCE_LEVEL
 K2_CONTAINER_AWARE_RESPONSIVE_LAYER=PASS_SOURCE_LEVEL
 K3_EMPLOYEES_POST_RECONCILIATION_ACCEPTANCE=PASS_SOURCE_LEVEL
+L1_ONBOARDING_CANONICAL_GAP_AUDIT=PERSISTED
 ```
 
 Ainda não executado:
@@ -429,13 +521,13 @@ PRODUCTION_E2E=NO
 ```text
 J Dashboard................ COMPLETE_SOURCE_LEVEL
 K Funcionários............. COMPLETE_SOURCE_LEVEL
-L Novo Funcionário V2...... NOT_STARTED
+L Novo Funcionário V2...... IN_PROGRESS
 M Coerência entre telas.... NOT_STARTED
 N Validação Design Lab..... NOT_STARTED
 O Evidências/fechamento.... NOT_STARTED
 ```
 
-I4/I5/I6 trocaram somente os cascos estruturais; I7 isolou o casco histórico; I8 auditou e endureceu apenas o contrato estrutural; I9 fechou a Fase I em base source-level. J1 auditou o Dashboard; J2 executou a reconciliação canônica; J3 confirmou o aceite pós-J2 e fechou a Fase J. K1 iniciou a Fase K com auditoria documental de Funcionários; K2 reconciliou os sete temas HIGH no Design Lab; K3 reauditorou o resultado, corrigiu somente a metainformação do índice e fechou a Fase K em base source-level.
+I4/I5/I6 trocaram somente os cascos estruturais; I7 isolou o casco histórico; I8 auditou e endureceu apenas o contrato estrutural; I9 fechou a Fase I em base source-level. J1 auditou o Dashboard; J2 executou a reconciliação canônica; J3 confirmou o aceite pós-J2 e fechou a Fase J. K1 iniciou a Fase K com auditoria documental de Funcionários; K2 reconciliou os sete temas HIGH no Design Lab; K3 reauditorou o resultado, corrigiu somente a metainformação do índice e fechou a Fase K em base source-level. L1 iniciou a Fase L com auditoria documental do Novo Funcionário V2; nenhuma mudança visual do wizard ocorreu em L1.
 
 ## Continuidade canônica
 
@@ -477,6 +569,8 @@ DECISOES_CONGELADAS.md
 60_* K2
 ↓
 61_* K3
+↓
+62_* L1
 ```
 
 ## Guardrails permanentes
@@ -496,6 +590,6 @@ DO_NOT_EDIT_DECISOES_CONGELADAS_MD
 
 ```text
 NEXT_OFFICIAL_PHASE=L_ONBOARDING_RECONCILIATION
-NEXT_OFFICIAL_ITEM=L1_DEFINITION_GATE
+NEXT_OFFICIAL_ITEM=L2_DEFINITION_GATE
 VISUAL_IMPLEMENTATION=DESIGN_LAB_ONLY
 ```
