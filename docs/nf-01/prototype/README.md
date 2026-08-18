@@ -49,7 +49,7 @@ PHASE_K_CLOSEOUT_BASIS=SOURCE_LEVEL
 UNRESOLVED_EMPLOYEES_CANONICAL_GAPS=0
 K4_REQUIRED=NO
 
-PHASE_L_ONBOARDING_RECONCILIATION=IN_PROGRESS
+PHASE_L_ONBOARDING_RECONCILIATION=COMPLETE
 L1_ONBOARDING_CANONICAL_GAP_AUDIT=COMPLETE
 L1_OUTPUT=../62_NF01_PHASE_L_L1_ONBOARDING_CANONICAL_GAP_AUDIT_2026-08-18.md
 L1_AUDIT_RESULT=GAPS_FOUND
@@ -63,14 +63,24 @@ L2_OUTPUT=../63_NF01_PHASE_L_L2_ONBOARDING_CANONICAL_RECONCILIATION_2026-08-18.m
 L2_ACCEPTANCE=PASS_SOURCE_LEVEL
 L2_HIGH_GAPS_RECONCILED_SOURCE_LEVEL=9/9
 ONBOARDING_VISUAL_CHANGE_IN_L2=YES_DESIGN_LAB_ONLY
+L3_ONBOARDING_POST_RECONCILIATION_ACCEPTANCE=COMPLETE
+L3_OUTPUT=../64_NF01_PHASE_L_L3_ONBOARDING_POST_RECONCILIATION_ACCEPTANCE_2026-08-18.md
+L3_ACCEPTANCE=PASS_SOURCE_LEVEL_WITH_TWO_HARDENING_FIXES_AND_ONE_CONTINUITY_FIX
+L3_BLOCKING_GAPS_FOUND=2
+L3_BLOCKING_GAPS_FIXED=2
+L3_CONTINUITY_DRIFT_FOUND=1
+L3_CONTINUITY_DRIFT_FIXED=1
+PHASE_L_CLOSEOUT_BASIS=SOURCE_LEVEL
+UNRESOLVED_ONBOARDING_BLOCKING_GAPS=0
+L4_REQUIRED=NO
 
 ACTIVE_SURFACE_LEGACY_SHELL_DEPENDENCY=0
 HISTORICAL_V1=screens/03.03-novo-funcionario.html
 HISTORICAL_V1_PRESERVED=YES
 HISTORICAL_V1_MIGRATED=NO
-NEXT_OFFICIAL_PHASE=L_ONBOARDING_RECONCILIATION
-NEXT_OFFICIAL_ITEM=L3_ONBOARDING_POST_RECONCILIATION_ACCEPTANCE_GATE
-L3_APPROVAL_INFERRED=NO
+NEXT_OFFICIAL_PHASE=M_CROSS_SCREEN_COHERENCE
+NEXT_OFFICIAL_ITEM=M1_CROSS_SCREEN_COHERENCE_AUDIT_GATE
+M1_APPROVAL_INFERRED=NO
 PRODUCTION_CHANGE=NO
 NF02_STARTED=NO
 PR_MERGE=NOT_AUTHORIZED
@@ -87,6 +97,8 @@ K3 reauditorou Funcionários pós-K2. Nenhum gap bloqueante foi encontrado; a ú
 L1 auditou `screens/03.04-novo-funcionario-v2.html` + `assets/new-employee-v2.css` + `assets/new-employee-v2.js` sem alterá-los. L2 reconciliou os nove temas HIGH no Design Lab: stepper horizontal + `Ver etapas`, ContextDrawer sob demanda, StickyFormActions unificadas, affordances demonstrativas de `users:create`/`biometrics:manage`, `NEEDS_REVIEW`, ciclo `VISIBLE_ACTIVE/HIDDEN_RETAINED` separado de `activePayloadPreview`, estados persistentes `PERMISSION_ERROR/OFFLINE/CONFLICT/SAVE_ERROR/SUBMIT_OUTCOME_UNKNOWN`, FieldGroup/ErrorSummary source-level e seis EntityPickers locais demonstrativos. A implementação preserva as oito etapas, AppShell compartilhado e isolamento de produção.
 
 A primeira tentativa de L2 foi interrompida e deixou o roadmap substituído por `PLACEHOLDER` e o checkpoint 63 prematuramente marcado como concluído. A recuperação restaurou o roadmap byte-a-byte antes da implementação real, corrigiu o checkpoint e manteve o histórico sem force-push ou reescrita.
+
+L3 reauditorou o resultado de L2 e encontrou dois defeitos source-level objetivos: o estado `ERROR` existia no CSS do stepper, mas não era produzido pelo controlador, e o EntityPicker visual não herdava integralmente label/required/describedby/foco de erro do select-fonte. Ambos foram corrigidos por hardening localizado em `new-employee-v2.js` e `new-employee-v2.css`, sem novo redesign. O tile de `prototype/index.html` também foi sincronizado de I6 para L3. Com isso, a Fase L foi encerrada em base source-level.
 
 A dívida transversal de `components.css`, a coerência cruzada entre telas e a validação completa de responsividade/acessibilidade permanecem diferidas para seus gates próprios.
 
