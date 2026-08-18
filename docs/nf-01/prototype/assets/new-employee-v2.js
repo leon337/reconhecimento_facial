@@ -62,6 +62,7 @@
   let maxReached = 0;
   let completedSteps = new Set();
   let needsReview = new Set();
+  let errorSteps = new Set();
   let biometricMockState = 'AGUARDANDO_CAMERA';
   let runtimeState = root.dataset.wizardRuntimeState || 'READY';
   let revision = 0;
@@ -146,6 +147,7 @@
     maxReached,
     completedSteps: [...completedSteps],
     needsReview: [...needsReview],
+    errorSteps: [...errorSteps],
     biometricMockState,
     runtimeState,
     submissionId,
@@ -228,6 +230,7 @@
     maxReached = Number.isInteger(draft.maxReached) ? Math.min(Math.max(draft.maxReached, currentStep), 7) : currentStep;
     completedSteps = new Set(Array.isArray(draft.completedSteps) ? draft.completedSteps.filter((item) => Number.isInteger(item) && item >= 0 && item <= 7) : []);
     needsReview = new Set(Array.isArray(draft.needsReview) ? draft.needsReview.filter((item) => Number.isInteger(item) && item >= 0 && item <= 7) : []);
+    errorSteps = new Set(Array.isArray(draft.errorSteps) ? draft.errorSteps.filter((item) => Number.isInteger(item) && item >= 0 && item <= 7) : []);
     biometricMockState = draft.biometricMockState || 'AGUARDANDO_CAMERA';
     revision = Number.isInteger(draft.revision) ? draft.revision : 0;
     submissionId = draft.submissionId || null;
@@ -256,11 +259,19 @@
     });
   };
 
+  const interactiveField = (field) => {
+    if (!field) return null;
+    const pickerInputId = field.dataset?.entityPickerInputId;
+    return pickerInputId ? document.getElementById(pickerInputId) || field : field;
+  };
+
   const clearFieldError = (field) => {
     if (!field) return;
     field.closest('.v2-field')?.classList.remove('has-error');
     field.closest('.v2-control')?.classList.remove('is-invalid');
     field.removeAttribute('aria-invalid');
+    const interactive = interactiveField(field);
+    if (interactive && interactive !== field) interactive.removeAttribute('aria-invalid');
   };
 
   const setFieldError = (field, message) => {
@@ -269,6 +280,8 @@
     wrapper?.classList.add('has-error');
     field.closest('.v2-control')?.classList.add('is-invalid');
     field.setAttribute('aria-invalid', 'true');
+    const interactive = interactiveField(field);
+    if (interactive && interactive !== field) interactive.setAttribute('aria-invalid', 'true');
     const error = wrapper?.querySelector('.v2-field__error');
     if (error && message) error.textContent = message;
   };
@@ -286,7 +299,7 @@
     }
     errorSummaryList.innerHTML = errors.map((item, index) => `<li><button type="button" data-error-target="${item.id}" data-error-index="${index}">${item.label}</button></li>`).join('');
     errorSummary.hidden = false;
-    errorSummary.querySelectorAll('[data-error-target]').forEach((button) => button.addEventListener('click', () => document.getElementById(button.dataset.errorTarget)?.focus()));
+    errorSummary.querySelectorAll('[data-error-target]').forEach((button) => button.addEventListener('click', () => interactiveField(document.getElementById(button.dataset.errorTarget))?.focus()));
     errorSummary.focus({ preventScroll: true });
   };
 
@@ -416,22 +429,24 @@
     if (index === 7 && needsReview.size) errors.push({ id: 'onboarding-step-list', label: `Revise ${needsReview.size} etapa(s) sinalizada(s) como NEEDS_REVIEW antes de concluir.` });
 
     if (errors.length) {
+      errorSteps.add(index);
       completedSteps.delete(index);
       renderErrorSummary(errors);
       if (stepStateBadge) {
-        stepStateBadge.classList.remove('is-valid');
-        stepStateBadge.classList.add('is-review');
-        stepStateBadge.textContent = 'Revisar campos';
+        stepStateBadge.classList.remove('is-valid', 'is-review');
+        stepStateBadge.classList.add('is-error');
+        stepStateBadge.textContent = 'Corrigir erros';
       }
       announce(`Há ${errors.length} problema(s) que precisam de revisão na etapa ${index + 1}.`);
       updateStepNavigation();
       return false;
     }
 
+    errorSteps.delete(index);
     completedSteps.add(index);
     needsReview.delete(index);
     if (stepStateBadge) {
-      stepStateBadge.classList.remove('is-review');
+      stepStateBadge.classList.remove('is-review', 'is-error');
       stepStateBadge.classList.add('is-valid');
       stepStateBadge.textContent = 'Etapa revisada';
     }
@@ -441,6 +456,7 @@
   };
 
   const stepStatus = (index) => {
+    if (errorSteps.has(index)) return 'ERROR';
     if (index === currentStep) return 'CURRENT';
     if (needsReview.has(index)) return 'NEEDS_REVIEW';
     if (completedSteps.has(index)) return 'COMPLETED';
@@ -465,7 +481,7 @@
       button.disabled = index > maxReached;
       if (index === currentStep) button.setAttribute('aria-current', 'step');
       else button.removeAttribute('aria-current');
-      const suffix = status === 'NEEDS_REVIEW' ? ', precisa revisar' : status === 'COMPLETED' ? ', concluída' : status === 'CURRENT' ? ', atual' : ', futura';
+      const suffix = status === 'ERROR' ? ', com erro' : status === 'NEEDS_REVIEW' ? ', precisa revisar' : status === 'COMPLETED' ? ', concluída' : status === 'CURRENT' ? ', atual' : ', futura';
       button.setAttribute('aria-label', `Etapa ${index + 1}: ${steps[index].label}${suffix}`);
     });
     renderStepList();
@@ -483,7 +499,8 @@
       const status = stepStatus(currentStep);
       stepStateBadge.classList.toggle('is-valid', status === 'COMPLETED');
       stepStateBadge.classList.toggle('is-review', status === 'NEEDS_REVIEW');
-      stepStateBadge.textContent = status === 'NEEDS_REVIEW' ? 'Precisa revisar' : status === 'COMPLETED' ? 'Etapa revisada' : 'Em preenchimento';
+      stepStateBadge.classList.toggle('is-error', status === 'ERROR');
+      stepStateBadge.textContent = status === 'ERROR' ? 'Corrigir erros' : status === 'NEEDS_REVIEW' ? 'Precisa revisar' : status === 'COMPLETED' ? 'Etapa revisada' : 'Em preenchimento';
     }
   };
 
@@ -586,6 +603,7 @@
     const affected = targets.filter((index) => index <= maxReached || completedSteps.has(index));
     if (!affected.length) return;
     affected.forEach((index) => {
+      errorSteps.delete(index);
       needsReview.add(index);
       completedSteps.delete(index);
     });
@@ -724,16 +742,31 @@
     select.classList.add('entity-picker__native');
     const options = [...select.options].filter((option) => option.value);
     const id = `entity-picker-${index}`;
+    const inputId = `${id}-input`;
     const wrapper = document.createElement('div');
     wrapper.className = 'entity-picker';
     const input = document.createElement('input');
+    input.id = inputId;
     input.type = 'text';
+    input.autocomplete = 'off';
     input.className = 'entity-picker__input';
     input.setAttribute('role', 'combobox');
     input.setAttribute('aria-autocomplete', 'list');
     input.setAttribute('aria-expanded', 'false');
     input.setAttribute('aria-controls', `${id}-listbox`);
+    if (select.getAttribute('aria-required') === 'true') input.setAttribute('aria-required', 'true');
+    const describedBy = select.getAttribute('aria-describedby');
+    if (describedBy) input.setAttribute('aria-describedby', describedBy);
     input.placeholder = select.options[0]?.text || 'Pesquisar';
+
+    const label = select.closest('.v2-field')?.querySelector(`label[for="${select.id}"]`);
+    if (label) label.setAttribute('for', inputId);
+    else input.setAttribute('aria-label', select.name || 'Selecionar entidade');
+
+    select.tabIndex = -1;
+    select.setAttribute('aria-hidden', 'true');
+    select.dataset.entityPickerInputId = inputId;
+
     const selected = select.selectedOptions[0];
     if (selected?.value) input.value = selected.text;
     const listbox = document.createElement('div');
@@ -770,12 +803,14 @@
       if (!option) return;
       select.value = option.value;
       input.value = option.text;
+      clearFieldError(select);
       close();
       select.dispatchEvent(new Event('change', { bubbles: true }));
     };
 
     input.addEventListener('focus', () => { filtered = options; open(); });
     input.addEventListener('input', () => {
+      clearFieldError(select);
       const query = input.value.trim().toLocaleLowerCase('pt-BR');
       filtered = options.filter((option) => option.text.toLocaleLowerCase('pt-BR').includes(query));
       if (select.selectedOptions[0]?.text !== input.value) select.value = '';
@@ -796,6 +831,7 @@
     select.addEventListener('change', () => {
       const option = select.selectedOptions[0];
       input.value = option?.value ? option.text : '';
+      clearFieldError(select);
     });
   };
 
@@ -805,6 +841,7 @@
   form.addEventListener('input', (event) => {
     if (!event.target.matches('input, textarea, select')) return;
     clearFieldError(event.target);
+    errorSteps.delete(currentStep);
     completedSteps.delete(currentStep);
     updateDynamicUI();
     updateStepNavigation();
@@ -815,6 +852,7 @@
   form.addEventListener('change', (event) => {
     if (!event.target.matches('input, select')) return;
     clearFieldError(event.target);
+    errorSteps.delete(currentStep);
     completedSteps.delete(currentStep);
     detectStructuralChange(event.target.name);
     updateDynamicUI();
@@ -854,6 +892,7 @@
     biometricMockState = 'AGUARDANDO_CAMERA';
     completedSteps = new Set();
     needsReview = new Set();
+    errorSteps = new Set();
     dirty = false;
     structuralSnapshot.clear();
     setRuntimeState('READY');
