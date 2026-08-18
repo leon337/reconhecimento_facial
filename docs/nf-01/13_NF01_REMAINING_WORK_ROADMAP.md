@@ -71,6 +71,10 @@ L1_HIGH_GAP_THEMES=9
 L1_MEDIUM_GAP_THEMES=7
 L1_LOW_DEFERRED_OBSERVATIONS=3
 ONBOARDING_VISUAL_CHANGE_IN_L1=NO
+L2_ONBOARDING_CANONICAL_RECONCILIATION=COMPLETE
+L2_ACCEPTANCE=PASS_SOURCE_LEVEL
+L2_HIGH_GAPS_RECONCILED_SOURCE_LEVEL=9/9
+ONBOARDING_VISUAL_CHANGE_IN_L2=YES_DESIGN_LAB_ONLY
 
 CANONICAL_APPSHELL=ONE
 CURRENT_APPSHELL_OWNER=docs/nf-01/prototype/assets/app-shell.css+app-shell.js
@@ -343,7 +347,7 @@ K4_REQUIRED=NO
 
 ```text
 [x] L1 — auditoria Current × Canonical, sem mudança visual
-[ ] L2 — reconciliação canônica do Novo Funcionário V2 no Design Lab
+[x] L2 — reconciliação canônica do Novo Funcionário V2 no Design Lab
 [ ] L3 — aceite pós-L2 e fechamento source-level da Fase L
 ```
 
@@ -381,7 +385,7 @@ L1-H8 FieldGroup/ErrorSummary incompletos semanticamente
 L1-H9 cadastros mestres ainda usam selects simples em vez do contrato EntityPicker
 ```
 
-### Direção proposta para L2
+### Direção aprovada para L2
 
 ```text
 PRESERVE=
@@ -419,6 +423,40 @@ DEFER=
   runtime backend RBAC enforcement
   full responsive/a11y validation to Phase N
   specialist legal/LGPD validation
+```
+
+### Resultado L2
+
+```text
+L2_OUTPUT=docs/nf-01/63_NF01_PHASE_L_L2_ONBOARDING_CANONICAL_RECONCILIATION_2026-08-18.md
+L2_IMPLEMENTATION=DESIGN_LAB_ONLY
+L2_ONBOARDING_HTML_CHANGED=YES
+L2_ONBOARDING_CSS_CHANGED=YES
+L2_ONBOARDING_JS_CHANGED=YES
+L2_ACCEPTANCE=PASS_SOURCE_LEVEL
+L2_HIGH_GAPS_RECONCILED_SOURCE_LEVEL=9/9
+
+HORIZONTAL_STEPPER=IMPLEMENTED_SOURCE_LEVEL
+STEP_LIST_TEXTUAL=IMPLEMENTED_SOURCE_LEVEL
+PERMANENT_VERTICAL_RAIL=REMOVED
+CONTEXT_DRAWER=IMPLEMENTED_SOURCE_LEVEL
+PERMANENT_RIGHT_CONTEXT_COLUMN=REMOVED
+STICKY_FORM_ACTIONS=UNIFIED
+BIOMETRIC_ACTION_PERMISSION=biometrics:manage
+DOWNSTREAM_REVIEW_STATE=NEEDS_REVIEW
+CONDITIONAL_DATA_LIFECYCLE=VISIBLE_ACTIVE|HIDDEN_RETAINED
+DRAFT_DATA_SEPARATE_FROM_ACTIVE_PAYLOAD=YES
+CRITICAL_WIZARD_STATES=PERMISSION_ERROR|OFFLINE|CONFLICT|SAVE_ERROR|SUBMIT_OUTCOME_UNKNOWN
+FIELDGROUP_ARIA_SEMANTICS=IMPROVED_SOURCE_LEVEL
+ERROR_SUMMARY=PERSISTENT_SOURCE_LEVEL
+LOCAL_ENTITY_PICKERS=6
+LOCAL_ONBOARDING_DIMENSIONING=rem/fr/minmax/clamp/container-query/dvh/safe-area
+REDUCED_MOTION_HANDLING=YES_SOURCE_LEVEL
+CAMERA_PANEL_STATES=AGUARDANDO_CAMERA|CAPTURANDO|VALIDANDO_QUALIDADE|PROCESSANDO|SUCESSO
+RUNTIME_BACKEND_RBAC=NOT_IMPLEMENTED_IN_NF01
+REAL_BACKEND_DRAFT_REVISION=NOT_IMPLEMENTED_IN_NF01
+REAL_TRANSACTIONAL_SUBMIT=NOT_IMPLEMENTED_IN_NF01
+REAL_CAMERA_STORAGE=NOT_IMPLEMENTED_IN_NF01
 ```
 
 ### Guardrails I6
@@ -501,6 +539,12 @@ K2_FAKE_PAGINATION_REMOVED=PASS_SOURCE_LEVEL
 K2_CONTAINER_AWARE_RESPONSIVE_LAYER=PASS_SOURCE_LEVEL
 K3_EMPLOYEES_POST_RECONCILIATION_ACCEPTANCE=PASS_SOURCE_LEVEL
 L1_ONBOARDING_CANONICAL_GAP_AUDIT=PERSISTED
+L2_ONBOARDING_CANONICAL_RECONCILIATION=PASS_SOURCE_LEVEL
+L2_HORIZONTAL_STEPPER_AND_CONTEXT_DRAWER=PASS_SOURCE_LEVEL
+L2_PERMISSION_AFFORDANCES=PASS_SOURCE_LEVEL
+L2_NEEDS_REVIEW_AND_CONDITIONAL_LIFECYCLE=PASS_SOURCE_LEVEL
+L2_CRITICAL_STATE_SURFACES=PASS_SOURCE_LEVEL
+L2_ERROR_SUMMARY_AND_ENTITY_PICKERS=PASS_SOURCE_LEVEL
 ```
 
 Ainda não executado:
@@ -527,7 +571,7 @@ N Validação Design Lab..... NOT_STARTED
 O Evidências/fechamento.... NOT_STARTED
 ```
 
-I4/I5/I6 trocaram somente os cascos estruturais; I7 isolou o casco histórico; I8 auditou e endureceu apenas o contrato estrutural; I9 fechou a Fase I em base source-level. J1 auditou o Dashboard; J2 executou a reconciliação canônica; J3 confirmou o aceite pós-J2 e fechou a Fase J. K1 iniciou a Fase K com auditoria documental de Funcionários; K2 reconciliou os sete temas HIGH no Design Lab; K3 reauditorou o resultado, corrigiu somente a metainformação do índice e fechou a Fase K em base source-level. L1 iniciou a Fase L com auditoria documental do Novo Funcionário V2; nenhuma mudança visual do wizard ocorreu em L1.
+I4/I5/I6 trocaram somente os cascos estruturais; I7 isolou o casco histórico; I8 auditou e endureceu apenas o contrato estrutural; I9 fechou a Fase I em base source-level. J1 auditou o Dashboard; J2 executou a reconciliação canônica; J3 confirmou o aceite pós-J2 e fechou a Fase J. K1 iniciou a Fase K com auditoria documental de Funcionários; K2 reconciliou os sete temas HIGH no Design Lab; K3 reauditorou o resultado, corrigiu somente a metainformação do índice e fechou a Fase K em base source-level. L1 iniciou a Fase L com auditoria documental do Novo Funcionário V2; L2 reconciliou os nove temas HIGH do onboarding no Design Lab em base source-level. A Fase L permanece aberta até L3.
 
 ## Continuidade canônica
 
@@ -571,6 +615,8 @@ DECISOES_CONGELADAS.md
 61_* K3
 ↓
 62_* L1
+↓
+63_* L2
 ```
 
 ## Guardrails permanentes
@@ -590,6 +636,7 @@ DO_NOT_EDIT_DECISOES_CONGELADAS_MD
 
 ```text
 NEXT_OFFICIAL_PHASE=L_ONBOARDING_RECONCILIATION
-NEXT_OFFICIAL_ITEM=L2_DEFINITION_GATE
+NEXT_OFFICIAL_ITEM=L3_ONBOARDING_POST_RECONCILIATION_ACCEPTANCE_GATE
+L3_APPROVAL_INFERRED=NO
 VISUAL_IMPLEMENTATION=DESIGN_LAB_ONLY
 ```
