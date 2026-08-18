@@ -1,0 +1,16 @@
+# NF-01 artifact manifest
+# Status: CHECKSUMS_DEFERRED_UNTIL_FINAL_CANDIDATE_HEAD
+# Reason: artifacts are still being updated by final diff/CI/audit reconciliation.
+# Integrity source during review: Git commit object + PR #32 changed-files list.
+# A final SHA-256 manifest must not be fabricated before the candidate HEAD is frozen.
+
+PENDING  docs/nf-01/01_PRODUCT_DEFINITION.md
+PENDING  docs/nf-01/02_UI_INVENTORY.md
+PENDING  docs/nf-01/03_INFORMATION_ARCHITECTURE.md
+PENDING  docs/nf-01/04_ROLES_PERMISSIONS_AND_STATES.md
+PENDING  docs/nf-01/05_DESIGN_SYSTEM.md
+PENDING  docs/nf-01/06_COMPONENT_CATALOG.md
+PENDING  docs/nf-01/07_WIREFRAMES.md
+PENDING  docs/nf-01/08_RESPONSIVE_ACCESSIBILITY.md
+PENDING  docs/nf-01/09_TEST_AND_ACCEPTANCE_STRATEGY.md
+PENDING  docs/nf-01/10_NF01_CLOSEOUT.md

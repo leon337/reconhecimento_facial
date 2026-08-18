@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>AppShell I3 — NF-01 Design Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/design-tokens.css">
+  <link rel="stylesheet" href="../assets/components.css">
+  <link rel="stylesheet" href="../assets/app-shell.css">
+  <style>
+    .appshell-reference-card {
+      min-height: 20rem;
+      display: grid;
+      align-content: start;
+      gap: 1rem;
+      padding: clamp(1.25rem, 3vw, 2rem);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-xl);
+      background: #fff;
+      box-shadow: var(--shadow-md), var(--shadow-inset-highlight);
+    }
+    .appshell-reference-card h2 { margin: 0; font-size: 1.25rem; }
+    .appshell-reference-card > p { margin: 0; max-width: 72ch; color: var(--text-secondary); line-height: 1.6; }
+    .appshell-reference-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+      gap: .75rem;
+    }
+    .appshell-reference-item {
+      padding: 1rem;
+      border: 1px solid var(--border-soft);
+      border-radius: .75rem;
+      background: var(--surface-subtle);
+    }
+    .appshell-reference-item strong { display: block; margin-bottom: .3rem; font-size: .8125rem; }
+    .appshell-reference-item span { color: var(--text-secondary); font-size: .75rem; line-height: 1.45; }
+    .appshell-reference-flow {
+      margin: 0;
+      padding: 1rem;
+      overflow-x: auto;
+      border: 1px solid var(--border-soft);
+      border-radius: .75rem;
+      background: var(--surface-subtle);
+      color: var(--text-primary);
+      font-size: .8rem;
+      line-height: 1.55;
+    }
+  </style>
+</head>
+<body
+  data-app-shell-active="dashboard"
+  data-app-shell-context-title="Potiguar Locações"
+  data-app-shell-context-subtitle="Galpão principal · contexto demonstrativo"
+  data-app-shell-profile-name="Administrador Demo"
+  data-app-shell-profile-role="Perfil fictício"
+  data-app-shell-profile-avatar="AD">
+
+  <main id="conteudo" data-app-shell-content>
+    <nav class="app-shell__breadcrumb" aria-label="Breadcrumb">
+      <ol>
+        <li>Design Lab</li>
+        <li aria-hidden="true">›</li>
+        <li aria-current="page">AppShell I3</li>
+      </ol>
+    </nav>
+
+    <header class="app-shell__page-header">
+      <div>
+        <p class="eyebrow">NF-01 · Design Lab · I3</p>
+        <h1>Substrato reutilizável do AppShell</h1>
+        <p>A página fornece apenas metadados e conteúdo. O bootstrap compartilhado materializa Sidebar, TopHeader e os comportamentos estruturais sem copiar o shell para cada tela.</p>
+      </div>
+    </header>
+
+    <section class="appshell-reference-card" aria-labelledby="appshell-contract">
+      <h2 id="appshell-contract">Contrato materializado em I3</h2>
+      <p>Esta referência preserva dados fictícios e demonstra a separação entre o conteúdo específico da página e o AppShell administrativo compartilhado. O item “Registrar ponto” continua sendo uma saída conceitual para uma jornada independente.</p>
+
+      <pre class="appshell-reference-flow" aria-label="Fluxo de composição do AppShell">PAGE METADATA + PAGE CONTENT
+              ↓
+       app-shell.js
+              ↓
+┌──────────────────────────────┐
+│ AppShell compartilhado       │
+│ ├─ CollapsibleSidebar        │
+│ ├─ TopHeader                 │
+│ └─ MainWorkspace             │
+│    └─ conteúdo preservado    │
+└──────────────────────────────┘</pre>
+
+      <div class="appshell-reference-grid">
+        <div class="appshell-reference-item"><strong>Uma implementação</strong><span>`app-shell.css` e `app-shell.js` concentram estrutura e comportamento reutilizáveis do shell no laboratório.</span></div>
+        <div class="appshell-reference-item"><strong>Conteúdo preservado</strong><span>O mesmo elemento `main` da página é movido para o workspace; um segundo `main` não é criado.</span></div>
+        <div class="appshell-reference-item"><strong>Montagem idempotente</strong><span>Chamadas repetidas de `NF01AppShell.mount()` não devem duplicar Sidebar, TopHeader, skip link ou shell.</span></div>
+        <div class="appshell-reference-item"><strong>Desktop / intermediário</strong><span>Sidebar expandida/recolhível em desktop largo e compacta na faixa intermediária.</span></div>
+        <div class="appshell-reference-item"><strong>Mobile</strong><span>Overlay com `inert`, Escape, backdrop, contenção de foco e retorno ao gatilho.</span></div>
+        <div class="appshell-reference-item"><strong>Fronteira</strong><span>Esta composição JS pertence ao Design Lab e não congela arquitetura Flask/Jinja de produção.</span></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="../assets/app-shell.js"></script>
+</body>
+</html>
