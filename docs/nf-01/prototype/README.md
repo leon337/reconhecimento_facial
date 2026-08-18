@@ -10,107 +10,105 @@ LEGACY_SHELL_OWNER=assets/legacy-shell.css+legacy-shell.js
 DASHBOARD_SHARED_APPSHELL=YES
 EMPLOYEES_SHARED_APPSHELL=YES
 ONBOARDING_SHARED_APPSHELL=YES
-I7_LEGACY_SHELL_QUARANTINE=COMPLETE
-I8_APPSHELL_STRUCTURAL_ACCEPTANCE=COMPLETE
-I8_ACCEPTANCE=PASS_SOURCE_LEVEL_WITH_HARDENING
-I9_PHASE_I_APPSHELL_CLOSEOUT=COMPLETE
-PHASE_I_DESIGN_LAB_APPSHELL=COMPLETE
-PHASE_I_CLOSEOUT_BASIS=SOURCE_LEVEL
-UNRESOLVED_PHASE_I_STRUCTURAL_GAPS=0
 
-PHASE_J_DASHBOARD_RECONCILIATION=COMPLETE
-J1_DASHBOARD_CANONICAL_GAP_AUDIT=COMPLETE
-J1_OUTPUT=../56_NF01_PHASE_J_J1_DASHBOARD_CANONICAL_GAP_AUDIT_2026-08-17.md
-J2_DASHBOARD_CANONICAL_RECONCILIATION=COMPLETE
-J2_OUTPUT=../57_NF01_PHASE_J_J2_DASHBOARD_CANONICAL_RECONCILIATION_2026-08-17.md
-J2_HIGH_GAPS_RECONCILED_SOURCE_LEVEL=6/6
-J3_DASHBOARD_POST_RECONCILIATION_ACCEPTANCE=COMPLETE
-J3_OUTPUT=../58_NF01_PHASE_J_J3_DASHBOARD_POST_RECONCILIATION_ACCEPTANCE_2026-08-17.md
-J3_ACCEPTANCE=PASS_SOURCE_LEVEL_WITH_ONE_CONTINUITY_FIX
-PHASE_J_CLOSEOUT_BASIS=SOURCE_LEVEL
-UNRESOLVED_DASHBOARD_CANONICAL_GAPS=0
-J4_REQUIRED=NO
+PHASE_I_DESIGN_LAB_APPSHELL=COMPLETE_SOURCE_LEVEL
+PHASE_J_DASHBOARD_RECONCILIATION=COMPLETE_SOURCE_LEVEL
+PHASE_K_EMPLOYEES_RECONCILIATION=COMPLETE_SOURCE_LEVEL
+PHASE_L_ONBOARDING_RECONCILIATION=COMPLETE_SOURCE_LEVEL
 
-PHASE_K_EMPLOYEES_RECONCILIATION=COMPLETE
-K1_EMPLOYEES_CANONICAL_GAP_AUDIT=COMPLETE
-K1_OUTPUT=../59_NF01_PHASE_K_K1_EMPLOYEES_CANONICAL_GAP_AUDIT_2026-08-17.md
-K1_AUDIT_RESULT=GAPS_FOUND
-K1_HIGH_GAP_THEMES=7
-EMPLOYEES_VISUAL_CHANGE_IN_K1=NO
-K2_EMPLOYEES_CANONICAL_RECONCILIATION=COMPLETE
-K2_OUTPUT=../60_NF01_PHASE_K_K2_EMPLOYEES_CANONICAL_RECONCILIATION_2026-08-17.md
-K2_ACCEPTANCE=PASS_SOURCE_LEVEL
-K2_HIGH_GAPS_RECONCILED_SOURCE_LEVEL=7/7
-EMPLOYEES_VISUAL_CHANGE_IN_K2=YES_DESIGN_LAB_ONLY
-K3_EMPLOYEES_POST_RECONCILIATION_ACCEPTANCE=COMPLETE
-K3_OUTPUT=../61_NF01_PHASE_K_K3_EMPLOYEES_POST_RECONCILIATION_ACCEPTANCE_2026-08-18.md
-K3_ACCEPTANCE=PASS_SOURCE_LEVEL_WITH_ONE_CONTINUITY_FIX
-PHASE_K_CLOSEOUT_BASIS=SOURCE_LEVEL
-UNRESOLVED_EMPLOYEES_CANONICAL_GAPS=0
-K4_REQUIRED=NO
+PHASE_M_CROSS_SCREEN_COHERENCE=IN_PROGRESS
+M1_CROSS_SCREEN_COHERENCE_AUDIT=COMPLETE
+M1_OUTPUT=../65_NF01_PHASE_M_M1_CROSS_SCREEN_COHERENCE_AUDIT_2026-08-18.md
+M1_AUDIT_RESULT=GAPS_FOUND
+M1_HIGH_GAP_THEMES=5
+M2_CROSS_SCREEN_COHERENCE_RECONCILIATION=COMPLETE
+M2_OUTPUT=../66_NF01_PHASE_M_M2_CROSS_SCREEN_COHERENCE_RECONCILIATION_2026-08-18.md
+M2_ACCEPTANCE=PASS_SOURCE_LEVEL
+M1_HIGH_GAPS_RECONCILED_SOURCE_LEVEL=5/5
 
-PHASE_L_ONBOARDING_RECONCILIATION=COMPLETE
-L1_ONBOARDING_CANONICAL_GAP_AUDIT=COMPLETE
-L1_OUTPUT=../62_NF01_PHASE_L_L1_ONBOARDING_CANONICAL_GAP_AUDIT_2026-08-18.md
-L1_AUDIT_RESULT=GAPS_FOUND
-L1_CRITICAL_GAPS=0
-L1_HIGH_GAP_THEMES=9
-L1_MEDIUM_GAP_THEMES=7
-L1_LOW_DEFERRED_OBSERVATIONS=3
-ONBOARDING_VISUAL_CHANGE_IN_L1=NO
-L2_ONBOARDING_CANONICAL_RECONCILIATION=COMPLETE
-L2_OUTPUT=../63_NF01_PHASE_L_L2_ONBOARDING_CANONICAL_RECONCILIATION_2026-08-18.md
-L2_ACCEPTANCE=PASS_SOURCE_LEVEL
-L2_HIGH_GAPS_RECONCILED_SOURCE_LEVEL=9/9
-ONBOARDING_VISUAL_CHANGE_IN_L2=YES_DESIGN_LAB_ONLY
-L3_ONBOARDING_POST_RECONCILIATION_ACCEPTANCE=COMPLETE
-L3_OUTPUT=../64_NF01_PHASE_L_L3_ONBOARDING_POST_RECONCILIATION_ACCEPTANCE_2026-08-18.md
-L3_ACCEPTANCE=PASS_SOURCE_LEVEL_WITH_TWO_HARDENING_FIXES_AND_ONE_CONTINUITY_FIX
-L3_BLOCKING_GAPS_FOUND=2
-L3_BLOCKING_GAPS_FIXED=2
-L3_CONTINUITY_DRIFT_FOUND=1
-L3_CONTINUITY_DRIFT_FIXED=1
-PHASE_L_CLOSEOUT_BASIS=SOURCE_LEVEL
-UNRESOLVED_ONBOARDING_BLOCKING_GAPS=0
-L4_REQUIRED=NO
+CROSS_SCREEN_SHARED_CONTEXT=Potiguar_Locacoes|Galpao_principal
+CROSS_SCREEN_SHARED_PROFILE=Administrador_Demo|admin
+CROSS_SCREEN_SHARED_EMPLOYEE_SOURCE=fixture:employees-k2
+DASHBOARD_TO_EMPLOYEES_HANDOFF=biometric=missing
+EMPLOYEES_LIST_STATE_RESTORE=sessionStorage_context_scoped
+ONBOARDING_VISIBLE_NAME=Novo_Funcionario
+ONBOARDING_DEMO_MUTATES_EMPLOYEE_LIST=NO
 
 ACTIVE_SURFACE_LEGACY_SHELL_DEPENDENCY=0
 HISTORICAL_V1=screens/03.03-novo-funcionario.html
 HISTORICAL_V1_PRESERVED=YES
 HISTORICAL_V1_MIGRATED=NO
+
 NEXT_OFFICIAL_PHASE=M_CROSS_SCREEN_COHERENCE
-NEXT_OFFICIAL_ITEM=M1_CROSS_SCREEN_COHERENCE_AUDIT_GATE
-M1_APPROVAL_INFERRED=NO
+NEXT_OFFICIAL_ITEM=M3_CROSS_SCREEN_POST_RECONCILIATION_ACCEPTANCE_GATE
+M3_APPROVAL_INFERRED=NO
 PRODUCTION_CHANGE=NO
 NF02_STARTED=NO
 PR_MERGE=NOT_AUTHORIZED
 ```
 
-I8 endureceu o bootstrap do AppShell e I9 fechou a Fase I somente em base source-level.
+## Estado atual das superfícies
 
-J1 auditou o Dashboard sem mudar o visual. J2 executou a reconciliação canônica de `screens/02.01-dashboard.html` + `assets/dashboard-v3.css`. J3 reauditorou o resultado, corrigiu somente metainformação do índice do laboratório e encerrou a Fase J em base source-level.
+### Dashboard
 
-K1 auditou `screens/03.01-funcionarios.html` + `assets/employees-v1.css` + `assets/employees-v1.js` sem alterar esses arquivos. K2 reconciliou os sete temas HIGH: métricas agora derivam das fixtures e não se confundem com resultados filtrados; o pseudo-KPI `Admin` foi removido; a tabela prioriza Nome/Matrícula, Unidade, Biometria e Status; `Novo funcionário` exige `users:create`; ações biométricas exigem `biometrics:manage`; os estados `LOADING`, `EMPTY_DATASET`, `READY`, `FILTER_NO_RESULTS`, `ERROR`, `OFFLINE` e `NO_PERMISSION` estão separados; e a paginação fictícia foi removida. O CSS local foi normalizado para `rem/fr/minmax` e container query.
+`screens/02.01-dashboard.html` preserva o contrato canônico de J2/J3 e, em M2, foi reconciliado com a amostra local de Funcionários:
 
-K3 reauditorou Funcionários pós-K2. Nenhum gap bloqueante foi encontrado; a única inconsistência objetiva estava no tile de `prototype/index.html`, que ainda descrevia Funcionários como etapa I5. O tile foi atualizado para K3/Fase K reconciliada, sem alterar novamente `03.01-funcionarios.html`, `employees-v1.css` ou `employees-v1.js`. A Fase K foi encerrada em base source-level.
+- `Funcionários cadastrados = 6` para a mesma amostra local;
+- João Souza = matrícula `00124`;
+- Maria Silva = matrícula `00123`;
+- Lucas Santos = matrícula `00131`;
+- Ana Paula = matrícula `00142`;
+- unidade demonstrativa das linhas de atividade = `Galpão principal`;
+- origem compartilhada = `fixture:employees-k2`;
+- `2 biometrias pendentes` continua derivado da mesma amostra;
+- `Ver funcionários filtrados` navega para `03.01-funcionarios.html?biometric=missing&source=dashboard`.
 
-L1 auditou `screens/03.04-novo-funcionario-v2.html` + `assets/new-employee-v2.css` + `assets/new-employee-v2.js` sem alterá-los. L2 reconciliou os nove temas HIGH no Design Lab: stepper horizontal + `Ver etapas`, ContextDrawer sob demanda, StickyFormActions unificadas, affordances demonstrativas de `users:create`/`biometrics:manage`, `NEEDS_REVIEW`, ciclo `VISIBLE_ACTIVE/HIDDEN_RETAINED` separado de `activePayloadPreview`, estados persistentes `PERMISSION_ERROR/OFFLINE/CONFLICT/SAVE_ERROR/SUBMIT_OUTCOME_UNKNOWN`, FieldGroup/ErrorSummary source-level e seis EntityPickers locais demonstrativos. A implementação preserva as oito etapas, AppShell compartilhado e isolamento de produção.
+`Registros hoje` continua uma fixture separada de registros e não é apresentado como derivação da lista local de Funcionários.
 
-A primeira tentativa de L2 foi interrompida e deixou o roadmap substituído por `PLACEHOLDER` e o checkpoint 63 prematuramente marcado como concluído. A recuperação restaurou o roadmap byte-a-byte antes da implementação real, corrigiu o checkpoint e manteve o histórico sem force-push ou reescrita.
+### Funcionários
 
-L3 reauditorou o resultado de L2 e encontrou dois defeitos source-level objetivos: o estado `ERROR` existia no CSS do stepper, mas não era produzido pelo controlador, e o EntityPicker visual não herdava integralmente label/required/describedby/foco de erro do select-fonte. Ambos foram corrigidos por hardening localizado em `new-employee-v2.js` e `new-employee-v2.css`, sem novo redesign. O tile de `prototype/index.html` também foi sincronizado de I6 para L3. Com isso, a Fase L foi encerrada em base source-level.
+`screens/03.01-funcionarios.html` continua preservando os contratos fechados em K3. M2 altera somente `assets/employees-v1.js` para integração cruzada:
 
-A dívida transversal de `components.css`, a coerência cruzada entre telas e a validação completa de responsividade/acessibilidade permanecem diferidas para seus gates próprios.
+- query string explícita pode aplicar `q`, `biometric` e `function`;
+- handoff do Dashboard aplica `biometric=missing`;
+- busca e filtros são preservados em `sessionStorage` escopado ao contexto demonstrativo;
+- handoff explícito tem precedência sobre estado restaurado;
+- retorno do onboarding reutiliza o estado anterior da lista na mesma sessão;
+- `FILTER_NO_RESULTS` permanece diferente de `EMPTY_DATASET` e `ERROR`.
 
-Continuam diferidos:
+### Novo Funcionário
+
+A estrutura funcional do onboarding permanece a fechada em L3. M2 usa `assets/interactions.js` como pequeno substrato compartilhado do Design Lab para manter:
+
+- contexto visível `Potiguar Locações / Galpão principal`;
+- principal `Administrador Demo / Admin`;
+- conjunto demonstrativo padrão `users:view users:create biometrics:manage punch:view punch:create`;
+- `aria-label` do contexto coerente após montagem do AppShell;
+- nome visível `Novo Funcionário`, mantendo `V2` somente como detalhe técnico do arquivo;
+- breadcrumb sem o primeiro nível redundante `Gestão`;
+- painel de sucesso explícito: a demonstração não altera a lista de Funcionários.
+
+O seletor de perfil do ContextDrawer permanece uma simulação explícita de variante do fluxo; não representa mudança silenciosa do principal real.
+
+## Continuidade
 
 ```text
-LIVE_HEALTH_OPERATIONAL_UI=NO
-RUNTIME_RBAC_ENFORCEMENT=NO
-BACKEND_DRAFT_REVISION=NOT_IMPLEMENTED
-REAL_TRANSACTIONAL_IDEMPOTENT_SUBMIT=NOT_IMPLEMENTED
-REMOTE_ENTITY_PICKER=NOT_IMPLEMENTED
-REAL_CAMERA_OR_BIOMETRIC_STORAGE=NOT_IMPLEMENTED
+58_* J3
+↓
+61_* K3
+↓
+64_* L3
+↓
+65_* M1
+↓
+66_* M2
+```
+
+O `13_NF01_REMAINING_WORK_ROADMAP.md` ainda precisa ser sincronizado com M1/M2. Até essa correção documental, os checkpoints 65/66 e o corpo do PR representam a continuidade mais recente da Fase M.
+
+## Validação ainda diferida
+
+```text
 BROWSER_VISUAL_MATRIX_360_768_1024_1440=NO
 INTERMEDIATE_WIDTH_VISUAL_TEST=NO
 ZOOM_200_MANUAL_TEST=NO
@@ -119,4 +117,17 @@ AUTOMATED_A11Y_SCAN=NO
 NEW_DESIGN_UNIT_TESTS_EXECUTED=NO
 NEW_DESIGN_INTEGRATION_TESTS_EXECUTED=NO
 PRODUCTION_E2E_EXECUTED=NO
+```
+
+O workflow geral do repositório pode validar sintaxe e regressão existente, mas isso não substitui os testes específicos de aceitação do Design Lab previstos para a Fase N.
+
+## Guardrails
+
+```text
+DO_NOT_MERGE_WITHOUT_EXPLICIT_LEANDRO_APPROVAL
+DO_NOT_START_NF02
+DO_NOT_CHANGE_PRODUCTION_CODE
+DO_NOT_CHANGE_BACKEND
+DO_NOT_DEPLOY
+DO_NOT_DECLARE_LEGAL_COMPLIANCE
 ```
