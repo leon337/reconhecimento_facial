@@ -3,390 +3,226 @@ import AxeBuilder from '@axe-core/playwright';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-const BASE_URL = process.env.NF01_BASE_URL || 'http://127.0.0.1:4173';
-const OUTPUT_DIR = process.env.NF01_EVIDENCE_DIR || path.resolve('../../evidence/phase-n/automation-run');
-const SCREENSHOT_DIR = path.join(OUTPUT_DIR, 'screenshots');
+const BASE = process.env.NF01_BASE_URL || 'http://127.0.0.1:4173';
+const OUT = process.env.NF01_EVIDENCE_DIR || path.resolve('../../evidence/phase-n/automation-run');
+const SHOTS = path.join(OUT, 'screenshots');
 const results = [];
 
 const surfaces = [
-  { id: 'app-shell', label: 'AppShell', file: 'screens/01.01-app-shell.html' },
-  { id: 'dashboard', label: 'Dashboard', file: 'screens/02.01-dashboard.html' },
-  { id: 'employees', label: 'Funcionários', file: 'screens/03.01-funcionarios.html' },
-  { id: 'onboarding', label: 'Novo Funcionário', file: 'screens/03.04-novo-funcionario-v2.html' }
+  ['app-shell', 'AppShell', 'screens/01.01-app-shell.html'],
+  ['dashboard', 'Dashboard', 'screens/02.01-dashboard.html'],
+  ['employees', 'Funcionários', 'screens/03.01-funcionarios.html'],
+  ['onboarding', 'Novo Funcionário', 'screens/03.04-novo-funcionario-v2.html']
 ];
-const viewports = [360, 480, 768, 900, 1024, 1280, 1440];
-const canonicalWidths = new Set([360, 768, 1024, 1440]);
+const widths = [360, 480, 768, 900, 1024, 1280, 1440];
 
-const add = (entry) => results.push({
-  CASE_ID: entry.caseId,
-  PHASE: entry.phase,
-  SURFACE: entry.surface,
-  VIEWPORT_OR_CONTAINER: entry.viewport ?? 'N/A',
-  ZOOM: entry.zoom ?? '100%',
-  PROFILE: entry.profile ?? 'admin',
-  STATE: entry.state ?? 'READY',
-  PRECONDITION: entry.precondition ?? '',
-  ACTION: entry.action ?? '',
-  EXPECTED: entry.expected ?? '',
-  ACTUAL: entry.actual ?? '',
-  RESULT: entry.result,
-  SEVERITY_IF_FAIL: entry.severity ?? 'MEDIUM',
-  EVIDENCE_REF: entry.evidence ?? '',
-  FOLLOW_UP_REF: entry.followUp ?? ''
-});
+function record({ id, phase, surface, viewport = 'N/A', zoom = '100%', profile = 'admin', state = 'READY', action = '', expected = '', actual = '', result, severity = 'MEDIUM', evidence = '' }) {
+  results.push({ CASE_ID: id, PHASE: phase, SURFACE: surface, VIEWPORT_OR_CONTAINER: viewport, ZOOM: zoom, PROFILE: profile, STATE: state, PRECONDITION: '', ACTION: action, EXPECTED: expected, ACTUAL: actual, RESULT: result, SEVERITY_IF_FAIL: severity, EVIDENCE_REF: evidence, FOLLOW_UP_REF: '' });
+}
 
-const isVisible = async (locator) => {
-  try { return await locator.isVisible(); } catch { return false; }
-};
+async function visible(locator) { try { return await locator.isVisible(); } catch { return false; } }
+async function shot(page, name) { const rel = `screenshots/${name}`; await page.screenshot({ path: path.join(SHOTS, name), fullPage: true }); return rel; }
 
-async function layoutSnapshot(page) {
+async function layout(page) {
   return page.evaluate(() => {
     const root = document.documentElement;
     const body = document.body;
     const scrollWidth = Math.max(root.scrollWidth, body?.scrollWidth || 0);
-    const viewport = window.innerWidth;
-    const globalOverflow = scrollWidth > viewport + 2;
-    const offenders = [...document.querySelectorAll('body *')]
-      .filter((el) => {
-        const style = getComputedStyle(el);
-        if (style.display === 'none' || style.visibility === 'hidden') return false;
-        if (el.closest('[hidden]')) return false;
-        const rect = el.getBoundingClientRect();
-        if (rect.width <= 0 || rect.height <= 0) return false;
-        return rect.right > viewport + 8 && !['auto', 'scroll'].includes(style.overflowX);
-      })
-      .slice(0, 8)
-      .map((el) => ({
-        tag: el.tagName.toLowerCase(),
-        className: typeof el.className === 'string' ? el.className.slice(0, 120) : '',
-        right: Math.round(el.getBoundingClientRect().right),
-        width: Math.round(el.getBoundingClientRect().width)
-      }));
-    return { viewport, scrollWidth, globalOverflow, offenders };
+    const viewport = innerWidth;
+    return { viewport, scrollWidth, globalOverflow: scrollWidth > viewport + 2, bodyTextLength: (body?.innerText || '').trim().length, mainCount: document.querySelectorAll('main').length, shellCount: document.querySelectorAll('[data-app-shell-root]').length };
   });
 }
 
-async function screenshot(page, fileName) {
-  const rel = `screenshots/${fileName}`;
-  await page.screenshot({ path: path.join(SCREENSHOT_DIR, fileName), fullPage: true });
-  return rel;
-}
-
-async function tabUntil(page, selector, maxTabs = 80) {
-  for (let i = 0; i < maxTabs; i += 1) {
-    const matched = await page.evaluate((sel) => document.activeElement?.matches?.(sel) || false, selector);
-    if (matched) return true;
+async function tabUntil(page, selector, max = 100) {
+  for (let i = 0; i < max; i += 1) {
+    if (await page.evaluate((s) => document.activeElement?.matches?.(s) || false, selector)) return true;
     await page.keyboard.press('Tab');
   }
-  return page.evaluate((sel) => document.activeElement?.matches?.(sel) || false, selector);
+  return false;
 }
 
-async function n2Visual(browser) {
-  for (const surface of surfaces) {
-    for (const width of viewports) {
-      const context = await browser.newContext({ viewport: { width, height: width <= 480 ? 820 : 900 }, deviceScaleFactor: 1 });
+async function n2(browser) {
+  for (const [id, label, file] of surfaces) {
+    for (const width of widths) {
+      const context = await browser.newContext({ viewport: { width, height: width <= 480 ? 820 : 900 } });
       const page = await context.newPage();
-      await page.goto(`${BASE_URL}/${surface.file}`, { waitUntil: 'domcontentloaded' });
+      await page.goto(`${BASE}/${file}`, { waitUntil: 'domcontentloaded' });
       await page.waitForTimeout(250);
-      const layout = await layoutSnapshot(page);
-      const evidence = await screenshot(page, `N2-${surface.id}-${width}.png`);
-      add({
-        caseId: `N2-${surface.id.toUpperCase()}-${width}-GLOBAL_REFLOW`,
-        phase: 'N2', surface: surface.label, viewport: width,
-        action: 'Renderizar superfície no viewport e medir overflow global.',
-        expected: 'Sem overflow horizontal global indevido.',
-        actual: JSON.stringify(layout),
-        result: layout.globalOverflow ? 'FAIL' : 'PASS',
-        severity: layout.globalOverflow ? 'BLOCKER' : 'MEDIUM',
-        evidence
-      });
-
-      if (surface.id === 'onboarding' && width === 360) {
-        const currentVisible = await isVisible(page.locator('[data-mobile-current]'));
-        const stepsVisible = await isVisible(page.locator('[data-toggle-step-list]'));
-        add({
-          caseId: 'N2-ONBOARDING-360-MOBILE_STEPPER', phase: 'N2', surface: surface.label, viewport: width,
-          action: 'Inspecionar stepper mobile.',
-          expected: 'Etapa X de 8 e Ver etapas visíveis.',
-          actual: `mobileCurrent=${currentVisible}; toggleStepList=${stepsVisible}`,
-          result: currentVisible && stepsVisible ? 'PASS' : 'FAIL', severity: 'HIGH', evidence
-        });
+      const state = await layout(page);
+      const evidence = await shot(page, `N2-${id}-${width}.png`);
+      const blank = id !== 'app-shell' && state.bodyTextLength < 80;
+      record({ id: `N2-${id.toUpperCase()}-${width}-REFLOW`, phase: 'N2', surface: label, viewport: width, action: 'Renderizar viewport e medir reflow/overflow.', expected: 'Conteúdo renderizado, um main e sem overflow global indevido.', actual: JSON.stringify(state), result: !state.globalOverflow && !blank && state.mainCount === 1 ? 'PASS' : 'FAIL', severity: blank || state.mainCount !== 1 ? 'BLOCKER' : 'HIGH', evidence });
+      if (id === 'onboarding' && width === 360) {
+        const a = await visible(page.locator('[data-mobile-current]'));
+        const b = await visible(page.locator('[data-toggle-step-list]'));
+        record({ id: 'N2-ONBOARDING-360-MOBILE_STEPPER', phase: 'N2', surface: label, viewport: width, action: 'Inspecionar stepper mobile.', expected: 'Etapa X de 8 e Ver etapas visíveis.', actual: `current=${a}; toggle=${b}`, result: a && b ? 'PASS' : 'FAIL', severity: 'HIGH', evidence });
       }
       await context.close();
     }
   }
 
-  // Equivalente automatizado de reflow a 200%: viewport CSS reduzido à metade com rasterização 2x.
-  for (const surface of surfaces) {
+  for (const [id, label, file] of surfaces) {
     const context = await browser.newContext({ viewport: { width: 720, height: 900 }, deviceScaleFactor: 2 });
     const page = await context.newPage();
-    await page.goto(`${BASE_URL}/${surface.file}`, { waitUntil: 'domcontentloaded' });
-    await page.waitForTimeout(250);
-    const layout = await layoutSnapshot(page);
-    const evidence = await screenshot(page, `N2-${surface.id}-zoom200-equivalent.png`);
-    add({
-      caseId: `N2-${surface.id.toUpperCase()}-ZOOM200_EQUIVALENT_REFLOW`, phase: 'N2', surface: surface.label,
-      viewport: '1440 physical / 720 CSS', zoom: '200%-equivalent',
-      action: 'Inspecionar reflow equivalente a 200% em Chromium headless.',
-      expected: 'Sem overflow horizontal global impeditivo.',
-      actual: JSON.stringify(layout),
-      result: layout.globalOverflow ? 'FAIL' : 'PASS', severity: layout.globalOverflow ? 'BLOCKER' : 'MEDIUM', evidence
-    });
-  }
-
-  add({
-    caseId: 'N2-MANUAL_BROWSER_ZOOM_200', phase: 'N2', surface: 'Todas', zoom: '200%',
-    action: 'Teste manual do controle de zoom da UI do navegador.',
-    expected: 'Executar zoom real do navegador a 200% e validar reflow.',
-    actual: 'Runner headless não expõe UI de navegador para operação manual; equivalente de reflow foi capturado separadamente.',
-    result: 'BLOCKED_TOOLING', severity: 'HIGH', evidence: 'N2-*-zoom200-equivalent.png'
-  });
-
-  // Handoff cross-screen e restauração de estado.
-  {
-    const context = await browser.newContext({ viewport: { width: 1024, height: 900 } });
-    const page = await context.newPage();
-    await page.goto(`${BASE_URL}/screens/02.01-dashboard.html`, { waitUntil: 'domcontentloaded' });
-    const handoff = page.locator('[data-cross-screen-handoff="biometric-missing"]');
-    const exists = await handoff.count() === 1;
-    if (exists) await handoff.click();
+    await page.goto(`${BASE}/${file}`, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(200);
-    const value = await page.locator('[data-biometric-filter]').inputValue().catch(() => '');
-    const visibleRows = await page.locator('[data-employee-row]:visible').count();
-    add({
-      caseId: 'N2-CROSSSCREEN-DASHBOARD_EMPLOYEES_HANDOFF', phase: 'N2', surface: 'Dashboard → Funcionários', viewport: 1024,
-      action: 'Ativar CTA de biometrias pendentes.',
-      expected: 'Abrir Funcionários com biometric=missing e 2 fixtures visíveis.',
-      actual: `url=${page.url()}; biometric=${value}; visibleRows=${visibleRows}`,
-      result: exists && value === 'missing' && visibleRows === 2 ? 'PASS' : 'FAIL', severity: 'BLOCKER',
-      evidence: await screenshot(page, 'N2-crossscreen-dashboard-employees.png')
-    });
-
-    const search = page.locator('[data-employee-search]');
-    await search.fill('João');
-    await page.locator('[data-new-employee-link]').click();
-    await page.waitForTimeout(150);
-    await page.goBack({ waitUntil: 'domcontentloaded' });
-    await page.waitForTimeout(200);
-    const restored = await page.locator('[data-employee-search]').inputValue().catch(() => '');
-    add({
-      caseId: 'N2-CROSSSCREEN-EMPLOYEE_LIST_STATE_RESTORE', phase: 'N2', surface: 'Funcionários ↔ Novo Funcionário', viewport: 1024,
-      action: 'Pesquisar João, entrar no onboarding e voltar.',
-      expected: 'Busca anterior restaurada na mesma sessão.',
-      actual: `search=${restored}`,
-      result: restored === 'João' ? 'PASS' : 'FAIL', severity: 'HIGH',
-      evidence: await screenshot(page, 'N2-crossscreen-list-state-restore.png')
-    });
+    const state = await layout(page);
+    const evidence = await shot(page, `N2-${id}-zoom200-equivalent.png`);
+    record({ id: `N2-${id.toUpperCase()}-ZOOM200_EQUIVALENT`, phase: 'N2', surface: label, viewport: '1440 physical / 720 CSS', zoom: '200%-equivalent', action: 'Capturar reflow equivalente a 200%.', expected: 'Conteúdo utilizável sem overflow global impeditivo.', actual: JSON.stringify(state), result: !state.globalOverflow && state.bodyTextLength >= 80 ? 'PASS' : 'FAIL', severity: 'HIGH', evidence });
     await context.close();
   }
+  record({ id: 'N2-MANUAL_BROWSER_ZOOM_200', phase: 'N2', surface: 'Todas', zoom: '200%', action: 'Operar controle real de zoom do navegador.', expected: 'Zoom real 200% validado manualmente.', actual: 'Chromium headless não expõe UI de navegador; evidência equivalente 720 CSS @2x foi gerada.', result: 'BLOCKED_TOOLING', severity: 'HIGH', evidence: 'N2-*-zoom200-equivalent.png' });
+
+  const context = await browser.newContext({ viewport: { width: 1024, height: 900 } });
+  const page = await context.newPage();
+  await page.goto(`${BASE}/screens/02.01-dashboard.html`, { waitUntil: 'domcontentloaded' });
+  const handoff = page.locator('[data-cross-screen-handoff="biometric-missing"]');
+  const exists = (await handoff.count()) === 1;
+  if (exists) await Promise.all([page.waitForURL(/03\.01-funcionarios\.html/).catch(() => null), handoff.click()]);
+  await page.waitForTimeout(200);
+  const onEmployees = page.url().includes('03.01-funcionarios.html');
+  const value = onEmployees ? await page.locator('[data-biometric-filter]').inputValue().catch(() => '') : '';
+  const visibleRows = onEmployees ? await page.locator('[data-employee-row]:visible').count() : 0;
+  const evidence = await shot(page, 'N2-crossscreen-dashboard-employees.png');
+  const handoffPass = exists && onEmployees && value === 'missing' && visibleRows === 2;
+  record({ id: 'N2-CROSSSCREEN-DASHBOARD_EMPLOYEES_HANDOFF', phase: 'N2', surface: 'Dashboard → Funcionários', viewport: 1024, action: 'Ativar biometrias pendentes.', expected: 'Abrir Funcionários com biometric=missing e 2 resultados.', actual: `exists=${exists}; url=${page.url()}; biometric=${value}; rows=${visibleRows}`, result: handoffPass ? 'PASS' : 'FAIL', severity: 'BLOCKER', evidence });
+
+  if (onEmployees) {
+    await page.locator('[data-employee-search]').fill('João');
+    const newLink = page.locator('[data-new-employee-link]');
+    if (await visible(newLink)) {
+      await Promise.all([page.waitForURL(/03\.04-novo-funcionario-v2\.html/).catch(() => null), newLink.click()]);
+      await page.goBack({ waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(150);
+      const restored = await page.locator('[data-employee-search]').inputValue().catch(() => '');
+      record({ id: 'N2-CROSSSCREEN-LIST_STATE_RESTORE', phase: 'N2', surface: 'Funcionários ↔ Novo Funcionário', viewport: 1024, action: 'Pesquisar João, entrar no onboarding e voltar.', expected: 'Busca João restaurada.', actual: `search=${restored}`, result: restored === 'João' ? 'PASS' : 'FAIL', severity: 'HIGH', evidence: await shot(page, 'N2-crossscreen-list-state-restore.png') });
+    } else {
+      record({ id: 'N2-CROSSSCREEN-LIST_STATE_RESTORE', phase: 'N2', surface: 'Funcionários ↔ Novo Funcionário', viewport: 1024, action: 'Entrar no onboarding e voltar.', expected: 'CTA permitido disponível.', actual: 'CTA não visível.', result: 'FAIL', severity: 'HIGH' });
+    }
+  } else {
+    record({ id: 'N2-CROSSSCREEN-LIST_STATE_RESTORE', phase: 'N2', surface: 'Funcionários ↔ Novo Funcionário', viewport: 1024, action: 'Entrar no onboarding e voltar.', expected: 'Pré-condição: handoff chega à lista.', actual: 'Pré-condição falhou.', result: 'BLOCKED_TOOLING', severity: 'HIGH' });
+  }
+  await context.close();
 }
 
-async function loadEmployeesRole(browser, role, permissions) {
+async function employeeVariant(browser, role, permissions, state = 'ready') {
   const context = await browser.newContext({ viewport: { width: 1024, height: 900 } });
   const page = await context.newPage();
   await page.route('**/screens/03.01-funcionarios.html*', async (route) => {
-    const response = await route.fetch();
-    let body = await response.text();
-    body = body
-      .replace(/data-employee-demo-role="[^"]*"/, `data-employee-demo-role="${role}"`)
-      .replace(/data-employee-demo-permissions="[^"]*"/, `data-employee-demo-permissions="${permissions.join(' ')}"`);
-    await route.fulfill({ response, body });
+    const res = await route.fetch();
+    let html = await res.text();
+    html = html.replace(/data-employee-demo-role="[^"]*"/, `data-employee-demo-role="${role}"`)
+      .replace(/data-employee-demo-permissions="[^"]*"/, `data-employee-demo-permissions="${permissions.join(' ')}"`)
+      .replace(/data-employee-demo-state="[^"]*"/, `data-employee-demo-state="${state}"`);
+    await route.fulfill({ response: res, body: html });
   });
-  await page.goto(`${BASE_URL}/screens/03.01-funcionarios.html`, { waitUntil: 'domcontentloaded' });
-  await page.waitForTimeout(200);
+  await page.goto(`${BASE}/screens/03.01-funcionarios.html`, { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(150);
   return { context, page };
 }
 
-async function n3Accessibility(browser) {
-  // Axe automático em desktop e mobile nas quatro superfícies.
-  for (const surface of surfaces) {
+async function n3(browser) {
+  for (const [id, label, file] of surfaces) {
     for (const width of [360, 1440]) {
       const context = await browser.newContext({ viewport: { width, height: 900 } });
       const page = await context.newPage();
-      await page.goto(`${BASE_URL}/${surface.file}`, { waitUntil: 'domcontentloaded' });
-      await page.waitForTimeout(250);
-      let analysis;
+      await page.goto(`${BASE}/${file}`, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(200);
       try {
-        analysis = await new AxeBuilder({ page }).analyze();
-        const criticalSerious = analysis.violations.filter((v) => ['critical', 'serious'].includes(v.impact));
-        add({
-          caseId: `N3-${surface.id.toUpperCase()}-${width}-AXE`, phase: 'N3', surface: surface.label, viewport: width,
-          action: 'Executar axe-core.', expected: '0 violações critical/serious.',
-          actual: JSON.stringify(criticalSerious.map((v) => ({ id: v.id, impact: v.impact, nodes: v.nodes.length }))),
-          result: criticalSerious.length === 0 ? 'PASS' : 'FAIL', severity: criticalSerious.length ? 'HIGH' : 'MEDIUM',
-          evidence: await screenshot(page, `N3-${surface.id}-${width}-axe.png`)
-        });
+        const scan = await new AxeBuilder({ page }).analyze();
+        const severe = scan.violations.filter((v) => ['critical', 'serious'].includes(v.impact));
+        record({ id: `N3-${id.toUpperCase()}-${width}-AXE`, phase: 'N3', surface: label, viewport: width, action: 'Executar axe-core.', expected: '0 critical/serious.', actual: JSON.stringify(severe.map((v) => ({ id: v.id, impact: v.impact, nodes: v.nodes.length }))), result: severe.length ? 'FAIL' : 'PASS', severity: 'HIGH', evidence: await shot(page, `N3-${id}-${width}-axe.png`) });
       } catch (error) {
-        add({
-          caseId: `N3-${surface.id.toUpperCase()}-${width}-AXE`, phase: 'N3', surface: surface.label, viewport: width,
-          action: 'Executar axe-core.', expected: 'Scan executável.', actual: String(error),
-          result: 'BLOCKED_TOOLING', severity: 'HIGH'
-        });
+        record({ id: `N3-${id.toUpperCase()}-${width}-AXE`, phase: 'N3', surface: label, viewport: width, action: 'Executar axe-core.', expected: 'Scan executável.', actual: String(error), result: 'BLOCKED_TOOLING', severity: 'HIGH' });
       }
       await context.close();
     }
   }
 
-  // Jornada crítica somente teclado.
   {
     const context = await browser.newContext({ viewport: { width: 1024, height: 900 } });
     const page = await context.newPage();
-    await page.goto(`${BASE_URL}/screens/03.04-novo-funcionario-v2.html`, { waitUntil: 'domcontentloaded' });
+    await page.goto(`${BASE}/screens/03.04-novo-funcionario-v2.html`, { waitUntil: 'domcontentloaded' });
     await page.evaluate(() => localStorage.clear());
     await page.reload({ waitUntil: 'domcontentloaded' });
     const reachedSteps = await tabUntil(page, '[data-toggle-step-list]');
     if (reachedSteps) await page.keyboard.press('Enter');
     const stepsExpanded = await page.locator('[data-toggle-step-list]').getAttribute('aria-expanded').catch(() => 'false');
-    const reachedContext = await tabUntil(page, '[data-open-context]');
-    if (reachedContext) await page.keyboard.press('Enter');
+    const reachedDrawer = await tabUntil(page, '[data-open-context]');
+    if (reachedDrawer) await page.keyboard.press('Enter');
     const drawerExpanded = await page.locator('[data-open-context]').getAttribute('aria-expanded').catch(() => 'false');
     if (drawerExpanded === 'true') await page.keyboard.press('Escape');
-    const drawerClosed = await page.locator('[data-open-context]').getAttribute('aria-expanded').catch(() => 'true');
-    add({
-      caseId: 'N3-ONBOARDING-KEYBOARD-STEPPER_DRAWER', phase: 'N3', surface: 'Novo Funcionário', viewport: 1024,
-      action: 'Tab/Enter em Ver etapas e ContextDrawer; Escape para fechar.',
-      expected: 'Controles alcançáveis sem mouse; drawer retorna a fechado.',
-      actual: `reachedSteps=${reachedSteps}; stepsExpanded=${stepsExpanded}; reachedContext=${reachedContext}; drawerExpanded=${drawerExpanded}; drawerAfterEsc=${drawerClosed}`,
-      result: reachedSteps && stepsExpanded === 'true' && reachedContext && drawerExpanded === 'true' && drawerClosed === 'false' ? 'PASS' : 'FAIL',
-      severity: 'BLOCKER', evidence: await screenshot(page, 'N3-onboarding-keyboard-stepper-drawer.png')
-    });
-
-    const firstPicker = page.locator('[role="combobox"]').first();
+    const drawerAfterEsc = await page.locator('[data-open-context]').getAttribute('aria-expanded').catch(() => 'true');
+    record({ id: 'N3-ONBOARDING-KEYBOARD-STEPPER_DRAWER', phase: 'N3', surface: 'Novo Funcionário', viewport: 1024, action: 'Tab/Enter/Escape em step list e drawer.', expected: 'Tudo operável sem mouse e drawer fecha com Escape.', actual: `steps=${reachedSteps}/${stepsExpanded}; drawer=${reachedDrawer}/${drawerExpanded}/${drawerAfterEsc}`, result: reachedSteps && stepsExpanded === 'true' && reachedDrawer && drawerExpanded === 'true' && drawerAfterEsc === 'false' ? 'PASS' : 'FAIL', severity: 'BLOCKER', evidence: await shot(page, 'N3-onboarding-keyboard.png') });
     const pickerCount = await page.locator('[role="combobox"]').count();
-    let pickerKeyboard = false;
+    let focused = false;
     if (pickerCount) {
-      await firstPicker.focus();
-      await firstPicker.press('ArrowDown').catch(() => {});
-      await firstPicker.press('Escape').catch(() => {});
-      pickerKeyboard = await firstPicker.evaluate((el) => document.activeElement === el);
+      const picker = page.locator('[role="combobox"]').first();
+      await picker.focus();
+      await picker.press('ArrowDown').catch(() => {});
+      await picker.press('Escape').catch(() => {});
+      focused = await picker.evaluate((el) => document.activeElement === el);
     }
-    add({
-      caseId: 'N3-ONBOARDING-ENTITY_PICKER-KEYBOARD', phase: 'N3', surface: 'Novo Funcionário', viewport: 1024,
-      action: 'Focar combobox e operar ArrowDown/Escape.',
-      expected: 'EntityPicker possui combobox alcançável e permanece operável por teclado.',
-      actual: `comboboxCount=${pickerCount}; focusPreserved=${pickerKeyboard}`,
-      result: pickerCount >= 6 && pickerKeyboard ? 'PASS' : 'FAIL', severity: 'HIGH'
-    });
+    record({ id: 'N3-ONBOARDING-ENTITY_PICKER-KEYBOARD', phase: 'N3', surface: 'Novo Funcionário', viewport: 1024, action: 'ArrowDown/Escape no combobox.', expected: '6 comboboxes locais e foco preservado.', actual: `count=${pickerCount}; focused=${focused}`, result: pickerCount >= 6 && focused ? 'PASS' : 'FAIL', severity: 'HIGH' });
+    let aria = '';
+    try { aria = await page.locator('body').ariaSnapshot(); } catch (e) { aria = `ERROR ${e}`; }
+    await fs.writeFile(path.join(OUT, 'onboarding-aria-snapshot.txt'), aria, 'utf8');
+    record({ id: 'N3-ONBOARDING-ARIA-SNAPSHOT', phase: 'N3', surface: 'Novo Funcionário', viewport: 1024, action: 'Capturar árvore ARIA.', expected: 'Snapshot disponível.', actual: aria ? 'captured' : 'empty', result: aria ? 'PASS' : 'FAIL', severity: 'HIGH', evidence: 'onboarding-aria-snapshot.txt' });
     await context.close();
   }
 
-  // Matriz RBAC visual na lista de Funcionários.
-  const profiles = {
+  const roles = {
     super_admin: ['users:view', 'users:create', 'biometrics:manage', 'punch:view', 'punch:create'],
     admin: ['users:view', 'users:create', 'biometrics:manage', 'punch:view', 'punch:create'],
     manager: ['users:view', 'users:create', 'punch:view'],
     auditor: ['users:view', 'punch:view'],
     operator: ['punch:create']
   };
-  for (const [role, permissions] of Object.entries(profiles)) {
-    const { context, page } = await loadEmployeesRole(browser, role, permissions);
+  for (const [role, permissions] of Object.entries(roles)) {
+    const { context, page } = await employeeVariant(browser, role, permissions);
     const canView = permissions.includes('users:view');
     const canCreate = permissions.includes('users:create');
     const canBio = permissions.includes('biometrics:manage');
-    const readyVisible = await isVisible(page.locator('[data-employee-ready-content]'));
-    const noPermissionVisible = await isVisible(page.locator('[data-employee-state-panel="no_permission"]'));
-    const createVisible = await isVisible(page.locator('[data-new-employee-link]'));
-    const bioVisibleCount = await page.locator('[data-employee-mutation]:visible').count();
-    const pass = (canView ? readyVisible : noPermissionVisible)
-      && createVisible === canCreate
-      && (canBio ? bioVisibleCount > 0 : bioVisibleCount === 0);
-    add({
-      caseId: `N3-RBAC-EMPLOYEES-${role.toUpperCase()}`, phase: 'N3', surface: 'Funcionários', viewport: 1024, profile: role,
-      action: 'Renderizar variante de permissões no Design Lab.',
-      expected: `view=${canView}; create=${canCreate}; biometrics=${canBio}`,
-      actual: `ready=${readyVisible}; noPermission=${noPermissionVisible}; create=${createVisible}; bioActions=${bioVisibleCount}`,
-      result: pass ? 'PASS' : 'FAIL', severity: 'BLOCKER',
-      evidence: await screenshot(page, `N3-rbac-employees-${role}.png`)
-    });
+    const ready = await visible(page.locator('[data-employee-ready-content]'));
+    const denied = await visible(page.locator('[data-employee-state-panel="no_permission"]'));
+    const create = await visible(page.locator('[data-new-employee-link]'));
+    const bio = await page.locator('[data-employee-mutation]:visible').count();
+    const pass = (canView ? ready : denied) && create === canCreate && (canBio ? bio > 0 : bio === 0);
+    record({ id: `N3-RBAC-${role.toUpperCase()}`, phase: 'N3', surface: 'Funcionários', viewport: 1024, profile: role, action: 'Renderizar variante RBAC.', expected: `view=${canView}; create=${canCreate}; biometrics=${canBio}`, actual: `ready=${ready}; denied=${denied}; create=${create}; bio=${bio}`, result: pass ? 'PASS' : 'FAIL', severity: 'BLOCKER', evidence: await shot(page, `N3-rbac-${role}.png`) });
     await context.close();
   }
 
-  // Estados persistentes de Funcionários via contrato de estado demonstrativo.
   for (const state of ['loading', 'empty', 'error', 'offline', 'no_permission']) {
-    const context = await browser.newContext({ viewport: { width: 1024, height: 900 } });
-    const page = await context.newPage();
-    await page.route('**/screens/03.01-funcionarios.html*', async (route) => {
-      const response = await route.fetch();
-      let body = await response.text();
-      body = body.replace(/data-employee-demo-state="[^"]*"/, `data-employee-demo-state="${state}"`);
-      await route.fulfill({ response, body });
-    });
-    await page.goto(`${BASE_URL}/screens/03.01-funcionarios.html`, { waitUntil: 'domcontentloaded' });
-    await page.waitForTimeout(150);
-    const visible = await isVisible(page.locator(`[data-employee-state-panel="${state}"]`));
-    add({
-      caseId: `N3-EMPLOYEES-STATE-${state.toUpperCase()}`, phase: 'N3', surface: 'Funcionários', viewport: 1024, state: state.toUpperCase(),
-      action: `Ativar estado demonstrativo ${state}.`, expected: 'Painel persistente correspondente visível.',
-      actual: `visible=${visible}`, result: visible ? 'PASS' : 'FAIL', severity: 'HIGH',
-      evidence: await screenshot(page, `N3-employees-state-${state}.png`)
-    });
+    const permissions = state === 'no_permission' ? [] : ['users:view'];
+    const { context, page } = await employeeVariant(browser, 'auditor', permissions, state);
+    const shown = await visible(page.locator(`[data-employee-state-panel="${state}"]`));
+    record({ id: `N3-EMPLOYEES-STATE-${state.toUpperCase()}`, phase: 'N3', surface: 'Funcionários', viewport: 1024, state: state.toUpperCase(), action: `Ativar ${state}.`, expected: 'Painel persistente correspondente visível.', actual: `visible=${shown}`, result: shown ? 'PASS' : 'FAIL', severity: 'HIGH', evidence: await shot(page, `N3-state-${state}.png`) });
     await context.close();
   }
 
-  // Accessibility-tree semantic snapshot como evidência suplementar.
-  {
-    const context = await browser.newContext({ viewport: { width: 1024, height: 900 } });
-    const page = await context.newPage();
-    await page.goto(`${BASE_URL}/screens/03.04-novo-funcionario-v2.html`, { waitUntil: 'domcontentloaded' });
-    let aria = '';
-    try { aria = await page.locator('body').ariaSnapshot(); } catch (error) { aria = `ARIA_SNAPSHOT_ERROR: ${error}`; }
-    await fs.writeFile(path.join(OUTPUT_DIR, 'onboarding-aria-snapshot.txt'), aria, 'utf8');
-    add({
-      caseId: 'N3-ONBOARDING-ARIA-TREE-SNAPSHOT', phase: 'N3', surface: 'Novo Funcionário', viewport: 1024,
-      action: 'Capturar árvore semântica ARIA do Chromium.',
-      expected: 'Snapshot disponível como evidência suplementar.',
-      actual: aria ? 'snapshot captured' : 'empty snapshot', result: aria ? 'PASS' : 'FAIL', severity: 'HIGH',
-      evidence: 'onboarding-aria-snapshot.txt'
-    });
-    await context.close();
-  }
-
-  add({
-    caseId: 'N3-MANUAL-SCREEN-READER-CRITICAL-JOURNEY', phase: 'N3', surface: 'Jornada crítica', viewport: 'N/A',
-    action: 'Executar jornada com screen reader real (NVDA/JAWS/VoiceOver/Orca).',
-    expected: 'Jornada crítica compreensível e operável pelo leitor de tela.',
-    actual: 'GitHub Actions/Chromium headless fornece árvore de acessibilidade, mas não uma sessão manual de screen reader real.',
-    result: 'BLOCKED_TOOLING', severity: 'HIGH', evidence: 'onboarding-aria-snapshot.txt'
-  });
+  record({ id: 'N3-MANUAL-SCREEN-READER-CRITICAL-JOURNEY', phase: 'N3', surface: 'Jornada crítica', action: 'Executar jornada com screen reader real.', expected: 'Operação compreensível e navegável por screen reader.', actual: 'CI headless fornece axe + árvore ARIA, mas não sessão manual NVDA/JAWS/VoiceOver/Orca.', result: 'BLOCKED_TOOLING', severity: 'HIGH', evidence: 'onboarding-aria-snapshot.txt' });
 }
 
 async function main() {
-  await fs.rm(OUTPUT_DIR, { recursive: true, force: true });
-  await fs.mkdir(SCREENSHOT_DIR, { recursive: true });
+  await fs.rm(OUT, { recursive: true, force: true });
+  await fs.mkdir(SHOTS, { recursive: true });
   const browser = await chromium.launch({ headless: true });
-  try {
-    await n2Visual(browser);
-    await n3Accessibility(browser);
-  } finally {
-    await browser.close();
+  try { await n2(browser); await n3(browser); } finally { await browser.close(); }
+  const summary = { PASS: 0, FAIL: 0, BLOCKED_TOOLING: 0, NOT_APPLICABLE: 0, failures: [], blocked: [] };
+  for (const item of results) {
+    summary[item.RESULT] = (summary[item.RESULT] || 0) + 1;
+    if (item.RESULT === 'FAIL') summary.failures.push({ caseId: item.CASE_ID, severity: item.SEVERITY_IF_FAIL, actual: item.ACTUAL });
+    if (item.RESULT === 'BLOCKED_TOOLING') summary.blocked.push({ caseId: item.CASE_ID, severity: item.SEVERITY_IF_FAIL });
   }
-
-  const summary = results.reduce((acc, item) => {
-    acc[item.RESULT] = (acc[item.RESULT] || 0) + 1;
-    if (item.RESULT === 'FAIL') acc.failures.push({ caseId: item.CASE_ID, severity: item.SEVERITY_IF_FAIL, actual: item.ACTUAL });
-    if (item.RESULT === 'BLOCKED_TOOLING') acc.blocked.push({ caseId: item.CASE_ID, severity: item.SEVERITY_IF_FAIL });
-    return acc;
-  }, { PASS: 0, FAIL: 0, BLOCKED_TOOLING: 0, NOT_APPLICABLE: 0, failures: [], blocked: [] });
-
-  await fs.writeFile(path.join(OUTPUT_DIR, 'results.json'), JSON.stringify({ generatedAt: new Date().toISOString(), baseUrl: BASE_URL, summary, results }, null, 2));
-  await fs.writeFile(path.join(OUTPUT_DIR, 'summary.txt'), [
-    `PASS=${summary.PASS}`,
-    `FAIL=${summary.FAIL}`,
-    `BLOCKED_TOOLING=${summary.BLOCKED_TOOLING}`,
-    `NOT_APPLICABLE=${summary.NOT_APPLICABLE}`,
-    ...summary.failures.map((f) => `FAIL ${f.severity} ${f.caseId} ${f.actual}`),
-    ...summary.blocked.map((b) => `BLOCKED ${b.severity} ${b.caseId}`)
-  ].join('\n'));
-
+  await fs.writeFile(path.join(OUT, 'results.json'), JSON.stringify({ generatedAt: new Date().toISOString(), summary, results }, null, 2));
+  await fs.writeFile(path.join(OUT, 'summary.txt'), [`PASS=${summary.PASS}`, `FAIL=${summary.FAIL}`, `BLOCKED_TOOLING=${summary.BLOCKED_TOOLING}`, ...summary.failures.map((x) => `FAIL ${x.severity} ${x.caseId} ${x.actual}`), ...summary.blocked.map((x) => `BLOCKED ${x.severity} ${x.caseId}`)].join('\n'));
   console.log(JSON.stringify(summary, null, 2));
-  if (summary.FAIL > 0) process.exitCode = 1;
+  if (summary.FAIL) process.exitCode = 1;
 }
 
 main().catch(async (error) => {
   console.error(error);
-  try {
-    await fs.mkdir(OUTPUT_DIR, { recursive: true });
-    await fs.writeFile(path.join(OUTPUT_DIR, 'runner-error.txt'), String(error?.stack || error));
-  } catch (_) {}
+  await fs.mkdir(OUT, { recursive: true }).catch(() => {});
+  await fs.writeFile(path.join(OUT, 'runner-error.txt'), String(error?.stack || error)).catch(() => {});
   process.exitCode = 2;
 });
