@@ -31,6 +31,9 @@
     document.querySelectorAll('[data-app-shell-profile-role]').forEach((node) => {
       node.textContent = crossScreenSession.profileRole;
     });
+    document.querySelectorAll('[data-app-shell-context]').forEach((node) => {
+      node.setAttribute('aria-label', `Contexto atual: ${crossScreenSession.contextTitle}, ${crossScreenSession.contextSubtitle}. Demonstração; não altera dados do formulário.`);
+    });
 
     const onboarding = document.querySelector('[data-onboarding-v2]');
     if (!onboarding) return;
