@@ -8,7 +8,7 @@
     if (document.querySelector('[data-design-lab-hidden-contract]')) return;
     const style = document.createElement('style');
     style.dataset.designLabHiddenContract = 'true';
-    style.textContent = '[hidden] { display: none !important; }';
+    style.textContent = '[hidden] { display: none !important; } .employee-account { color: var(--text-secondary) !important; }';
     document.head.append(style);
   };
 
