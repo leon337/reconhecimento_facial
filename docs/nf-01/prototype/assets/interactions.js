@@ -1,7 +1,68 @@
 (() => {
+  const body = document.body;
   const toast = document.querySelector('[data-toast]');
   const dateTargets = document.querySelectorAll('[data-current-date]');
   let toastTimer;
+
+  const crossScreenSession = {
+    contextTitle: 'Potiguar Locações',
+    contextSubtitle: 'Galpão principal · contexto demonstrativo',
+    profileName: 'Administrador Demo',
+    profileRole: 'Admin · perfil fictício',
+    permissions: 'users:view users:create biometrics:manage punch:view punch:create'
+  };
+
+  const syncVisibleShell = () => {
+    body.dataset.appShellContextTitle = crossScreenSession.contextTitle;
+    body.dataset.appShellContextSubtitle = crossScreenSession.contextSubtitle;
+    body.dataset.appShellProfileName = crossScreenSession.profileName;
+    body.dataset.appShellProfileRole = crossScreenSession.profileRole;
+    body.dataset.appShellProfileAvatar = 'AD';
+
+    document.querySelectorAll('[data-app-shell-context-title]').forEach((node) => {
+      node.textContent = crossScreenSession.contextTitle;
+    });
+    document.querySelectorAll('[data-app-shell-context-subtitle]').forEach((node) => {
+      node.textContent = crossScreenSession.contextSubtitle;
+    });
+    document.querySelectorAll('[data-app-shell-profile-name]').forEach((node) => {
+      node.textContent = crossScreenSession.profileName;
+    });
+    document.querySelectorAll('[data-app-shell-profile-role]').forEach((node) => {
+      node.textContent = crossScreenSession.profileRole;
+    });
+
+    const onboarding = document.querySelector('[data-onboarding-v2]');
+    if (!onboarding) return;
+
+    onboarding.dataset.demoPermissions = crossScreenSession.permissions;
+    document.title = 'Novo Funcionário — NF-01 Design Lab';
+
+    const breadcrumb = onboarding.querySelector('.breadcrumb');
+    if (breadcrumb) {
+      const links = [...breadcrumb.querySelectorAll('a')];
+      if (links[0]?.textContent.trim() === 'Gestão') {
+        const separator = links[0].nextElementSibling;
+        links[0].remove();
+        if (separator?.textContent.trim() === '›') separator.remove();
+      }
+      const current = breadcrumb.querySelector('[aria-current="page"]');
+      if (current) current.textContent = 'Novo funcionário';
+    }
+
+    const profileSelector = onboarding.querySelector('[data-demo-permission-profile]');
+    if (profileSelector) {
+      const adminOption = profileSelector.querySelector('option[value="admin"]');
+      if (adminOption) adminOption.textContent = 'Administrador — override explícito do fluxo';
+    }
+
+    const successCopy = onboarding.querySelector('[data-success-panel] .success-screen > p');
+    if (successCopy) {
+      successCopy.textContent = 'O comportamento visual da conclusão foi executado. Nenhum funcionário, matrícula, conta, dado bancário ou template biométrico foi enviado ao backend; a lista de Funcionários não é alterada por esta demonstração.';
+    }
+  };
+
+  syncVisibleShell();
 
   if (dateTargets.length) {
     const formatted = new Intl.DateTimeFormat('pt-BR', {
