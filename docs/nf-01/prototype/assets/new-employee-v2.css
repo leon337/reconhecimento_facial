@@ -68,6 +68,7 @@
 .save-state.is-error { color: var(--error-strong); background: var(--error-soft); }
 .step-state-badge.is-valid { color: var(--success-strong); background: var(--success-soft); }
 .step-state-badge.is-review { color: var(--warning-strong); background: var(--warning-soft); }
+.step-state-badge.is-error { color: var(--error-strong); background: var(--error-soft); border-color: color-mix(in srgb, var(--error-strong) 28%, white); }
 
 .button--compact { min-height: 2.5rem; padding-inline: var(--space-3); }
 
@@ -187,6 +188,8 @@
   cursor: pointer;
 }
 .step-list__button[aria-current="step"] { border-color: var(--brand-700); background: var(--brand-100); font-weight: 800; }
+.step-list__button[data-step-status="ERROR"] { border-color: color-mix(in srgb, var(--error-strong) 38%, var(--border-default)); background: var(--error-soft); }
+.step-list__button[data-step-status="ERROR"]::before { content: "× "; color: var(--error-strong); font-weight: 800; }
 .step-list__button[data-step-status="NEEDS_REVIEW"]::before { content: "! "; color: var(--warning-strong); font-weight: 800; }
 .step-list__button[data-step-status="COMPLETED"]::before { content: "✓ "; color: var(--success-strong); font-weight: 800; }
 
