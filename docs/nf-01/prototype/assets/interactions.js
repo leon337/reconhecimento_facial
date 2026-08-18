@@ -19,21 +19,24 @@
     body.dataset.appShellProfileRole = crossScreenSession.profileRole;
     body.dataset.appShellProfileAvatar = 'AD';
 
-    document.querySelectorAll('[data-app-shell-context-title]').forEach((node) => {
-      node.textContent = crossScreenSession.contextTitle;
-    });
-    document.querySelectorAll('[data-app-shell-context-subtitle]').forEach((node) => {
-      node.textContent = crossScreenSession.contextSubtitle;
-    });
-    document.querySelectorAll('[data-app-shell-profile-name]').forEach((node) => {
-      node.textContent = crossScreenSession.profileName;
-    });
-    document.querySelectorAll('[data-app-shell-profile-role]').forEach((node) => {
-      node.textContent = crossScreenSession.profileRole;
-    });
-    document.querySelectorAll('[data-app-shell-context]').forEach((node) => {
-      node.setAttribute('aria-label', `Contexto atual: ${crossScreenSession.contextTitle}, ${crossScreenSession.contextSubtitle}. Demonstração; não altera dados do formulário.`);
-    });
+    const shellRoot = document.querySelector('[data-app-shell-root]');
+    if (shellRoot) {
+      shellRoot.querySelectorAll('[data-app-shell-context-title]').forEach((node) => {
+        node.textContent = crossScreenSession.contextTitle;
+      });
+      shellRoot.querySelectorAll('[data-app-shell-context-subtitle]').forEach((node) => {
+        node.textContent = crossScreenSession.contextSubtitle;
+      });
+      shellRoot.querySelectorAll('[data-app-shell-profile-name]').forEach((node) => {
+        node.textContent = crossScreenSession.profileName;
+      });
+      shellRoot.querySelectorAll('[data-app-shell-profile-role]').forEach((node) => {
+        node.textContent = crossScreenSession.profileRole;
+      });
+      shellRoot.querySelectorAll('[data-app-shell-context]').forEach((node) => {
+        node.setAttribute('aria-label', `Contexto atual: ${crossScreenSession.contextTitle}, ${crossScreenSession.contextSubtitle}. Demonstração; não altera dados do formulário.`);
+      });
+    }
 
     const onboarding = document.querySelector('[data-onboarding-v2]');
     if (!onboarding) return;
