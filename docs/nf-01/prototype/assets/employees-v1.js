@@ -3,6 +3,7 @@
   const collection = document.querySelector('[data-employee-collection]');
   if (!collection) return;
 
+  const LIST_STATE_KEY = 'cpp:nf01:employees:list-state:v1:potiguar-locacoes:galpao-principal';
   const search = collection.querySelector('[data-employee-search]');
   const biometric = collection.querySelector('[data-biometric-filter]');
   const employeeFunction = collection.querySelector('[data-function-filter]');
@@ -38,6 +39,56 @@
     .split(/\s+/)
     .filter(Boolean)
     .every((permission) => permissions.has(permission));
+
+  const readStoredListState = () => {
+    try {
+      return JSON.parse(sessionStorage.getItem(LIST_STATE_KEY) || 'null');
+    } catch (_) {
+      return null;
+    }
+  };
+
+  const persistListState = () => {
+    try {
+      sessionStorage.setItem(LIST_STATE_KEY, JSON.stringify({
+        query: search?.value || '',
+        biometric: biometric?.value || 'all',
+        employeeFunction: employeeFunction?.value || 'all'
+      }));
+    } catch (_) { /* Design Lab only */ }
+  };
+
+  const applyInitialListState = () => {
+    const params = new URLSearchParams(window.location.search);
+    const hasExplicitHandoff = ['q', 'biometric', 'function'].some((key) => params.has(key));
+
+    if (hasExplicitHandoff) {
+      if (search) search.value = params.get('q') || '';
+      if (biometric) {
+        const requestedBiometric = params.get('biometric');
+        biometric.value = ['all', 'active', 'missing'].includes(requestedBiometric) ? requestedBiometric : 'all';
+      }
+      if (employeeFunction) {
+        const requestedFunction = params.get('function');
+        employeeFunction.value = requestedFunction && [...employeeFunction.options].some((option) => option.value === requestedFunction)
+          ? requestedFunction
+          : 'all';
+      }
+      persistListState();
+      return params.get('source') === 'dashboard' ? 'dashboard' : 'explicit';
+    }
+
+    const stored = readStoredListState();
+    if (!stored) return 'default';
+    if (search) search.value = stored.query || '';
+    if (biometric && ['all', 'active', 'missing'].includes(stored.biometric)) biometric.value = stored.biometric;
+    if (employeeFunction && [...employeeFunction.options].some((option) => option.value === stored.employeeFunction)) {
+      employeeFunction.value = stored.employeeFunction;
+    }
+    return 'restored';
+  };
+
+  const initialStateSource = applyInitialListState();
 
   const applyPermissionVisibility = () => {
     document.querySelectorAll('[data-requires-permission]').forEach((element) => {
@@ -99,12 +150,18 @@
         ? `Mostrando 1 de ${rows.length} funcionários demonstrativos`
         : `Mostrando ${visible} de ${rows.length} funcionários demonstrativos`;
     }
+    persistListState();
   };
 
   if (accessSummary) {
     const relevantPermissions = ['users:view', 'users:create', 'biometrics:manage']
       .filter((permission) => permissions.has(permission));
-    accessSummary.textContent = `Perfil demo: ${role} · permissões visuais: ${relevantPermissions.join(', ') || 'nenhuma'}.`;
+    const handoff = initialStateSource === 'dashboard'
+      ? ' · handoff do Dashboard: biometria pendente'
+      : initialStateSource === 'restored'
+        ? ' · filtros restaurados nesta sessão'
+        : '';
+    accessSummary.textContent = `Perfil demo: ${role} · permissões visuais: ${relevantPermissions.join(', ') || 'nenhuma'}${handoff}.`;
   }
 
   applyPermissionVisibility();
@@ -120,10 +177,12 @@
       if (search) search.value = '';
       if (biometric) biometric.value = 'all';
       if (employeeFunction) employeeFunction.value = 'all';
+      try { sessionStorage.removeItem(LIST_STATE_KEY); } catch (_) { /* Design Lab only */ }
       applyFilters();
       search?.focus();
     });
 
+    document.querySelector('[data-new-employee-link]')?.addEventListener('click', persistListState);
     applyFilters();
   }
 })();
