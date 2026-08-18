@@ -16,22 +16,23 @@ PHASE_J_DASHBOARD_RECONCILIATION=COMPLETE_SOURCE_LEVEL
 PHASE_K_EMPLOYEES_RECONCILIATION=COMPLETE_SOURCE_LEVEL
 PHASE_L_ONBOARDING_RECONCILIATION=COMPLETE_SOURCE_LEVEL
 PHASE_M_CROSS_SCREEN_COHERENCE=COMPLETE_SOURCE_LEVEL
-PHASE_N_DESIGN_LAB_VALIDATION=IN_PROGRESS
-
-M1_CROSS_SCREEN_COHERENCE_AUDIT=COMPLETE
-M1_OUTPUT=../65_NF01_PHASE_M_M1_CROSS_SCREEN_COHERENCE_AUDIT_2026-08-18.md
-M2_CROSS_SCREEN_COHERENCE_RECONCILIATION=COMPLETE
-M2_OUTPUT=../66_NF01_PHASE_M_M2_CROSS_SCREEN_COHERENCE_RECONCILIATION_2026-08-18.md
-M3_CROSS_SCREEN_POST_RECONCILIATION_ACCEPTANCE=COMPLETE
-M3_OUTPUT=../67_NF01_PHASE_M_M3_CROSS_SCREEN_POST_RECONCILIATION_ACCEPTANCE_2026-08-18.md
-UNRESOLVED_CROSS_SCREEN_BLOCKING_GAPS=0
+PHASE_N_DESIGN_LAB_VALIDATION=IN_PROGRESS_BLOCKED_ON_MANUAL_EVIDENCE
 
 N1_DESIGN_LAB_VALIDATION_DEFINITION=COMPLETE
 N1_OUTPUT=../68_NF01_PHASE_N_N1_DESIGN_LAB_VALIDATION_DEFINITION_2026-08-18.md
-N1_IMPLEMENTATION=VALIDATION_PLAN_ONLY
-N2_BROWSER_RESPONSIVE_VISUAL_VALIDATION=NOT_APPROVED
-N3_ACCESSIBILITY_INTERACTION_STATE_RBAC_VALIDATION=NOT_APPROVED
-N4_PHASE_N_CONSOLIDATED_ACCEPTANCE=NOT_APPROVED
+N2_BROWSER_RESPONSIVE_VISUAL_VALIDATION=EXECUTED
+N2_OUTPUT=../69_NF01_PHASE_N_N2_BROWSER_RESPONSIVE_VISUAL_VALIDATION_2026-08-18.md
+N2_AUTOMATED_ACCEPTANCE=PASS_AFTER_TARGETED_FIXES
+N2_ACCEPTANCE=BLOCKED_TOOLING
+N3_ACCESSIBILITY_INTERACTION_STATE_RBAC_VALIDATION=EXECUTED
+N3_OUTPUT=../70_NF01_PHASE_N_N3_ACCESSIBILITY_INTERACTION_STATE_RBAC_VALIDATION_2026-08-18.md
+N3_AUTOMATED_ACCEPTANCE=PASS_AFTER_TARGETED_FIXES_AND_RETESTS
+N3_ACCEPTANCE=BLOCKED_TOOLING
+N4_PHASE_N_CONSOLIDATED_ACCEPTANCE=EXECUTED
+N4_OUTPUT=../71_NF01_PHASE_N_N4_CONSOLIDATED_ACCEPTANCE_2026-08-18.md
+N4_ACCEPTANCE=BLOCKED_TOOLING
+FINAL_AUTOMATED_FAIL=0
+BLOCKED_TOOLING_HIGH=2
 
 CROSS_SCREEN_SHARED_CONTEXT=Potiguar_Locacoes|Galpao_principal
 CROSS_SCREEN_SHARED_PROFILE=Administrador_Demo|admin
@@ -47,83 +48,97 @@ HISTORICAL_V1_PRESERVED=YES
 HISTORICAL_V1_MIGRATED=NO
 
 NEXT_OFFICIAL_PHASE=N_DESIGN_LAB_VALIDATION
-NEXT_OFFICIAL_ITEM=N2_BROWSER_RESPONSIVE_VISUAL_VALIDATION_GATE
-N2_APPROVAL_INFERRED=NO
+NEXT_OFFICIAL_ITEM=PHASE_N_MANUAL_EVIDENCE_COMPLETION_GATE
+MANUAL_EVIDENCE_REQUIRED=ZOOM_200|SCREEN_READER
+PHASE_O_START_ALLOWED=NO
 PRODUCTION_CHANGE=NO
 NF02_STARTED=NO
 PR_MERGE=NOT_AUTHORIZED
 ```
 
-## Estado atual das superfícies
+## Superfícies ativas
 
 ### Dashboard
 
-`screens/02.01-dashboard.html` permanece reconciliado com a amostra local compartilhada:
-
-- `Funcionários cadastrados = 6`;
-- João Souza = matrícula `00124`;
-- Maria Silva = matrícula `00123`;
-- Lucas Santos = matrícula `00131`;
-- Ana Paula = matrícula `00142`;
-- unidade demonstrativa = `Galpão principal`;
-- origem compartilhada = `fixture:employees-k2`;
-- `2 biometrias pendentes` deriva da mesma amostra;
-- `Ver funcionários filtrados` navega para `03.01-funcionarios.html?biometric=missing&source=dashboard`.
-
-`Registros hoje` continua uma fixture separada de registros.
+`screens/02.01-dashboard.html` permanece reconciliado com a amostra local compartilhada e com o handoff real para Funcionários.
 
 ### Funcionários
 
-`screens/03.01-funcionarios.html` preserva os contratos fechados em K3/M3:
-
-- query explícita pode aplicar `q`, `biometric` e `function`;
-- handoff do Dashboard aplica `biometric=missing`;
-- busca e filtros são preservados em `sessionStorage` escopado ao contexto;
-- handoff explícito tem precedência sobre estado restaurado;
-- retorno do onboarding reutiliza o estado anterior na mesma sessão;
-- `FILTER_NO_RESULTS` permanece diferente de `EMPTY_DATASET` e `ERROR`.
+`screens/03.01-funcionarios.html` preserva busca/filtros, estados distintos e RBAC demonstrativo. A Fase N confirmou as variantes `super_admin`, `admin`, `manager`, `auditor` e `operator` após o hardening do contrato `hidden`.
 
 ### Novo Funcionário
 
-A estrutura funcional permanece a fechada em L3/M3:
+`screens/03.04-novo-funcionario-v2.html` preserva o wizard canônico, ContextDrawer, HorizontalStepper, EntityPickers e estados críticos. A Fase N confirmou teclado automatizado e axe-core após correções.
 
-- contexto visível `Potiguar Locações / Galpão principal`;
-- principal `Administrador Demo / Admin`;
-- permissões demonstrativas padrão `users:view users:create biometrics:manage punch:view punch:create`;
-- nome visível `Novo Funcionário`, mantendo `V2` somente no nome técnico do arquivo;
-- breadcrumb deduplicado em runtime;
-- conclusão demo não altera a lista real de Funcionários.
+## Fase N — evidência executada
 
-## Fase N — matriz definida em N1
-
-N1 não alterou HTML/CSS/JS. Ele definiu a inspeção que os próximos gates deverão executar.
-
-### N2 — visual/responsivo
+Workflow dedicado:
 
 ```text
-CANONICAL_VIEWPORTS=360|768|1024|1440
-INTERMEDIATE_VIEWPORTS=480|900|1280
-CONTAINER_FIRST_VALIDATION=REQUIRED
-ZOOM_200_MANUAL_TEST=REQUIRED
+NF01 Phase N Validation
+RUN_ID=32125796830
+RUN_NUMBER=17
+HEAD=c1a1db3e9f0c944e522813c475ba29b8758b4ec6
+CONCLUSION=SUCCESS
+ARTIFACT_ID=9320310859
 ```
 
-Cobertura: AppShell, Dashboard, Funcionários, Novo Funcionário e handoffs cross-screen.
+Resumo durável:
 
-### N3 — acessibilidade/interação/estados/RBAC
+`../evidence/phase-n/2026-08-18_N2_N3_AUTOMATED_VALIDATION_SUMMARY.json`
+
+### Browser / responsividade
 
 ```text
-KEYBOARD_CRITICAL_JOURNEY=REQUIRED
-SCREEN_READER_CRITICAL_JOURNEY=REQUIRED
-AUTOMATED_A11Y_SCAN=IF_TOOLING_AVAILABLE
-RBAC_VISUAL_MATRIX=REQUIRED
-STATE_MATRIX=REQUIRED
+360|480|768|900|1024|1280|1440=PASS_AUTOMATED
+ZOOM_200_EQUIVALENT_REFLOW=PASS_AUTOMATED
+DASHBOARD_TO_EMPLOYEES_HANDOFF=PASS
+EMPLOYEES_LIST_STATE_RESTORE=PASS
+MANUAL_BROWSER_ZOOM_200=BLOCKED_TOOLING
 ```
 
-Se ferramenta necessária não estiver disponível, o resultado deve ser `BLOCKED_TOOLING`; PASS não pode ser inferido.
+### Acessibilidade / interação / RBAC
 
-### N4 — aceite consolidado
+```text
+AXE_CRITICAL_SERIOUS_FINAL=0
+KEYBOARD_STEPPER=PASS
+KEYBOARD_CONTEXT_DRAWER=PASS
+KEYBOARD_ENTITY_PICKER=PASS_RETEST
+RBAC_VISUAL_MATRIX=PASS
+EMPLOYEE_STATE_MATRIX=PASS
+ARIA_TREE_SNAPSHOT=CAPTURED
+MANUAL_SCREEN_READER_CRITICAL_JOURNEY=BLOCKED_TOOLING
+```
 
-N4 somente pode fechar a Fase N com zero BLOCKER/HIGH aberto e evidência explícita dos casos exigidos por N1.
+### Defeitos corrigidos durante a inspeção
+
+```text
+9816c44  scope de interactions.js evitou destruição do body
+8ceab55  hidden voltou a ser semanticamente/visualmente oculto
+dbcafef  contraste de employee-account corrigido
+```
+
+Todos os defeitos de produto detectados pela automação têm reteste PASS. O único FAIL residual da matriz base do runner era falso positivo do harness em EntityPicker oculto e foi supersedido por reteste focado PASS.
+
+## Por que a Fase N ainda não fecha
+
+N1 exige evidência manual que a ferramenta atual não consegue produzir:
+
+```text
+N2-MANUAL_BROWSER_ZOOM_200=BLOCKED_TOOLING_HIGH
+N3-MANUAL-SCREEN-READER-CRITICAL-JOURNEY=BLOCKED_TOOLING_HIGH
+```
+
+`BLOCKED_TOOLING` não pode ser convertido em PASS por inferência. Portanto N4 foi executado, mas o aceite consolidado permanece bloqueado até essas duas verificações manuais serem registradas.
+
+## Limites preservados
+
+```text
+NEW_DESIGN_UNIT_TESTS_EXECUTED=NO
+NEW_DESIGN_INTEGRATION_TESTS_EXECUTED=NO
+PRODUCTION_E2E_EXECUTED=NO
+PRODUCTION_HOMOLOGATION=NO
+```
 
 ## Continuidade
 
@@ -134,29 +149,16 @@ N4 somente pode fechar a Fase N com zero BLOCKER/HIGH aberto e evidência explí
 ↓
 64_* L3
 ↓
-65_* M1
-↓
-66_* M2
-↓
 67_* M3
 ↓
 68_* N1
+↓
+69_* N2
+↓
+70_* N3
+↓
+71_* N4
 ```
-
-## Validação ainda não executada
-
-```text
-BROWSER_VISUAL_MATRIX_360_768_1024_1440=NO
-INTERMEDIATE_WIDTH_VISUAL_TEST=NO
-ZOOM_200_MANUAL_TEST=NO
-SCREEN_READER_MANUAL_TEST=NO
-AUTOMATED_A11Y_SCAN=NO
-NEW_DESIGN_UNIT_TESTS_EXECUTED=NO
-NEW_DESIGN_INTEGRATION_TESTS_EXECUTED=NO
-PRODUCTION_E2E_EXECUTED=NO
-```
-
-O contrato canônico da NF-01 mantém novos testes unitários/de integração como não executados; a Fase N revisa sua cobertura documental, mas não os declara PASS.
 
 ## Guardrails
 
