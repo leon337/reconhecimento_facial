@@ -58,13 +58,19 @@ L1_HIGH_GAP_THEMES=9
 L1_MEDIUM_GAP_THEMES=7
 L1_LOW_DEFERRED_OBSERVATIONS=3
 ONBOARDING_VISUAL_CHANGE_IN_L1=NO
+L2_ONBOARDING_CANONICAL_RECONCILIATION=COMPLETE
+L2_OUTPUT=../63_NF01_PHASE_L_L2_ONBOARDING_CANONICAL_RECONCILIATION_2026-08-18.md
+L2_ACCEPTANCE=PASS_SOURCE_LEVEL
+L2_HIGH_GAPS_RECONCILED_SOURCE_LEVEL=9/9
+ONBOARDING_VISUAL_CHANGE_IN_L2=YES_DESIGN_LAB_ONLY
 
 ACTIVE_SURFACE_LEGACY_SHELL_DEPENDENCY=0
 HISTORICAL_V1=screens/03.03-novo-funcionario.html
 HISTORICAL_V1_PRESERVED=YES
 HISTORICAL_V1_MIGRATED=NO
 NEXT_OFFICIAL_PHASE=L_ONBOARDING_RECONCILIATION
-NEXT_OFFICIAL_ITEM=L2_DEFINITION_GATE
+NEXT_OFFICIAL_ITEM=L3_ONBOARDING_POST_RECONCILIATION_ACCEPTANCE_GATE
+L3_APPROVAL_INFERRED=NO
 PRODUCTION_CHANGE=NO
 NF02_STARTED=NO
 PR_MERGE=NOT_AUTHORIZED
@@ -78,7 +84,9 @@ K1 auditou `screens/03.01-funcionarios.html` + `assets/employees-v1.css` + `asse
 
 K3 reauditorou Funcionários pós-K2. Nenhum gap bloqueante foi encontrado; a única inconsistência objetiva estava no tile de `prototype/index.html`, que ainda descrevia Funcionários como etapa I5. O tile foi atualizado para K3/Fase K reconciliada, sem alterar novamente `03.01-funcionarios.html`, `employees-v1.css` ou `employees-v1.js`. A Fase K foi encerrada em base source-level.
 
-L1 auditou `screens/03.04-novo-funcionario-v2.html` + `assets/new-employee-v2.css` + `assets/new-employee-v2.js` sem alterá-los. O conteúdo funcional das oito etapas está amplamente alinhado, mas a arquitetura de interação ainda usa a direção anterior: stepper vertical, painel contextual permanente, StickyFormActions fragmentadas, ausência de variantes reais de `biometrics:manage`, ausência de `NEEDS_REVIEW`, ciclo de dados condicionais incompleto, estados críticos do wizard não materializados, semântica FieldGroup/ErrorSummary incompleta e cadastros mestres ainda representados por selects simples. L2 permanece necessário para a reconciliação canônica.
+L1 auditou `screens/03.04-novo-funcionario-v2.html` + `assets/new-employee-v2.css` + `assets/new-employee-v2.js` sem alterá-los. L2 reconciliou os nove temas HIGH no Design Lab: stepper horizontal + `Ver etapas`, ContextDrawer sob demanda, StickyFormActions unificadas, affordances demonstrativas de `users:create`/`biometrics:manage`, `NEEDS_REVIEW`, ciclo `VISIBLE_ACTIVE/HIDDEN_RETAINED` separado de `activePayloadPreview`, estados persistentes `PERMISSION_ERROR/OFFLINE/CONFLICT/SAVE_ERROR/SUBMIT_OUTCOME_UNKNOWN`, FieldGroup/ErrorSummary source-level e seis EntityPickers locais demonstrativos. A implementação preserva as oito etapas, AppShell compartilhado e isolamento de produção.
+
+A primeira tentativa de L2 foi interrompida e havia substituído o roadmap por `PLACEHOLDER` e declarado o checkpoint 63 prematuramente. A recuperação restaurou o roadmap byte-a-byte antes da implementação real, corrigiu o checkpoint e manteve o histórico sem force-push ou reescrita.
 
 A dívida transversal de `components.css`, a coerência cruzada entre telas e a validação completa de responsividade/acessibilidade permanecem diferidas para seus gates próprios.
 
@@ -87,6 +95,10 @@ Continuam diferidos:
 ```text
 LIVE_HEALTH_OPERATIONAL_UI=NO
 RUNTIME_RBAC_ENFORCEMENT=NO
+BACKEND_DRAFT_REVISION=NO
+REAL_TRANSACTIONAL_IDEMPOTENT_SUBMIT=NO
+REMOTE_ENTITY_PICKER=NO
+REAL_CAMERA_OR_BIOMETRIC_STORAGE=NO
 BROWSER_VISUAL_MATRIX_360_768_1024_1440=NO
 INTERMEDIATE_WIDTH_VISUAL_TEST=NO
 ZOOM_200_MANUAL_TEST=NO
