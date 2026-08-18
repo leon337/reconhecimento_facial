@@ -51,7 +51,12 @@ jobs:
           SERVER_PID=$!
           trap 'kill ${SERVER_PID} || true' EXIT
           sleep 2
+          set +e
           node run-phase-n.mjs
+          MAIN_EXIT=$?
+          set -e
+          echo "Base matrix exit=${MAIN_EXIT}; executing focused retests for superseded cases."
+          node run-phase-n-followup.mjs
 
       - name: Upload Phase N evidence
         if: always()
