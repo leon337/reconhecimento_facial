@@ -39,7 +39,7 @@ jobs:
         run: |
           npx playwright install --with-deps chromium
           sudo apt-get update
-          sudo apt-get install -y xvfb openbox xdotool dbus-x11 at-spi2-core orca speech-dispatcher imagemagick jq
+          sudo apt-get install -y xvfb openbox xdotool dbus-x11 at-spi2-core python3-pyatspi orca speech-dispatcher imagemagick jq
 
       - name: Run headed browser + Orca evidence
         working-directory: docs/nf-01/validation/phase-n
