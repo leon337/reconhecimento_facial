@@ -29,6 +29,17 @@ const focusWebContentForOrca = async (wid, label) => {
   await sleep(700);
   checkpoint(`ORCA_WEB_FOCUS_${label.replaceAll(' ', '_')}`);
 };
+const atspiFocusForOrca = async (target) => {
+  const probe = path.join(process.env.GITHUB_WORKSPACE || '', '.github/scripts/nf01-orca-atspi-focus.py');
+  try {
+    const output = execFileSync('python3', [probe, target], { encoding: 'utf8', env: process.env }).trim();
+    console.log(`NF01_ATSPI_FOCUS_TARGET=${target};${output}`);
+  } catch (error) {
+    const stderr = String(error?.stderr || '').trim();
+    console.log(`NF01_ATSPI_FOCUS_TARGET=${target};ERROR=${stderr || error.message}`);
+  }
+  await sleep(900);
+};
 
 const context = await chromium.launchPersistentContext('/tmp/nf01-cloud-profile', {
   headless: false,
@@ -113,17 +124,18 @@ async function inspect(label) {
   writePartial(`INSPECTED_${label}`);
 }
 
-async function visit(relative, label, shot) {
+async function visit(relative, label, shot, orcaTarget = '') {
   checkpoint(`VISIT_${label.replaceAll(' ', '_')}`);
   await page.goto(`${base}/${relative}`, { waitUntil: 'networkidle' });
   await sleep(900);
   await inspect(label);
   capture(wid, shot);
   await focusWebContentForOrca(wid, label);
+  if (orcaTarget) await atspiFocusForOrca(orcaTarget);
   await sleep(350);
 }
 
-await visit('02.01-dashboard.html', 'Dashboard', 'N2-dashboard-real-browser-zoom.png');
+await visit('02.01-dashboard.html', 'Dashboard', 'N2-dashboard-real-browser-zoom.png', 'Biometrias pendentes');
 checkpoint('DASHBOARD_HANDOFF_ASSISTED');
 const handoff = page.locator('[data-cross-screen-handoff="biometric-missing"]');
 await handoff.focus();
@@ -136,9 +148,9 @@ await sleep(700);
 await inspect('Funcionários filtrados via Dashboard');
 capture(wid, 'N3-dashboard-to-employees-filtered.png');
 
-await visit('01.01-app-shell.html', 'AppShell', 'N2-appshell-real-browser-zoom.png');
-await visit('03.01-funcionarios.html', 'Funcionários', 'N2-funcionarios-real-browser-zoom.png');
-await visit('03.04-novo-funcionario-v2.html', 'Novo Funcionário', 'N2-novo-funcionario-real-browser-zoom.png');
+await visit('01.01-app-shell.html', 'AppShell', 'N2-appshell-real-browser-zoom.png', 'Dashboard');
+await visit('03.01-funcionarios.html', 'Funcionários', 'N2-funcionarios-real-browser-zoom.png', 'Novo funcionário');
+await visit('03.04-novo-funcionario-v2.html', 'Novo Funcionário', 'N2-novo-funcionario-real-browser-zoom.png', 'Ver etapas');
 
 checkpoint('STEP_LIST_OPEN_ASSISTED');
 const stepToggle = page.locator('[data-toggle-step-list]');
@@ -165,6 +177,7 @@ checkpoint('CONTEXT_DRAWER_ASSISTED');
 const summary = page.locator('[data-open-context]');
 const drawer = page.locator('[data-context-drawer]');
 await summary.focus();
+await atspiFocusForOrca('Resumo');
 await page.keyboard.press('Enter');
 await drawer.waitFor({ state: 'visible', timeout: 10000 });
 await sleep(500);
@@ -208,6 +221,7 @@ interactions.push({
   result: errorText && errorRect ? 'PASS_ASSISTED' : 'FAIL',
 });
 console.log(`NF01_ERROR_SUMMARY=${errorText}`);
+await atspiFocusForOrca('Revise as informações desta etapa');
 capture(wid, 'N3-error-summary.png');
 
 checkpoint('RETURN_TO_EMPLOYEES_ASSISTED');
