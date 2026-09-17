@@ -89,7 +89,7 @@ jobs:
           trap 'safe_kill "${ORCA_PID:-}" "${SERVER_PID:-}" "${WM_PID:-}"' EXIT
           sleep 2
 
-          orca --replace --debug-file "$EVIDENCE/N3-orca-debug.log" > /tmp/nf01-orca-stdout.log 2>&1 &
+          orca --replace --enable=speech --debug-file "$EVIDENCE/N3-orca-debug.log" > /tmp/nf01-orca-stdout.log 2>&1 &
           ORCA_PID=$!
           sleep 4
 
