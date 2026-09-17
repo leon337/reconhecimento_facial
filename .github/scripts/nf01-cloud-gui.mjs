@@ -129,33 +129,71 @@ await visit('03.04-novo-funcionario-v2.html', 'Novo Funcionário', 'N2-novo-func
 
 checkpoint('STEP_LIST_OPEN_ASSISTED');
 const stepToggle = page.locator('[data-toggle-step-list]');
+const stepList = page.locator('[data-step-list]');
 await stepToggle.focus();
 await page.keyboard.press('Enter');
-await sleep(400);
+await sleep(500);
 const stepExpanded = await stepToggle.getAttribute('aria-expanded');
-interactions.push({ case: 'STEP_LIST_OPEN', input: 'PLAYWRIGHT_KEYBOARD', ariaExpanded: stepExpanded, result: stepExpanded === 'true' ? 'PASS_ASSISTED' : 'FAIL' });
+const stepHidden = await stepList.evaluate((el) => el.hidden);
+await stepList.scrollIntoViewIfNeeded();
+await sleep(300);
+const stepRect = await stepList.boundingBox();
+interactions.push({
+  case: 'STEP_LIST_OPEN',
+  input: 'PLAYWRIGHT_KEYBOARD',
+  ariaExpanded: stepExpanded,
+  hidden: stepHidden,
+  boundingBox: stepRect,
+  result: stepExpanded === 'true' && stepHidden === false ? 'PASS_ASSISTED' : 'FAIL',
+});
 capture(wid, 'N3-step-list-open.png');
 
 checkpoint('CONTEXT_DRAWER_ASSISTED');
 const summary = page.locator('[data-open-context]');
+const drawer = page.locator('[data-context-drawer]');
 await summary.focus();
 await page.keyboard.press('Enter');
-await page.locator('[data-context-drawer]').waitFor({ state: 'visible', timeout: 10000 });
+await drawer.waitFor({ state: 'visible', timeout: 10000 });
+await sleep(500);
+const drawerState = await drawer.evaluate((el) => ({
+  hidden: el.hidden,
+  ariaHidden: el.getAttribute('aria-hidden'),
+  rect: (() => {
+    const r = el.getBoundingClientRect();
+    return { x: r.x, y: r.y, width: r.width, height: r.height, right: r.right, bottom: r.bottom };
+  })(),
+}));
 capture(wid, 'N2-N3-context-drawer-open.png');
 await page.keyboard.press('Escape');
 await sleep(400);
 const focusReturned = await summary.evaluate((el) => document.activeElement === el);
-interactions.push({ case: 'CONTEXT_DRAWER_OPEN_CLOSE', input: 'PLAYWRIGHT_KEYBOARD', focusReturned, result: focusReturned ? 'PASS_ASSISTED' : 'FAIL' });
+interactions.push({
+  case: 'CONTEXT_DRAWER_OPEN_CLOSE',
+  input: 'PLAYWRIGHT_KEYBOARD',
+  openState: drawerState,
+  focusReturned,
+  result: !drawerState.hidden && drawerState.ariaHidden === 'false' && drawerState.rect.width > 0 && focusReturned ? 'PASS_ASSISTED' : 'FAIL',
+});
 console.log(`NF01_CONTEXT_DRAWER_FOCUS_RETURNED=${focusReturned}`);
 
 checkpoint('ERROR_SUMMARY_ASSISTED');
 const continueButton = page.locator('[data-next-step]');
+const errorSummary = page.locator('[data-error-summary]');
 await continueButton.focus();
 await page.keyboard.press('Enter');
-await page.locator('[data-error-summary]').waitFor({ state: 'visible', timeout: 10000 });
-await sleep(400);
-const errorText = (await page.locator('[data-error-summary]').innerText()).replace(/\s+/g, ' ').trim();
-interactions.push({ case: 'ERROR_SUMMARY', input: 'PLAYWRIGHT_KEYBOARD', actual: errorText, result: errorText ? 'PASS_ASSISTED' : 'FAIL' });
+await errorSummary.waitFor({ state: 'visible', timeout: 10000 });
+await sleep(300);
+const errorText = (await errorSummary.innerText()).replace(/\s+/g, ' ').trim();
+await errorSummary.scrollIntoViewIfNeeded();
+await sleep(300);
+const errorRect = await errorSummary.boundingBox();
+interactions.push({
+  case: 'ERROR_SUMMARY',
+  input: 'PLAYWRIGHT_KEYBOARD',
+  actual: errorText,
+  boundingBox: errorRect,
+  result: errorText && errorRect ? 'PASS_ASSISTED' : 'FAIL',
+});
 console.log(`NF01_ERROR_SUMMARY=${errorText}`);
 capture(wid, 'N3-error-summary.png');
 
