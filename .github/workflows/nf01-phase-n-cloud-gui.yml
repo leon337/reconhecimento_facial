@@ -139,7 +139,8 @@ jobs:
           ORCA_PID=$!
           sleep 4
 
-          cat > /tmp/nf01-cloud-driver.mjs <<'NODE'
+          DRIVER="$GITHUB_WORKSPACE/docs/nf-01/validation/phase-n/nf01-cloud-driver.mjs"
+          cat > "$DRIVER" <<'NODE'
           import { chromium } from 'playwright';
           import { execFileSync } from 'node:child_process';
           import fs from 'node:fs';
@@ -241,7 +242,8 @@ jobs:
           await browser.close();
           NODE
 
-          node /tmp/nf01-cloud-driver.mjs
+          node "$DRIVER"
+          rm -f "$DRIVER"
           sleep 2
 
           grep 'SPEECH OUTPUT' "$EVIDENCE/N3-orca-debug.log" > "$EVIDENCE/N3-orca-speech-output.log" || true
