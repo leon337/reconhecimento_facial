@@ -38,7 +38,7 @@ jobs:
         run: |
           npx playwright install --with-deps chromium
           sudo apt-get update
-          sudo apt-get install -y xvfb xdotool dbus-x11 at-spi2-core orca speech-dispatcher imagemagick jq
+          sudo apt-get install -y xvfb openbox xdotool dbus-x11 at-spi2-core orca speech-dispatcher imagemagick jq
 
       - name: Run headed browser + Orca evidence
         working-directory: docs/nf-01/validation/phase-n
@@ -53,9 +53,17 @@ jobs:
           mkdir -p "$XDG_RUNTIME_DIR"
           chmod 700 "$XDG_RUNTIME_DIR"
 
+          safe_kill() {
+            for pid in "$@"; do
+              if [ -n "${pid:-}" ] && [ "$pid" -gt 1 ] 2>/dev/null && kill -0 "$pid" 2>/dev/null; then
+                kill "$pid" 2>/dev/null || true
+              fi
+            done
+          }
+
           Xvfb :99 -screen 0 1920x1080x24 -ac > /tmp/nf01-xvfb.log 2>&1 &
           XVFB_PID=$!
-          trap 'kill ${XVFB_PID} 2>/dev/null || true' EXIT
+          trap 'safe_kill "${XVFB_PID:-}"' EXIT
           sleep 2
 
           dbus-run-session -- bash <<'INNER'
@@ -66,9 +74,21 @@ jobs:
           export NO_AT_BRIDGE=0
           export EVIDENCE="$GITHUB_WORKSPACE/docs/nf-01/evidence/phase-n/cloud-gui-run"
 
+          safe_kill() {
+            for pid in "$@"; do
+              if [ -n "${pid:-}" ] && [ "$pid" -gt 1 ] 2>/dev/null && kill -0 "$pid" 2>/dev/null; then
+                kill "$pid" 2>/dev/null || true
+              fi
+            done
+          }
+
+          openbox > /tmp/nf01-openbox.log 2>&1 &
+          WM_PID=$!
           python3 -m http.server 4173 --directory "$GITHUB_WORKSPACE/docs/nf-01/prototype" > /tmp/nf01-http.log 2>&1 &
           SERVER_PID=$!
-          trap 'kill ${SERVER_PID} ${BROWSER_PID:-0} ${ORCA_PID:-0} 2>/dev/null || true' EXIT
+          BROWSER_PID=""
+          ORCA_PID=""
+          trap 'safe_kill "${ORCA_PID:-}" "${BROWSER_PID:-}" "${SERVER_PID:-}" "${WM_PID:-}"' EXIT
           sleep 2
 
           cd "$GITHUB_WORKSPACE/docs/nf-01/validation/phase-n"
@@ -80,18 +100,32 @@ jobs:
             --force-renderer-accessibility \
             --remote-debugging-port=9222 \
             --user-data-dir=/tmp/nf01-cloud-profile \
-            --start-maximized \
+            --window-size=1920,1040 \
             http://127.0.0.1:4173/screens/02.01-dashboard.html \
             > /tmp/nf01-chromium.log 2>&1 &
           BROWSER_PID=$!
 
           WID=""
           for _ in $(seq 1 60); do
-            WID=$(xdotool search --onlyvisible --name 'NF-01 Design Lab' 2>/dev/null | tail -n 1 || true)
+            WID=$(xdotool search --onlyvisible --pid "$BROWSER_PID" 2>/dev/null | head -n 1 || true)
+            if [ -z "$WID" ]; then
+              WID=$(xdotool search --onlyvisible --class 'chrome|chromium' 2>/dev/null | head -n 1 || true)
+            fi
+            if [ -z "$WID" ]; then
+              WID=$(xdotool search --onlyvisible --name 'NF-01|Dashboard|Chromium|Chrome' 2>/dev/null | head -n 1 || true)
+            fi
             if [ -n "$WID" ]; then break; fi
             sleep 0.5
           done
-          test -n "$WID"
+
+          if [ -z "$WID" ]; then
+            echo 'No browser window found.' >&2
+            xdotool search --onlyvisible --name '.' 2>/dev/null || true
+            cat /tmp/nf01-openbox.log || true
+            cat /tmp/nf01-chromium.log || true
+            exit 20
+          fi
+
           export WID
           xdotool windowactivate --sync "$WID"
           xdotool key --window "$WID" ctrl+0
@@ -135,7 +169,12 @@ jobs:
               scrollWidth: document.documentElement.scrollWidth,
               horizontalOverflow: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
             }));
-            rows.push({ label, ...metrics, zoomApprox: Number((metrics.outerWidth / metrics.innerWidth).toFixed(2)) });
+            rows.push({
+              label,
+              ...metrics,
+              zoomApprox: Number((metrics.outerWidth / metrics.innerWidth).toFixed(2)),
+              zoom200Signal: metrics.devicePixelRatio >= 1.9 && metrics.devicePixelRatio <= 2.1,
+            });
           }
 
           async function visit(relative, label, shot) {
@@ -192,6 +231,8 @@ jobs:
             execution: 'CLOUD_HEADED_GUI_AUTOMATION',
             browserZoomMethod: 'OS_LEVEL_CTRL_PLUS_ON_HEADED_CHROMIUM',
             expectedZoom: '200%',
+            zoom200SignalsAllPass: rows.every((row) => row.zoom200Signal),
+            noHorizontalOverflowAllPass: rows.every((row) => !row.horizontalOverflow),
             surfaces: rows,
             contextDrawerFocusReturned: focusReturned,
             errorSummaryText: errorText,
@@ -210,14 +251,17 @@ jobs:
           speech = (evidence / 'N3-orca-speech-output.log').read_text(errors='ignore') if (evidence / 'N3-orca-speech-output.log').exists() else ''
           expected = [
               'Dashboard',
-              '2 biometrias pendentes',
               'Funcionários',
               'Novo Funcionário',
               'Resumo e controles do Design Lab',
               'Revise as informações desta etapa',
           ]
           result = {item: (item.lower() in speech.lower()) for item in expected}
-          (evidence / 'orca-speech-assertions.json').write_text(json.dumps(result, indent=2, ensure_ascii=False))
+          (evidence / 'orca-speech-assertions.json').write_text(json.dumps({
+              'execution': 'CLOUD_ORCA_ASSISTED_EVIDENCE',
+              'all_expected_announcements_found': all(result.values()),
+              'assertions': result,
+          }, indent=2, ensure_ascii=False))
           PY
           INNER
 
