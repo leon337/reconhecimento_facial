@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflows/nf01-phase-n-cloud-gui.yml'
       - '.github/scripts/nf01-cloud-gui.mjs'
+      - '.github/scripts/nf01-orca-atspi-focus.py'
       - 'docs/nf-01/prototype/**'
       - 'docs/nf-01/validation/phase-n/**'
   workflow_dispatch:
