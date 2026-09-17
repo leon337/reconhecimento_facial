@@ -13,9 +13,9 @@ if (!evidence) throw new Error('EVIDENCE is required');
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const shell = (command) => execFileSync('bash', ['-lc', command], { encoding: 'utf8' }).trim();
 const activateWindow = (wid) => execFileSync('xdotool', ['windowactivate', '--sync', wid], { stdio: 'ignore' });
-const osKey = (wid, ...keys) => {
+const zoomKey = (wid, key) => {
   activateWindow(wid);
-  execFileSync('xdotool', ['key', ...keys], { stdio: 'ignore' });
+  execFileSync('xdotool', ['key', key], { stdio: 'ignore' });
 };
 const capture = (wid, name) => execFileSync('/usr/bin/import', ['-window', wid, path.join(evidence, name)], { stdio: 'ignore' });
 const checkpoint = (label) => console.log(`NF01_CLOUD_CHECKPOINT=${label}`);
@@ -52,15 +52,33 @@ if (!wid) throw new Error('No headed Chromium window found in Xvfb');
 checkpoint(`WINDOW_FOUND_${wid}`);
 
 activateWindow(wid);
-osKey(wid, 'ctrl+0');
+zoomKey(wid, 'ctrl+0');
 for (let i = 0; i < 5; i += 1) {
-  osKey(wid, 'ctrl+plus');
+  zoomKey(wid, 'ctrl+plus');
   await sleep(250);
 }
 await sleep(1200);
 checkpoint('BROWSER_ZOOM_APPLIED');
 
 const rows = [];
+const interactions = [];
+
+function writePartial(status) {
+  fs.writeFileSync(path.join(evidence, 'cloud-gui-summary.json'), JSON.stringify({
+    execution: 'CLOUD_HEADED_GUI_ASSISTED_VALIDATION',
+    status,
+    browserControl: 'PLAYWRIGHT_LAUNCH_PERSISTENT_CONTEXT',
+    interactionInput: 'PLAYWRIGHT_KEYBOARD_ASSISTED',
+    browserZoomMethod: 'OS_LEVEL_CTRL_PLUS_ON_HEADED_CHROMIUM',
+    expectedZoom: '200%',
+    zoom200SignalsAllPass: rows.length > 0 && rows.every((row) => row.zoom200Signal),
+    noHorizontalOverflowAllPass: rows.length > 0 && rows.every((row) => !row.horizontalOverflow),
+    surfaces: rows,
+    interactions,
+    manualAcceptanceClaimed: false,
+  }, null, 2));
+}
+
 async function inspect(label) {
   const metrics = await page.evaluate(() => ({
     url: location.href,
@@ -81,6 +99,7 @@ async function inspect(label) {
     zoom200Signal: (metrics.devicePixelRatio >= 1.9 && metrics.devicePixelRatio <= 2.1) || (zoomRatio >= 1.85 && zoomRatio <= 2.15),
   });
   console.log(`NF01_SURFACE=${label};URL=${metrics.url};ZOOM_RATIO=${zoomRatio.toFixed(2)};OVERFLOW=${metrics.horizontalOverflow}`);
+  writePartial(`INSPECTED_${label}`);
 }
 
 async function visit(relative, label, shot) {
@@ -92,13 +111,13 @@ async function visit(relative, label, shot) {
 }
 
 await visit('02.01-dashboard.html', 'Dashboard', 'N2-dashboard-real-browser-zoom.png');
-checkpoint('DASHBOARD_HANDOFF_FOCUS');
+checkpoint('DASHBOARD_HANDOFF_ASSISTED');
 const handoff = page.locator('[data-cross-screen-handoff="biometric-missing"]');
 await handoff.focus();
 const handoffFocused = await handoff.evaluate((el) => document.activeElement === el);
-console.log(`NF01_FOCUS_DASHBOARD_HANDOFF=${handoffFocused}`);
-osKey(wid, 'Return');
+await page.keyboard.press('Enter');
 await page.waitForURL(/03\.01-funcionarios\.html\?biometric=missing/, { timeout: 10000 });
+interactions.push({ case: 'DASHBOARD_TO_EMPLOYEES', input: 'PLAYWRIGHT_KEYBOARD', focusConfirmed: handoffFocused, result: 'PASS_ASSISTED' });
 checkpoint('DASHBOARD_HANDOFF_NAVIGATED');
 await sleep(700);
 await inspect('Funcionários filtrados via Dashboard');
@@ -108,56 +127,48 @@ await visit('01.01-app-shell.html', 'AppShell', 'N2-appshell-real-browser-zoom.p
 await visit('03.01-funcionarios.html', 'Funcionários', 'N2-funcionarios-real-browser-zoom.png');
 await visit('03.04-novo-funcionario-v2.html', 'Novo Funcionário', 'N2-novo-funcionario-real-browser-zoom.png');
 
-checkpoint('STEP_LIST_OPEN');
+checkpoint('STEP_LIST_OPEN_ASSISTED');
 const stepToggle = page.locator('[data-toggle-step-list]');
 await stepToggle.focus();
-osKey(wid, 'Return');
+await page.keyboard.press('Enter');
 await sleep(400);
+const stepExpanded = await stepToggle.getAttribute('aria-expanded');
+interactions.push({ case: 'STEP_LIST_OPEN', input: 'PLAYWRIGHT_KEYBOARD', ariaExpanded: stepExpanded, result: stepExpanded === 'true' ? 'PASS_ASSISTED' : 'FAIL' });
 capture(wid, 'N3-step-list-open.png');
 
-checkpoint('CONTEXT_DRAWER_OPEN');
+checkpoint('CONTEXT_DRAWER_ASSISTED');
 const summary = page.locator('[data-open-context]');
 await summary.focus();
-osKey(wid, 'Return');
+await page.keyboard.press('Enter');
 await page.locator('[data-context-drawer]').waitFor({ state: 'visible', timeout: 10000 });
 capture(wid, 'N2-N3-context-drawer-open.png');
-osKey(wid, 'Escape');
+await page.keyboard.press('Escape');
 await sleep(400);
 const focusReturned = await summary.evaluate((el) => document.activeElement === el);
+interactions.push({ case: 'CONTEXT_DRAWER_OPEN_CLOSE', input: 'PLAYWRIGHT_KEYBOARD', focusReturned, result: focusReturned ? 'PASS_ASSISTED' : 'FAIL' });
 console.log(`NF01_CONTEXT_DRAWER_FOCUS_RETURNED=${focusReturned}`);
 
-checkpoint('ERROR_SUMMARY_TRIGGER');
+checkpoint('ERROR_SUMMARY_ASSISTED');
 const continueButton = page.locator('[data-next-step]');
 await continueButton.focus();
-osKey(wid, 'Return');
+await page.keyboard.press('Enter');
 await page.locator('[data-error-summary]').waitFor({ state: 'visible', timeout: 10000 });
 await sleep(400);
 const errorText = (await page.locator('[data-error-summary]').innerText()).replace(/\s+/g, ' ').trim();
+interactions.push({ case: 'ERROR_SUMMARY', input: 'PLAYWRIGHT_KEYBOARD', actual: errorText, result: errorText ? 'PASS_ASSISTED' : 'FAIL' });
 console.log(`NF01_ERROR_SUMMARY=${errorText}`);
 capture(wid, 'N3-error-summary.png');
 
-checkpoint('RETURN_TO_EMPLOYEES');
+checkpoint('RETURN_TO_EMPLOYEES_ASSISTED');
 const employeesBreadcrumb = page.locator('nav[aria-label="Breadcrumb"] a[href="03.01-funcionarios.html"]').last();
 await employeesBreadcrumb.focus();
-osKey(wid, 'Return');
+await page.keyboard.press('Enter');
 await page.waitForURL(/03\.01-funcionarios\.html$/, { timeout: 10000 });
 await sleep(700);
 await inspect('Retorno a Funcionários');
+interactions.push({ case: 'RETURN_TO_EMPLOYEES', input: 'PLAYWRIGHT_KEYBOARD', result: 'PASS_ASSISTED' });
 
-const summaryJson = {
-  execution: 'CLOUD_HEADED_GUI_AUTOMATION',
-  browserControl: 'PLAYWRIGHT_LAUNCH_PERSISTENT_CONTEXT',
-  keyboardInput: 'OS_LEVEL_XDOTOOL_ACTIVE_WINDOW',
-  browserZoomMethod: 'OS_LEVEL_CTRL_PLUS_ON_HEADED_CHROMIUM',
-  expectedZoom: '200%',
-  zoom200SignalsAllPass: rows.every((row) => row.zoom200Signal),
-  noHorizontalOverflowAllPass: rows.every((row) => !row.horizontalOverflow),
-  surfaces: rows,
-  dashboardHandoffFocusConfirmed: handoffFocused,
-  contextDrawerFocusReturned: focusReturned,
-  errorSummaryText: errorText,
-};
-fs.writeFileSync(path.join(evidence, 'cloud-gui-summary.json'), JSON.stringify(summaryJson, null, 2));
+writePartial('COMPLETE_ASSISTED_EVIDENCE');
 checkpoint('SUMMARY_WRITTEN');
 await context.close();
 checkpoint('COMPLETE');
