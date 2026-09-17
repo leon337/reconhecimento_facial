@@ -6,6 +6,7 @@ on:
       - docs/nf-01-produto-design-system
     paths:
       - '.github/workflows/nf01-phase-n-cloud-gui.yml'
+      - '.github/scripts/nf01-cloud-gui.mjs'
       - 'docs/nf-01/prototype/**'
       - 'docs/nf-01/validation/phase-n/**'
   workflow_dispatch:
@@ -47,9 +48,7 @@ jobs:
           set -euo pipefail
           EVIDENCE="$GITHUB_WORKSPACE/docs/nf-01/evidence/phase-n/cloud-gui-run"
           mkdir -p "$EVIDENCE"
-          export EVIDENCE
-          export DISPLAY=:99
-          export XDG_RUNTIME_DIR=/tmp/nf01-runtime
+          export EVIDENCE DISPLAY=:99 XDG_RUNTIME_DIR=/tmp/nf01-runtime
           mkdir -p "$XDG_RUNTIME_DIR"
           chmod 700 "$XDG_RUNTIME_DIR"
 
@@ -86,171 +85,32 @@ jobs:
           WM_PID=$!
           python3 -m http.server 4173 --directory "$GITHUB_WORKSPACE/docs/nf-01/prototype" > /tmp/nf01-http.log 2>&1 &
           SERVER_PID=$!
-          BROWSER_PID=""
           ORCA_PID=""
-          trap 'safe_kill "${ORCA_PID:-}" "${BROWSER_PID:-}" "${SERVER_PID:-}" "${WM_PID:-}"' EXIT
-          sleep 2
-
-          cd "$GITHUB_WORKSPACE/docs/nf-01/validation/phase-n"
-          CHROMIUM=$(node --input-type=module -e "import { chromium } from 'playwright'; console.log(chromium.executablePath())")
-
-          "$CHROMIUM" \
-            --no-sandbox \
-            --disable-dev-shm-usage \
-            --force-renderer-accessibility \
-            --remote-debugging-port=9222 \
-            --user-data-dir=/tmp/nf01-cloud-profile \
-            --window-size=1920,1040 \
-            http://127.0.0.1:4173/screens/02.01-dashboard.html \
-            > /tmp/nf01-chromium.log 2>&1 &
-          BROWSER_PID=$!
-
-          WID=""
-          for _ in $(seq 1 60); do
-            WID=$(xdotool search --onlyvisible --pid "$BROWSER_PID" 2>/dev/null | head -n 1 || true)
-            if [ -z "$WID" ]; then
-              WID=$(xdotool search --onlyvisible --class 'chrome|chromium' 2>/dev/null | head -n 1 || true)
-            fi
-            if [ -z "$WID" ]; then
-              WID=$(xdotool search --onlyvisible --name 'NF-01|Dashboard|Chromium|Chrome' 2>/dev/null | head -n 1 || true)
-            fi
-            if [ -n "$WID" ]; then break; fi
-            sleep 0.5
-          done
-
-          if [ -z "$WID" ]; then
-            echo 'No browser window found.' >&2
-            xdotool search --onlyvisible --name '.' 2>/dev/null || true
-            cat /tmp/nf01-openbox.log || true
-            cat /tmp/nf01-chromium.log || true
-            exit 20
-          fi
-
-          export WID
-          xdotool windowactivate --sync "$WID"
-          xdotool key --window "$WID" ctrl+0
-          for _ in 1 2 3 4 5; do
-            xdotool key --window "$WID" ctrl+plus
-            sleep 0.25
-          done
+          trap 'safe_kill "${ORCA_PID:-}" "${SERVER_PID:-}" "${WM_PID:-}"' EXIT
           sleep 2
 
           orca --replace --debug-file "$EVIDENCE/N3-orca-debug.log" > /tmp/nf01-orca-stdout.log 2>&1 &
           ORCA_PID=$!
           sleep 4
 
-          DRIVER="$GITHUB_WORKSPACE/docs/nf-01/validation/phase-n/nf01-cloud-driver.mjs"
-          cat > "$DRIVER" <<'NODE'
-          import { chromium } from 'playwright';
-          import { execFileSync } from 'node:child_process';
-          import fs from 'node:fs';
-          import path from 'node:path';
-
-          const base = 'http://127.0.0.1:4173/screens';
-          const evidence = process.env.EVIDENCE;
-          const wid = process.env.WID;
-          const browser = await chromium.connectOverCDP('http://127.0.0.1:9222');
-          const context = browser.contexts()[0];
-          const pages = context.pages();
-          const page = pages[0];
-
-          const osKey = (...keys) => execFileSync('xdotool', ['key', '--window', wid, ...keys], { stdio: 'ignore' });
-          const capture = (name) => execFileSync('import', ['-window', wid, path.join(evidence, name)], { stdio: 'ignore' });
-          const settle = () => page.waitForTimeout(900);
-          const rows = [];
-
-          async function inspect(label) {
-            const metrics = await page.evaluate(() => ({
-              url: location.href,
-              title: document.title,
-              innerWidth: window.innerWidth,
-              outerWidth: window.outerWidth,
-              devicePixelRatio: window.devicePixelRatio,
-              clientWidth: document.documentElement.clientWidth,
-              scrollWidth: document.documentElement.scrollWidth,
-              horizontalOverflow: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
-            }));
-            rows.push({
-              label,
-              ...metrics,
-              zoomApprox: Number((metrics.outerWidth / metrics.innerWidth).toFixed(2)),
-              zoom200Signal: metrics.devicePixelRatio >= 1.9 && metrics.devicePixelRatio <= 2.1,
-            });
-          }
-
-          async function visit(relative, label, shot) {
-            await page.goto(`${base}/${relative}`, { waitUntil: 'networkidle' });
-            await settle();
-            await inspect(label);
-            capture(shot);
-          }
-
-          await visit('02.01-dashboard.html', 'Dashboard', 'N2-dashboard-real-browser-zoom.png');
-          await page.locator('[data-cross-screen-handoff="biometric-missing"]').focus();
-          await settle();
-          osKey('Return');
-          await page.waitForURL(/03\.01-funcionarios\.html\?biometric=missing/);
-          await settle();
-          await inspect('Funcionários filtrados via Dashboard');
-          capture('N3-dashboard-to-employees-filtered.png');
-
-          await visit('01.01-app-shell.html', 'AppShell', 'N2-appshell-real-browser-zoom.png');
-          await visit('03.01-funcionarios.html', 'Funcionários', 'N2-funcionarios-real-browser-zoom.png');
-          await visit('03.04-novo-funcionario-v2.html', 'Novo Funcionário', 'N2-novo-funcionario-real-browser-zoom.png');
-
-          const stepToggle = page.locator('[data-toggle-step-list]');
-          await stepToggle.focus();
-          osKey('Return');
-          await page.waitForTimeout(400);
-          capture('N3-step-list-open.png');
-
-          const summary = page.locator('[data-open-context]');
-          await summary.focus();
-          osKey('Return');
-          await page.locator('[data-context-drawer]').waitFor({ state: 'visible' });
-          capture('N2-N3-context-drawer-open.png');
-          osKey('Escape');
-          await page.waitForTimeout(400);
-          const focusReturned = await summary.evaluate((el) => document.activeElement === el);
-
-          const continueButton = page.locator('[data-next-step]');
-          await continueButton.focus();
-          osKey('Return');
-          await page.locator('[data-error-summary]').waitFor({ state: 'visible' });
-          await page.waitForTimeout(400);
-          const errorText = (await page.locator('[data-error-summary]').innerText()).replace(/\s+/g, ' ').trim();
-          capture('N3-error-summary.png');
-
-          const employeesBreadcrumb = page.locator('nav[aria-label="Breadcrumb"] a[href="03.01-funcionarios.html"]').last();
-          await employeesBreadcrumb.focus();
-          osKey('Return');
-          await page.waitForURL(/03\.01-funcionarios\.html$/);
-          await settle();
-          await inspect('Retorno a Funcionários');
-
-          const summaryJson = {
-            execution: 'CLOUD_HEADED_GUI_AUTOMATION',
-            browserZoomMethod: 'OS_LEVEL_CTRL_PLUS_ON_HEADED_CHROMIUM',
-            expectedZoom: '200%',
-            zoom200SignalsAllPass: rows.every((row) => row.zoom200Signal),
-            noHorizontalOverflowAllPass: rows.every((row) => !row.horizontalOverflow),
-            surfaces: rows,
-            contextDrawerFocusReturned: focusReturned,
-            errorSummaryText: errorText,
-          };
-          fs.writeFileSync(path.join(evidence, 'cloud-gui-summary.json'), JSON.stringify(summaryJson, null, 2));
-          await browser.close();
-          NODE
-
-          node "$DRIVER"
-          rm -f "$DRIVER"
+          cd "$GITHUB_WORKSPACE/docs/nf-01/validation/phase-n"
+          node "$GITHUB_WORKSPACE/.github/scripts/nf01-cloud-gui.mjs"
           sleep 2
 
+          safe_kill "$ORCA_PID"
+          ORCA_PID=""
+          sleep 1
+          cp /tmp/nf01-xvfb.log "$EVIDENCE/runtime-xvfb.log" || true
+          cp /tmp/nf01-openbox.log "$EVIDENCE/runtime-openbox.log" || true
+          cp /tmp/nf01-http.log "$EVIDENCE/runtime-http.log" || true
+          cp /tmp/nf01-orca-stdout.log "$EVIDENCE/runtime-orca-stdout.log" || true
           grep 'SPEECH OUTPUT' "$EVIDENCE/N3-orca-debug.log" > "$EVIDENCE/N3-orca-speech-output.log" || true
+
           python3 - <<'PY'
           import json, os, pathlib
           evidence = pathlib.Path(os.environ['EVIDENCE'])
-          speech = (evidence / 'N3-orca-speech-output.log').read_text(errors='ignore') if (evidence / 'N3-orca-speech-output.log').exists() else ''
+          speech_file = evidence / 'N3-orca-speech-output.log'
+          speech = speech_file.read_text(errors='ignore') if speech_file.exists() else ''
           expected = [
               'Dashboard',
               'Funcionários',
