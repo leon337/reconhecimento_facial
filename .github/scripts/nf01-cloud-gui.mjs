@@ -19,6 +19,16 @@ const zoomKey = (wid, key) => {
 };
 const capture = (wid, name) => execFileSync('/usr/bin/import', ['-window', wid, path.join(evidence, name)], { stdio: 'ignore' });
 const checkpoint = (label) => console.log(`NF01_CLOUD_CHECKPOINT=${label}`);
+const nativeKey = (wid, key) => {
+  activateWindow(wid);
+  execFileSync('xdotool', ['key', '--clearmodifiers', key], { stdio: 'ignore' });
+};
+const focusWebContentForOrca = async (wid, label) => {
+  activateWindow(wid);
+  nativeKey(wid, 'F6');
+  await sleep(700);
+  checkpoint(`ORCA_WEB_FOCUS_${label.replaceAll(' ', '_')}`);
+};
 
 const context = await chromium.launchPersistentContext('/tmp/nf01-cloud-profile', {
   headless: false,
@@ -59,6 +69,7 @@ for (let i = 0; i < 5; i += 1) {
 }
 await sleep(1200);
 checkpoint('BROWSER_ZOOM_APPLIED');
+await focusWebContentForOrca(wid, 'INITIAL_DASHBOARD');
 
 const rows = [];
 const interactions = [];
@@ -108,6 +119,8 @@ async function visit(relative, label, shot) {
   await sleep(900);
   await inspect(label);
   capture(wid, shot);
+  await focusWebContentForOrca(wid, label);
+  await sleep(350);
 }
 
 await visit('02.01-dashboard.html', 'Dashboard', 'N2-dashboard-real-browser-zoom.png');
