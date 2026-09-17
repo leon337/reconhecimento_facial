@@ -21,24 +21,26 @@ def children(obj):
     try:
         count = obj.childCount
     except Exception:
-        return
+        return []
+    out = []
     for index in range(count):
         try:
             child = obj.getChildAtIndex(index)
         except Exception:
             continue
         if child is not None:
-            yield child
+            out.append(child)
+    return out
 
-def walk(root, limit=12000):
+def walk(root, limit):
     stack = [root]
     seen = 0
     while stack and seen < limit:
         obj = stack.pop()
         seen += 1
-        yield obj
+        yield obj, seen
         try:
-            kids = list(children(obj))
+            kids = children(obj)
         except Exception:
             kids = []
         stack.extend(reversed(kids))
@@ -57,12 +59,14 @@ if not apps:
     emit({"status": "NO_CHROME_APPLICATION", "needle": needle})
     raise SystemExit(2)
 
-focusable = []
-documents = []
-matches = []
+candidate = None
+candidate_meta = None
+first_document = None
+scanned = 0
 
 for app in apps:
-    for obj in walk(app):
+    for obj, count in walk(app, limit=3000):
+        scanned += 1
         try:
             name = obj.name or ""
             role = obj.getRoleName()
@@ -73,27 +77,19 @@ for app in apps:
         except Exception:
             continue
 
-        if role == "document web":
-            documents.append(obj)
+        if first_document is None and role == "document web":
+            first_document = obj
 
-        if is_focusable and is_showing and is_visible:
-            focusable.append((obj, role, name))
-
-        if needle and needle in name.lower():
-            matches.append((obj, role, name, is_focusable, is_showing, is_visible))
-
-candidate = None
-candidate_meta = None
-
-for obj, role, name, is_focusable, is_showing, is_visible in matches:
-    if is_focusable and is_showing and is_visible:
-        candidate = obj
-        candidate_meta = (role, name, "TARGET_MATCH")
+        if needle and needle in name.lower() and is_focusable and is_showing and is_visible:
+            candidate = obj
+            candidate_meta = (role, name, "TARGET_MATCH")
+            break
+    if candidate is not None:
         break
 
-if candidate is None and documents:
-    document = documents[0]
-    for obj in walk(document, limit=6000):
+if candidate is None and first_document is not None:
+    for obj, count in walk(first_document, limit=800):
+        scanned += 1
         try:
             name = obj.name or ""
             role = obj.getRoleName()
@@ -105,18 +101,12 @@ if candidate is None and documents:
         except Exception:
             continue
 
-if candidate is None and focusable:
-    obj, role, name = focusable[0]
-    candidate = obj
-    candidate_meta = (role, name, "APP_FIRST_FOCUSABLE")
-
 if candidate is None:
     emit({
         "status": "NO_FOCUSABLE_CONTENT",
         "needle": needle,
-        "document_count": len(documents),
-        "focusable_count": len(focusable),
-        "matches": [{"role": r, "name": n, "focusable": f, "showing": s, "visible": v} for _, r, n, f, s, v in matches[:20]],
+        "scanned": scanned,
+        "document_found": first_document is not None,
     })
     raise SystemExit(3)
 
@@ -124,10 +114,18 @@ role, name, source = candidate_meta
 try:
     result = bool(candidate.queryComponent().grabFocus())
 except Exception as exc:
-    emit({"status": "GRAB_FOCUS_ERROR", "needle": needle, "role": role, "name": name, "source": source, "error": repr(exc)})
+    emit({
+        "status": "GRAB_FOCUS_ERROR",
+        "needle": needle,
+        "role": role,
+        "name": name,
+        "source": source,
+        "scanned": scanned,
+        "error": repr(exc),
+    })
     raise SystemExit(4)
 
-time.sleep(0.75)
+time.sleep(0.6)
 try:
     focused = candidate.getState().contains(pyatspi.STATE_FOCUSED)
 except Exception:
@@ -141,7 +139,5 @@ emit({
     "source": source,
     "grab_focus_result": result,
     "focused_after": focused,
-    "document_count": len(documents),
-    "focusable_count": len(focusable),
-    "match_count": len(matches),
+    "scanned": scanned,
 })
