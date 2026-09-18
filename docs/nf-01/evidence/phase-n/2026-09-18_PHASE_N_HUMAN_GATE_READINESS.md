@@ -13,7 +13,8 @@ A linha técnica da Fase N foi executada até o limite permitido pelo contrato N
 ```text
 PHASE_N_TECHNICAL_WORK=COMPLETE_TO_TOOLING_LIMIT
 HUMAN_GATE_READY=YES
-PHASE_N_CLOSEOUT=BLOCKED_ON_H1_H2
+N3_REAL_ORCA_HUMAN_DIRECTED=PASS
+PHASE_N_CLOSEOUT=BLOCKED_ON_H1_ONLY
 PHASE_O_START_ALLOWED=NO
 PR_MERGE_AUTHORIZED=NO
 NF02_START_ALLOWED=NO
@@ -153,7 +154,14 @@ A Fase N não redefine esses contratos como PASS.
 
 ## Human Gate obrigatório
 
-Restam exatamente dois resultados humanos a registrar.
+O resultado humano de leitor de tela foi fechado por evidência real de Orca:
+
+```text
+N3_MANUAL_SCREEN_READER_CRITICAL_JOURNEY=PASS
+EVIDENCE=docs/nf-01/evidence/phase-n/2026-09-18_N3_REAL_ORCA_HUMAN_DIRECTED_EVIDENCE.md
+```
+
+Resta exatamente um resultado humano a registrar.
 
 ### H1 — Zoom real 200%
 
@@ -164,29 +172,9 @@ N2_MANUAL_BROWSER_ZOOM_200=PASS|FAIL
 Usar o roteiro:
 `docs/nf-01/evidence/phase-n/2026-09-18_PHASE_N_MINIMAL_HUMAN_GATE.md`
 
-### H2 — Leitor de tela real
-
-```text
-N3_MANUAL_SCREEN_READER_CRITICAL_JOURNEY=PASS|FAIL
-```
-
-Jornada mínima:
-
-```text
-Dashboard
-→ atenção de biometria pendente
-→ Funcionários filtrados
-→ Novo funcionário
-→ Ver etapas
-→ abrir/fechar ContextDrawer
-→ provocar erro
-→ ouvir ErrorSummary
-→ retornar a Funcionários
-```
-
 ## Regra de saída
 
-Somente se H1 e H2 forem PASS, com `OPEN_BLOCKER=0` e `OPEN_HIGH=0`, N4 poderá ser reconciliado para fechamento da Fase N.
+Somente se H1 for PASS, mantendo N3=PASS, com `OPEN_BLOCKER=0` e `OPEN_HIGH=0`, N4 poderá ser reconciliado para fechamento da Fase N.
 
 Até a decisão humana:
 
