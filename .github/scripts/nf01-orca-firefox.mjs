@@ -105,6 +105,19 @@ async function nativeTabUntil(label, needle, maxTabs = 80) {
 
 async function resetWebFocus() {
   activateWindow(wid);
+  const skip = page.locator('a[href="#main-content"]').first();
+  if (await skip.count()) {
+    await skip.focus();
+    await sleep(500);
+    const snap = await activeElementSnapshot();
+    console.log(`NF01_FIREFOX_ORCA_SEED_FOCUS=${snap.name || ''}`);
+    journey.push({
+      label: 'WEB_FOCUS_SEED',
+      activeElement: snap,
+      result: 'PLAYWRIGHT_SKIP_LINK_SEED_ONLY',
+    });
+    return;
+  }
   nativeKey(wid, 'F6');
   await sleep(650);
 }
