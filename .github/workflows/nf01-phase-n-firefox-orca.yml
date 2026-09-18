@@ -93,7 +93,10 @@ jobs:
           sleep 4
 
           cd "$GITHUB_WORKSPACE/docs/nf-01/validation/phase-n"
+          set +e
           node "$GITHUB_WORKSPACE/.github/scripts/nf01-orca-firefox.mjs"
+          NODE_RC=$?
+          set -e
           sleep 2
 
           safe_kill "$ORCA_PID"
@@ -130,6 +133,8 @@ jobs:
               json.dumps(payload, indent=2, ensure_ascii=False)
           )
           PY
+
+          exit "$NODE_RC"
           INNER
 
       - name: Show Firefox Orca summary
