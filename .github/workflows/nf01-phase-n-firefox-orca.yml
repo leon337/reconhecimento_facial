@@ -38,7 +38,7 @@ jobs:
         run: |
           npx playwright install --with-deps firefox
           sudo apt-get update
-          sudo apt-get install -y xvfb openbox xdotool dbus-x11 at-spi2-core orca speech-dispatcher jq
+          sudo apt-get install -y xvfb openbox xdotool dbus-x11 at-spi2-core python3-pyatspi orca speech-dispatcher jq
 
       - name: Run Firefox + Orca native keyboard journey
         working-directory: docs/nf-01/validation/phase-n
@@ -70,6 +70,7 @@ jobs:
           export XDG_RUNTIME_DIR=/tmp/nf01-firefox-runtime
           export GTK_MODULES=gail:atk-bridge
           export NO_AT_BRIDGE=0
+          export MOZ_ACCESSIBILITY_ATSPI=1
           export EVIDENCE="$GITHUB_WORKSPACE/docs/nf-01/evidence/phase-n/firefox-orca-run"
 
           safe_kill() {
@@ -88,6 +89,7 @@ jobs:
           trap 'safe_kill "${ORCA_PID:-}" "${SERVER_PID:-}" "${WM_PID:-}"' EXIT
           sleep 2
 
+          gsettings set org.gnome.desktop.a11y.applications screen-reader-enabled true || true
           orca --replace --enable=speech --debug-file "$EVIDENCE/orca-debug.log" > /tmp/nf01-firefox-orca-stdout.log 2>&1 &
           ORCA_PID=$!
           sleep 4
