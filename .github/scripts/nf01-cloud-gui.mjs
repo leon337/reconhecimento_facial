@@ -97,6 +97,12 @@ const rows = [];
 const interactions = [];
 const nativeScreenReaderJourney = [];
 
+async function orcaWhereAmI(label) {
+  nativeKey(wid, 'KP_Enter');
+  checkpoint(`ORCA_WHERE_AM_I_${label.replaceAll(' ', '_')}`);
+  await sleep(1600);
+}
+
 async function activeElementSnapshot() {
   return page.evaluate(() => {
     const el = document.activeElement;
@@ -139,7 +145,8 @@ async function nativeTabUntil(label, needle, maxTabs = 45) {
         result: 'FOCUSED_NATIVE_KEYBOARD',
       });
       console.log(`NF01_NATIVE_SR_FOCUS=${label};TARGET=${needle};NAME=${snap.name};TABS=${index}`);
-      await sleep(1400);
+      await sleep(700);
+      await orcaWhereAmI(label);
       return snap;
     }
     nativeKey(wid, 'Tab');
@@ -208,6 +215,7 @@ async function nativeScreenReaderCriticalJourney() {
   await page.locator('[data-error-summary]').waitFor({ state: 'visible', timeout: 10000 });
   await sleep(1800);
   const errorSnap = await activeElementSnapshot();
+  await orcaWhereAmI('ERROR_SUMMARY');
   nativeScreenReaderJourney.push({
     label: 'ERROR_SUMMARY_AFTER_ENTER',
     activeElement: errorSnap,
