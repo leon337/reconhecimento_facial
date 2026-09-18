@@ -34,6 +34,9 @@ const atspiFocusForOrca = async (target) => {
   try {
     const output = execFileSync('python3', [probe, target], { encoding: 'utf8', env: process.env }).trim();
     console.log(`NF01_ATSPI_FOCUS_TARGET=${target};${output}`);
+    nativeKey(wid, 'Tab');
+    await sleep(250);
+    nativeKey(wid, 'shift+Tab');
   } catch (error) {
     const stderr = String(error?.stderr || '').trim();
     console.log(`NF01_ATSPI_FOCUS_TARGET=${target};ERROR=${stderr || error.message}`);
@@ -48,6 +51,9 @@ const context = await chromium.launchPersistentContext('/tmp/nf01-cloud-profile'
     '--no-sandbox',
     '--disable-dev-shm-usage',
     '--force-renderer-accessibility',
+    '--disable-translate',
+    '--disable-features=Translate,TranslateUI',
+    '--lang=pt-BR',
     '--window-size=1920,1040',
   ],
 });
