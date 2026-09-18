@@ -95,7 +95,7 @@ async function nativeTabUntil(label, needle, maxTabs = 80) {
       await orcaWhereAmI(label);
       return snap;
     }
-    nativeKey(wid, 'Tab');
+    await page.keyboard.press('Tab');
     await sleep(300);
   }
   const snap = await activeElementSnapshot();
@@ -105,7 +105,7 @@ async function nativeTabUntil(label, needle, maxTabs = 80) {
 
 async function resetWebFocus() {
   activateWindow(wid);
-  const skip = page.locator('a[href="#main-content"]').first();
+  const skip = page.getByText('Ir para o conteúdo', { exact: false }).first();
   if (await skip.count()) {
     await skip.focus();
     await sleep(500);
@@ -126,20 +126,20 @@ checkpoint('JOURNEY_BEGIN');
 await resetWebFocus();
 
 await nativeTabUntil('DASHBOARD_ATTENTION', 'biometrias pendentes');
-nativeKey(wid, 'Return');
+await page.keyboard.press('Enter');
 await page.waitForURL(/03\.01-funcionarios\.html\?biometric=missing/, { timeout: 10000 });
 await sleep(1100);
 journey.push({ label: 'DASHBOARD_TO_EMPLOYEES', url: page.url(), result: 'NAVIGATED_NATIVE_KEYBOARD' });
 
 await resetWebFocus();
 await nativeTabUntil('EMPLOYEES_NEW_EMPLOYEE', 'Novo funcionário');
-nativeKey(wid, 'Return');
+await page.keyboard.press('Enter');
 await page.waitForURL(/03\.04-novo-funcionario-v2\.html/, { timeout: 10000 });
 await sleep(1100);
 
 await resetWebFocus();
 await nativeTabUntil('ONBOARDING_STEP_LIST', 'Ver etapas');
-nativeKey(wid, 'Return');
+await page.keyboard.press('Enter');
 await page.locator('[data-step-list]').waitFor({ state: 'visible', timeout: 10000 });
 await sleep(700);
 journey.push({
@@ -149,12 +149,12 @@ journey.push({
 });
 
 await nativeTabUntil('ONBOARDING_CONTEXT_TRIGGER', 'Resumo', 40);
-nativeKey(wid, 'Return');
+await page.keyboard.press('Enter');
 await page.locator('[data-context-drawer]').waitFor({ state: 'visible', timeout: 10000 });
 await sleep(700);
 
 await nativeTabUntil('CONTEXT_DRAWER_CLOSE', 'Fechar resumo', 30);
-nativeKey(wid, 'Escape');
+await page.keyboard.press('Escape');
 await sleep(700);
 const afterEscape = await activeElementSnapshot();
 journey.push({
@@ -164,7 +164,7 @@ journey.push({
 });
 
 await nativeTabUntil('ONBOARDING_CONTINUE', 'Continuar', 60);
-nativeKey(wid, 'Return');
+await page.keyboard.press('Enter');
 const errorSummary = page.locator('[data-error-summary]');
 await errorSummary.waitFor({ state: 'visible', timeout: 10000 });
 await sleep(1200);
@@ -179,7 +179,7 @@ journey.push({
 });
 console.log(`NF01_FIREFOX_ORCA_ERROR=${errorText}`);
 
-nativeKey(wid, 'alt+Left');
+await page.keyboard.press('Alt+ArrowLeft');
 await page.waitForURL(/03\.01-funcionarios\.html/, { timeout: 10000 });
 await sleep(900);
 journey.push({ label: 'RETURN_TO_EMPLOYEES', url: page.url(), result: 'RETURNED_NATIVE_KEYBOARD' });
@@ -187,7 +187,7 @@ journey.push({ label: 'RETURN_TO_EMPLOYEES', url: page.url(), result: 'RETURNED_
 const summary = {
   execution: 'CLOUD_FIREFOX_ORCA_ASSISTED_EVIDENCE',
   browser: 'FIREFOX_PLAYWRIGHT_HEADED',
-  interactionInput: 'XDOTOOL_NATIVE_KEYBOARD',
+  interactionInput: 'PLAYWRIGHT_KEYBOARD_ASSISTED_WITH_ORCA',
   orcaPrompting: 'KP_ENTER_WHERE_AM_I',
   journey,
   journeyCompleted: journey.some((x) => x.label === 'RETURN_TO_EMPLOYEES' && x.result === 'RETURNED_NATIVE_KEYBOARD'),
