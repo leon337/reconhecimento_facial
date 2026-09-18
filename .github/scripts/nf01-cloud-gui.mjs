@@ -51,6 +51,11 @@ const context = await chromium.launchPersistentContext('/tmp/nf01-cloud-profile'
     '--no-sandbox',
     '--disable-dev-shm-usage',
     '--force-renderer-accessibility',
+    '--no-first-run',
+    '--no-default-browser-check',
+    '--disable-infobars',
+    '--disable-notifications',
+    '--app=http://127.0.0.1:4173/screens/02.01-dashboard.html',
     '--disable-translate',
     '--disable-features=Translate,TranslateUI',
     '--lang=pt-BR',
@@ -90,6 +95,129 @@ await focusWebContentForOrca(wid, 'INITIAL_DASHBOARD');
 
 const rows = [];
 const interactions = [];
+const nativeScreenReaderJourney = [];
+
+async function activeElementSnapshot() {
+  return page.evaluate(() => {
+    const el = document.activeElement;
+    if (!el) return { tag: null, role: null, name: null };
+    const name = (
+      el.getAttribute?.('aria-label')
+      || el.innerText
+      || el.textContent
+      || el.getAttribute?.('title')
+      || ''
+    ).replace(/\s+/g, ' ').trim();
+    return {
+      tag: el.tagName,
+      role: el.getAttribute?.('role') || null,
+      name,
+      href: el.getAttribute?.('href') || null,
+      ariaExpanded: el.getAttribute?.('aria-expanded') || null,
+    };
+  });
+}
+
+async function nativeTabUntil(label, needle, maxTabs = 45) {
+  const wanted = needle.toLocaleLowerCase('pt-BR');
+  for (let index = 0; index <= maxTabs; index += 1) {
+    const snap = await activeElementSnapshot();
+    if ((snap.name || '').toLocaleLowerCase('pt-BR').includes(wanted)) {
+      nativeScreenReaderJourney.push({
+        label,
+        target: needle,
+        tabs: index,
+        activeElement: snap,
+        result: 'FOCUSED_NATIVE_KEYBOARD',
+      });
+      console.log(`NF01_NATIVE_SR_FOCUS=${label};TARGET=${needle};NAME=${snap.name};TABS=${index}`);
+      await sleep(1400);
+      return snap;
+    }
+    nativeKey(wid, 'Tab');
+    await sleep(320);
+  }
+  const snap = await activeElementSnapshot();
+  nativeScreenReaderJourney.push({
+    label,
+    target: needle,
+    activeElement: snap,
+    result: 'TARGET_NOT_REACHED',
+  });
+  console.log(`NF01_NATIVE_SR_FOCUS=${label};TARGET=${needle};RESULT=NOT_REACHED;ACTIVE=${snap.name || ''}`);
+  return null;
+}
+
+async function nativeScreenReaderCriticalJourney() {
+  checkpoint('NATIVE_SCREEN_READER_BEGIN');
+  await page.goto(`${base}/02.01-dashboard.html`, { waitUntil: 'networkidle' });
+  await sleep(900);
+  activateWindow(wid);
+  nativeKey(wid, 'F6');
+  await sleep(700);
+
+  const attention = await nativeTabUntil('DASHBOARD_ATTENTION', 'biometrias pendentes', 35);
+  if (!attention) return;
+  nativeKey(wid, 'Return');
+  await page.waitForURL(/03\.01-funcionarios\.html\?biometric=missing/, { timeout: 10000 });
+  await sleep(1200);
+
+  nativeKey(wid, 'F6');
+  await sleep(650);
+  const createEmployee = await nativeTabUntil('EMPLOYEES_NEW_EMPLOYEE', 'Novo funcionário', 40);
+  if (!createEmployee) return;
+  nativeKey(wid, 'Return');
+  await page.waitForURL(/03\.04-novo-funcionario-v2\.html/, { timeout: 10000 });
+  await sleep(1200);
+
+  nativeKey(wid, 'F6');
+  await sleep(650);
+  const steps = await nativeTabUntil('ONBOARDING_STEP_LIST', 'Ver etapas', 50);
+  if (!steps) return;
+  nativeKey(wid, 'Return');
+  await sleep(1200);
+
+  const summary = await nativeTabUntil('ONBOARDING_CONTEXT_TRIGGER', 'Resumo', 25);
+  if (!summary) return;
+  nativeKey(wid, 'Return');
+  await page.locator('[data-context-drawer]').waitFor({ state: 'visible', timeout: 10000 });
+  await sleep(900);
+
+  const close = await nativeTabUntil('CONTEXT_DRAWER_CLOSE', 'Fechar resumo', 20);
+  await sleep(900);
+  nativeKey(wid, 'Escape');
+  await sleep(900);
+  const afterEscape = await activeElementSnapshot();
+  nativeScreenReaderJourney.push({
+    label: 'CONTEXT_DRAWER_ESCAPE',
+    activeElement: afterEscape,
+    result: (afterEscape.name || '').includes('Resumo') ? 'FOCUS_RETURNED' : 'FOCUS_RETURN_UNCONFIRMED',
+  });
+
+  const next = await nativeTabUntil('ONBOARDING_CONTINUE', 'Continuar', 45);
+  if (!next) return;
+  nativeKey(wid, 'Return');
+  await page.locator('[data-error-summary]').waitFor({ state: 'visible', timeout: 10000 });
+  await sleep(1800);
+  const errorSnap = await activeElementSnapshot();
+  nativeScreenReaderJourney.push({
+    label: 'ERROR_SUMMARY_AFTER_ENTER',
+    activeElement: errorSnap,
+    errorText: (await page.locator('[data-error-summary]').innerText()).replace(/\s+/g, ' ').trim(),
+    result: 'ERROR_VISIBLE',
+  });
+  console.log(`NF01_NATIVE_SR_ERROR=${nativeScreenReaderJourney.at(-1).errorText}`);
+
+  nativeKey(wid, 'alt+Left');
+  await page.waitForURL(/03\.01-funcionarios\.html/, { timeout: 10000 });
+  await sleep(1000);
+  nativeScreenReaderJourney.push({
+    label: 'RETURN_TO_EMPLOYEES',
+    url: page.url(),
+    result: 'RETURNED_NATIVE_KEYBOARD',
+  });
+  checkpoint('NATIVE_SCREEN_READER_COMPLETE');
+}
 
 function writePartial(status) {
   fs.writeFileSync(path.join(evidence, 'cloud-gui-summary.json'), JSON.stringify({
@@ -103,6 +231,7 @@ function writePartial(status) {
     noHorizontalOverflowAllPass: rows.length > 0 && rows.every((row) => !row.horizontalOverflow),
     surfaces: rows,
     interactions,
+    nativeScreenReaderJourney,
     manualAcceptanceClaimed: false,
   }, null, 2));
 }
@@ -239,6 +368,7 @@ await sleep(700);
 await inspect('Retorno a Funcionários');
 interactions.push({ case: 'RETURN_TO_EMPLOYEES', input: 'PLAYWRIGHT_KEYBOARD', result: 'PASS_ASSISTED' });
 
+await nativeScreenReaderCriticalJourney();
 writePartial('COMPLETE_ASSISTED_EVIDENCE');
 checkpoint('SUMMARY_WRITTEN');
 await context.close();
