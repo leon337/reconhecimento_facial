@@ -1,0 +1,220 @@
+/* NF-01 Design Lab — legacy AppShell quarantine (I7)
+ * Historical support only for screens explicitly marked data-legacy-shell.
+ * Current surfaces must use app-shell.css instead.
+ */
+
+body[data-legacy-shell] .app-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: var(--sidebar-expanded) minmax(0, 1fr);
+}
+
+body[data-legacy-shell] .sidebar {
+  position: fixed;
+  z-index: 70;
+  inset: 0 auto 0 0;
+  width: var(--sidebar-expanded);
+  display: flex;
+  flex-direction: column;
+  color: #e8f2ec;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(199,163,61,.10), transparent 18rem),
+    linear-gradient(180deg, #123727 0%, var(--brand-900) 50%, #103323 100%);
+  border-right: 1px solid rgba(255,255,255,.06);
+  box-shadow: 8px 0 28px rgba(20,61,43,.10);
+}
+
+body[data-legacy-shell] .sidebar__brand {
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 20px;
+  border-bottom: 1px solid rgba(255,255,255,.09);
+}
+
+body[data-legacy-shell] .brand-mark {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  color: var(--brand-900);
+  background: linear-gradient(145deg, #d8bb5d, var(--premium-500));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.5), 0 8px 18px rgba(0,0,0,.16);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+body[data-legacy-shell] .brand-copy { min-width: 0; }
+body[data-legacy-shell] .brand-copy strong { display: block; color: #fff; font-size: 15px; line-height: 1.2; }
+body[data-legacy-shell] .brand-copy span { display: block; margin-top: 4px; color: #d6b94f; font-size: 10px; font-weight: 800; letter-spacing: .08em; }
+body[data-legacy-shell] .sidebar__nav { flex: 1; padding: 14px 12px; overflow-y: auto; }
+body[data-legacy-shell] .nav-section { margin-top: 18px; }
+body[data-legacy-shell] .nav-section:first-child { margin-top: 0; }
+body[data-legacy-shell] .nav-label { padding: 0 12px 7px; color: #a7bcb0; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+body[data-legacy-shell] .nav-list { display: grid; gap: 4px; }
+
+body[data-legacy-shell] .nav-item {
+  position: relative;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  color: #dfeae4;
+  font-size: 14px;
+  font-weight: 600;
+  transition: transform var(--motion-fast) var(--ease-standard), background var(--motion-fast) var(--ease-standard), border-color var(--motion-fast) var(--ease-standard), color var(--motion-fast) var(--ease-standard);
+}
+
+body[data-legacy-shell] .nav-item:hover { background: rgba(255,255,255,.07); border-color: rgba(255,255,255,.05); color: #fff; transform: translateX(1px); }
+body[data-legacy-shell] .nav-item:active { transform: translateX(0) scale(.995); background: rgba(255,255,255,.10); }
+body[data-legacy-shell] .nav-item[aria-current="page"] {
+  color: #fff;
+  background: linear-gradient(90deg, rgba(46,125,87,.52), rgba(46,125,87,.30));
+  border-color: rgba(255,255,255,.07);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 6px 18px rgba(0,0,0,.10);
+}
+body[data-legacy-shell] .nav-item[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 9px;
+  bottom: 9px;
+  width: 3px;
+  border-radius: 999px;
+  background: var(--premium-500);
+  box-shadow: 0 0 0 1px rgba(199,163,61,.10), 0 0 16px rgba(199,163,61,.20);
+}
+body[data-legacy-shell] .nav-item__external { margin-left: auto; opacity: .75; }
+
+body[data-legacy-shell] .sidebar__context {
+  margin: 14px 12px 16px;
+  padding: 14px;
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 14px;
+  background: rgba(255,255,255,.045);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+}
+body[data-legacy-shell] .sidebar__context small { display: block; color: #a9beb2; font-size: 11px; font-weight: 700; }
+body[data-legacy-shell] .sidebar__context strong { display: block; margin-top: 5px; color: #fff; font-size: 13px; }
+body[data-legacy-shell] .sidebar__context span { display: block; margin-top: 3px; color: #cedbd4; font-size: 12px; }
+
+body[data-legacy-shell] .app-main { grid-column: 2; min-width: 0; }
+
+body[data-legacy-shell] .topbar {
+  position: sticky;
+  z-index: 50;
+  top: 0;
+  min-height: var(--topbar-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 28px;
+  background: rgba(255,255,255,.90);
+  border-bottom: 1px solid rgba(20,61,43,.10);
+  box-shadow: 0 1px 0 rgba(255,255,255,.8), 0 8px 24px rgba(31,41,51,.045);
+  backdrop-filter: blur(18px);
+}
+body[data-legacy-shell] .topbar__start,
+body[data-legacy-shell] .topbar__end { display: flex; align-items: center; gap: 10px; min-width: 0; }
+body[data-legacy-shell] .mobile-menu-button { display: none; }
+
+body[data-legacy-shell] .profile-button,
+body[data-legacy-shell] .context-button {
+  min-height: var(--touch-min);
+  transition: transform var(--motion-fast) var(--ease-standard), box-shadow var(--motion-base) var(--ease-standard), background var(--motion-fast) var(--ease-standard), border-color var(--motion-fast) var(--ease-standard), color var(--motion-fast) var(--ease-standard);
+}
+
+body[data-legacy-shell] .context-button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 320px;
+  padding: 0 12px;
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+  color: var(--text-primary);
+  background: linear-gradient(180deg, #fbfdfc, #f3f6f4);
+  box-shadow: var(--shadow-xs), var(--shadow-inset-highlight);
+  cursor: pointer;
+}
+body[data-legacy-shell] .context-button:hover { border-color: #c4d2ca; background: #fff; box-shadow: var(--shadow-sm), var(--shadow-inset-highlight); }
+body[data-legacy-shell] .context-button:active { transform: translateY(1px); box-shadow: var(--shadow-xs); }
+body[data-legacy-shell] .context-button strong { font-size: 13px; }
+body[data-legacy-shell] .context-button span { color: var(--text-secondary); font-size: 12px; }
+body[data-legacy-shell] .context-button .chevron { margin-left: auto; color: var(--text-tertiary); }
+
+body[data-legacy-shell] .audit-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 14px;
+  border: 1px solid #dfc267;
+  border-radius: var(--radius-full);
+  color: var(--premium-700);
+  background: linear-gradient(180deg, #fffaf0, var(--premium-100));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.8);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .04em;
+}
+
+body[data-legacy-shell] .profile-button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 8px 4px 5px;
+  border: 1px solid transparent;
+  border-radius: 13px;
+  color: var(--text-primary);
+  background: transparent;
+  cursor: pointer;
+}
+body[data-legacy-shell] .profile-button:hover { border-color: var(--border-default); background: #fff; box-shadow: var(--shadow-sm); }
+body[data-legacy-shell] .avatar {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--brand-800);
+  background: var(--brand-100);
+  font-size: 11px;
+  font-weight: 800;
+}
+body[data-legacy-shell] .profile-copy { text-align: left; line-height: 1.15; }
+body[data-legacy-shell] .profile-copy strong { display: block; font-size: 12px; }
+body[data-legacy-shell] .profile-copy span { display: block; margin-top: 4px; color: var(--text-secondary); font-size: 11px; }
+
+@media (max-width: 980px) {
+  body[data-legacy-shell] .app-shell { display: block; }
+  body[data-legacy-shell] .app-main { min-width: 0; }
+  body[data-legacy-shell] .sidebar { transform: translateX(-105%); transition: transform var(--motion-slow) var(--ease-standard); box-shadow: var(--shadow-lg); }
+  body[data-legacy-shell].nav-open .sidebar { transform: translateX(0); }
+  body[data-legacy-shell].nav-open::after { content: ""; position: fixed; z-index: 60; inset: 0; background: rgba(20,33,27,.42); backdrop-filter: blur(2px); }
+  body[data-legacy-shell] .mobile-menu-button { display: grid; }
+  body[data-legacy-shell] .topbar { padding-inline: 18px; }
+  body[data-legacy-shell] .context-button { min-width: 0; max-width: 330px; }
+  body[data-legacy-shell] .audit-badge { display: none; }
+}
+
+@media (max-width: 720px) {
+  body[data-legacy-shell] .topbar { min-height: 60px; }
+  body[data-legacy-shell] .context-button { max-width: 210px; }
+  body[data-legacy-shell] .context-button span { display: none; }
+  body[data-legacy-shell] .profile-copy { display: none; }
+  body[data-legacy-shell] .profile-button { padding-right: 5px; }
+}
+
+@media (max-width: 430px) {
+  body[data-legacy-shell] .topbar { padding-inline: 12px; }
+  body[data-legacy-shell] .context-button { width: 44px; padding: 0; justify-content: center; }
+  body[data-legacy-shell] .context-button strong,
+  body[data-legacy-shell] .context-button .chevron { display: none; }
+  body[data-legacy-shell] .icon-button:not(.mobile-menu-button) { display: none; }
+}

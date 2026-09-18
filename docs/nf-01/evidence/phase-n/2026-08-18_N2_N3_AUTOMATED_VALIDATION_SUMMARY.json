@@ -1,0 +1,73 @@
+{
+  "mission": "CPP-NF-01-PRODUTO-DESIGN-SYSTEM",
+  "date": "2026-08-18",
+  "branch": "docs/nf-01-produto-design-system",
+  "pr": 32,
+  "validation_head": "c1a1db3e9f0c944e522813c475ba29b8758b4ec6",
+  "workflow": {
+    "name": "NF01 Phase N Validation",
+    "run_id": 32125796830,
+    "run_number": 17,
+    "conclusion": "success",
+    "artifact_id": 9320310859,
+    "artifact_name": "nf01-phase-n-evidence",
+    "artifact_digest": "sha256:02d952de8c294d0c5d5cca38c316b79120bade246f7c07eb411a083b9903ecfa",
+    "artifact_retention_days": 30
+  },
+  "base_matrix": {
+    "pass": 55,
+    "fail": 1,
+    "blocked_tooling": 2,
+    "not_applicable": 0,
+    "note": "O único FAIL da matriz base foi um falso positivo do harness no EntityPicker oculto; foi supersedido por reteste focado em etapa Vínculo restaurada."
+  },
+  "focused_retests": [
+    {
+      "case_id": "N3-EMPLOYEES-360-AXE-RETEST",
+      "result": "PASS",
+      "purpose": "Confirmar correção do contraste das seis linhas Conta:."
+    },
+    {
+      "case_id": "N3-ONBOARDING-ENTITY_PICKER-KEYBOARD-RETEST",
+      "result": "PASS",
+      "actual": {
+        "visible_pickers": 6,
+        "expanded_after_arrow": true,
+        "expanded_after_escape": false,
+        "focus_preserved_after_escape": true
+      }
+    }
+  ],
+  "final": {
+    "automated_fail": 0,
+    "blocked_tooling": 2,
+    "blocked_cases": [
+      "N2-MANUAL_BROWSER_ZOOM_200",
+      "N3-MANUAL-SCREEN-READER-CRITICAL-JOURNEY"
+    ]
+  },
+  "design_lab_fixes_during_validation": [
+    {
+      "commit": "9816c44daf00cfdbcdf2c3548b1fa9fd00b1ed38",
+      "issue": "interactions.js matched body metadata attributes and replaced the entire body textContent",
+      "resolution": "scope visible shell synchronization to data-app-shell-root"
+    },
+    {
+      "commit": "8ceab55c56f40afb036bdf8eb42a78736d068d2a",
+      "issue": "author CSS overrode native hidden behavior, exposing hidden wizard/state/RBAC affordances",
+      "resolution": "enforce hidden display semantics in the Design Lab shared interaction substrate"
+    },
+    {
+      "commit": "dbcafef6b8007cd6680705ecc41980355df4f6a8",
+      "issue": "employee account metadata contrast 4.41:1 at 12px",
+      "resolution": "use text-secondary token; axe retest passes"
+    }
+  ],
+  "limits": {
+    "manual_browser_zoom_200": "BLOCKED_TOOLING",
+    "manual_screen_reader": "BLOCKED_TOOLING",
+    "new_design_unit_tests_executed": false,
+    "new_design_integration_tests_executed": false,
+    "production_e2e_executed": false
+  }
+}

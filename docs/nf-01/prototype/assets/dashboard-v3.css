@@ -1,0 +1,189 @@
+/* NF-01 Design Lab — Dashboard J2 canonical reconciliation layer
+   AppShell continua em app-shell.css/app-shell.js.
+   Este arquivo trata somente o conteúdo do Dashboard e usa unidades relativas
+   para o que J2 toca; a dívida global de components.css permanece diferida. */
+
+.dashboard-page .date-pill { font-size: .875rem; }
+
+.dashboard-page .demo-notice {
+  padding: .75rem .875rem;
+  font-size: .875rem;
+  line-height: 1.5;
+  box-shadow: var(--shadow-xs), var(--shadow-inset-highlight);
+}
+
+.dashboard-page .kpi-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  gap: 1.125rem;
+}
+
+.dashboard-page .kpi-card,
+.dashboard-page .panel {
+  border-color: rgba(20,61,43,.11);
+}
+
+.dashboard-page .kpi-card {
+  min-height: 11.75rem;
+  padding: 1.25rem;
+  box-shadow: var(--shadow-md), var(--shadow-inset-highlight);
+}
+
+.dashboard-page .kpi-card:last-child { grid-column: auto; }
+
+.dashboard-page .panel--primary {
+  border-color: rgba(20,61,43,.13);
+  box-shadow: var(--shadow-lg), var(--shadow-inset-highlight);
+}
+
+.dashboard-page .panel--secondary {
+  border-color: rgba(20,61,43,.10);
+  box-shadow: var(--shadow-md), var(--shadow-inset-highlight);
+}
+
+.dashboard-page .kpi-card__identity { align-items: flex-start; }
+.dashboard-page .kpi-card__identity > div:last-child {
+  min-height: 4.75rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.dashboard-page .kpi-card__label {
+  min-height: 2.5rem;
+  margin-top: 0;
+  color: #4f5d56;
+  font-size: .9375rem;
+  line-height: 1.3;
+  font-weight: 700;
+}
+
+.dashboard-page .kpi-card__value {
+  margin-top: .3125rem;
+  font-size: 2.25rem;
+}
+
+.dashboard-page .kpi-card__help {
+  margin-top: 1rem;
+  font-size: .875rem;
+}
+
+.dashboard-page .status-pill {
+  min-height: 1.875rem;
+  padding-inline: .6875rem;
+  font-size: .75rem;
+}
+
+.metric-state {
+  min-height: 1.875rem;
+  display: inline-flex;
+  align-items: center;
+  padding-inline: .6875rem;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-full);
+  color: var(--text-secondary);
+  background: var(--surface-subtle);
+  font-size: .75rem;
+  line-height: 1;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.metric-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .375rem .875rem;
+  margin-top: .75rem;
+  padding-top: .75rem;
+  border-top: 1px solid var(--border-soft);
+  color: var(--text-tertiary);
+  font-size: .75rem;
+  line-height: 1.45;
+}
+
+.metric-card__meta time { color: var(--text-secondary); }
+
+.dashboard-page .dashboard-grid {
+  grid-template-columns: minmax(0, 1.8fr) minmax(20rem, .86fr);
+  gap: 1.25rem;
+}
+
+.dashboard-page .panel__title { font-size: 1.25rem; }
+.dashboard-page .panel__subtitle { font-size: .875rem; }
+.dashboard-page .text-action,
+.dashboard-page .button { font-size: .875rem; }
+
+.dashboard-page .activity-head {
+  min-height: 3rem;
+  color: #526159;
+  font-size: .8125rem;
+}
+
+.dashboard-page .activity-row { min-height: 4.75rem; }
+.dashboard-page .person__avatar { width: 2.5rem; height: 2.5rem; font-size: .6875rem; }
+.dashboard-page .person__name { font-size: .9375rem; }
+.dashboard-page .person__meta { font-size: .8125rem; }
+.dashboard-page .activity-cell { font-size: .875rem; }
+
+.dashboard-page .activity-footer {
+  justify-content: flex-start;
+  padding-top: .875rem;
+  font-size: .8125rem;
+}
+
+.dashboard-page .attention-list { gap: .75rem; }
+.dashboard-page .attention-item { min-height: 6.875rem; }
+.dashboard-page .attention-copy strong { font-size: .9375rem; }
+.dashboard-page .attention-copy p { font-size: .875rem; }
+.dashboard-page .attention-copy .attention-link { font-size: .8125rem; }
+
+.attention-policy {
+  min-height: 3rem;
+  display: flex;
+  align-items: flex-start;
+  gap: .625rem;
+  padding: .75rem .875rem;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  background: var(--surface-subtle);
+  font-size: .8125rem;
+  line-height: 1.5;
+}
+
+.attention-policy .icon {
+  margin-top: .125rem;
+  color: var(--info-strong);
+}
+
+.dashboard-state {
+  padding: 1rem;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--surface-subtle);
+  color: var(--text-primary);
+}
+
+.dashboard-state h2,
+.dashboard-state p { margin: 0; }
+.dashboard-state p { color: var(--text-secondary); line-height: 1.5; }
+
+.dashboard-page .page-footnote { font-size: .78125rem; }
+
+@media (max-width: 61.25rem) {
+  .dashboard-page .dashboard-grid { grid-template-columns: 1fr; }
+  .dashboard-page .side-stack { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 45rem) {
+  .dashboard-page .kpi-card__identity > div:last-child { min-height: auto; }
+  .dashboard-page .kpi-card__label { min-height: auto; }
+  .dashboard-page .activity-cell { font-size: .875rem; }
+  .metric-card__meta { flex-direction: column; gap: .25rem; }
+  .attention-policy { padding-inline: .75rem; }
+}
+
+@media (max-width: 26.875rem) {
+  .dashboard-page .kpi-card__value { font-size: 2.125rem; }
+  .metric-state,
+  .dashboard-page .status-pill { white-space: normal; text-align: center; }
+}

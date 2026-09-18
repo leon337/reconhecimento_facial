@@ -1,0 +1,172 @@
+# NF-01 — Design Lab
+
+Laboratório visual isolado da NF-01.
+
+```text
+CANONICAL_APPSHELL=ONE
+CURRENT_APPSHELL_OWNER=assets/app-shell.css+app-shell.js
+CURRENT_APPSHELL_VERSION=i8
+LEGACY_SHELL_OWNER=assets/legacy-shell.css+legacy-shell.js
+DASHBOARD_SHARED_APPSHELL=YES
+EMPLOYEES_SHARED_APPSHELL=YES
+ONBOARDING_SHARED_APPSHELL=YES
+
+PHASE_I_DESIGN_LAB_APPSHELL=COMPLETE_SOURCE_LEVEL
+PHASE_J_DASHBOARD_RECONCILIATION=COMPLETE_SOURCE_LEVEL
+PHASE_K_EMPLOYEES_RECONCILIATION=COMPLETE_SOURCE_LEVEL
+PHASE_L_ONBOARDING_RECONCILIATION=COMPLETE_SOURCE_LEVEL
+PHASE_M_CROSS_SCREEN_COHERENCE=COMPLETE_SOURCE_LEVEL
+PHASE_N_DESIGN_LAB_VALIDATION=IN_PROGRESS_BLOCKED_ON_MANUAL_EVIDENCE
+
+N1_DESIGN_LAB_VALIDATION_DEFINITION=COMPLETE
+N1_OUTPUT=../68_NF01_PHASE_N_N1_DESIGN_LAB_VALIDATION_DEFINITION_2026-08-18.md
+N2_BROWSER_RESPONSIVE_VISUAL_VALIDATION=EXECUTED
+N2_OUTPUT=../69_NF01_PHASE_N_N2_BROWSER_RESPONSIVE_VISUAL_VALIDATION_2026-08-18.md
+N2_AUTOMATED_ACCEPTANCE=PASS_AFTER_TARGETED_FIXES
+N2_ACCEPTANCE=BLOCKED_TOOLING
+N3_ACCESSIBILITY_INTERACTION_STATE_RBAC_VALIDATION=EXECUTED
+N3_OUTPUT=../70_NF01_PHASE_N_N3_ACCESSIBILITY_INTERACTION_STATE_RBAC_VALIDATION_2026-08-18.md
+N3_AUTOMATED_ACCEPTANCE=PASS_AFTER_TARGETED_FIXES_AND_RETESTS
+N3_ACCEPTANCE=BLOCKED_TOOLING
+N4_PHASE_N_CONSOLIDATED_ACCEPTANCE=EXECUTED
+N4_OUTPUT=../71_NF01_PHASE_N_N4_CONSOLIDATED_ACCEPTANCE_2026-08-18.md
+N4_ACCEPTANCE=BLOCKED_TOOLING
+FINAL_AUTOMATED_FAIL=0
+BLOCKED_TOOLING_HIGH=2
+
+CROSS_SCREEN_SHARED_CONTEXT=Potiguar_Locacoes|Galpao_principal
+CROSS_SCREEN_SHARED_PROFILE=Administrador_Demo|admin
+CROSS_SCREEN_SHARED_EMPLOYEE_SOURCE=fixture:employees-k2
+DASHBOARD_TO_EMPLOYEES_HANDOFF=biometric=missing
+EMPLOYEES_LIST_STATE_RESTORE=sessionStorage_context_scoped
+ONBOARDING_VISIBLE_NAME=Novo_Funcionario
+ONBOARDING_DEMO_MUTATES_EMPLOYEE_LIST=NO
+
+ACTIVE_SURFACE_LEGACY_SHELL_DEPENDENCY=0
+HISTORICAL_V1=screens/03.03-novo-funcionario.html
+HISTORICAL_V1_PRESERVED=YES
+HISTORICAL_V1_MIGRATED=NO
+
+NEXT_OFFICIAL_PHASE=N_DESIGN_LAB_VALIDATION
+NEXT_OFFICIAL_ITEM=PHASE_N_MANUAL_EVIDENCE_COMPLETION_GATE
+MANUAL_EVIDENCE_REQUIRED=ZOOM_200|SCREEN_READER
+PHASE_O_START_ALLOWED=NO
+PRODUCTION_CHANGE=NO
+NF02_STARTED=NO
+PR_MERGE=NOT_AUTHORIZED
+```
+
+## Superfícies ativas
+
+### Dashboard
+
+`screens/02.01-dashboard.html` permanece reconciliado com a amostra local compartilhada e com o handoff real para Funcionários.
+
+### Funcionários
+
+`screens/03.01-funcionarios.html` preserva busca/filtros, estados distintos e RBAC demonstrativo. A Fase N confirmou as variantes `super_admin`, `admin`, `manager`, `auditor` e `operator` após o hardening do contrato `hidden`.
+
+### Novo Funcionário
+
+`screens/03.04-novo-funcionario-v2.html` preserva o wizard canônico, ContextDrawer, HorizontalStepper, EntityPickers e estados críticos. A Fase N confirmou teclado automatizado e axe-core após correções.
+
+## Fase N — evidência executada
+
+Workflow dedicado:
+
+```text
+NF01 Phase N Validation
+RUN_ID=32125796830
+RUN_NUMBER=17
+HEAD=c1a1db3e9f0c944e522813c475ba29b8758b4ec6
+CONCLUSION=SUCCESS
+ARTIFACT_ID=9320310859
+```
+
+Resumo durável:
+
+`../evidence/phase-n/2026-08-18_N2_N3_AUTOMATED_VALIDATION_SUMMARY.json`
+
+### Browser / responsividade
+
+```text
+360|480|768|900|1024|1280|1440=PASS_AUTOMATED
+ZOOM_200_EQUIVALENT_REFLOW=PASS_AUTOMATED
+DASHBOARD_TO_EMPLOYEES_HANDOFF=PASS
+EMPLOYEES_LIST_STATE_RESTORE=PASS
+MANUAL_BROWSER_ZOOM_200=BLOCKED_TOOLING
+```
+
+### Acessibilidade / interação / RBAC
+
+```text
+AXE_CRITICAL_SERIOUS_FINAL=0
+KEYBOARD_STEPPER=PASS
+KEYBOARD_CONTEXT_DRAWER=PASS
+KEYBOARD_ENTITY_PICKER=PASS_RETEST
+RBAC_VISUAL_MATRIX=PASS
+EMPLOYEE_STATE_MATRIX=PASS
+ARIA_TREE_SNAPSHOT=CAPTURED
+MANUAL_SCREEN_READER_CRITICAL_JOURNEY=BLOCKED_TOOLING
+```
+
+### Defeitos corrigidos durante a inspeção
+
+```text
+9816c44  scope de interactions.js evitou destruição do body
+8ceab55  hidden voltou a ser semanticamente/visualmente oculto
+dbcafef  contraste de employee-account corrigido
+```
+
+Todos os defeitos de produto detectados pela automação têm reteste PASS. O único FAIL residual da matriz base do runner era falso positivo do harness em EntityPicker oculto e foi supersedido por reteste focado PASS.
+
+## Por que a Fase N ainda não fecha
+
+N1 exige evidência manual que a ferramenta atual não consegue produzir:
+
+```text
+N2-MANUAL_BROWSER_ZOOM_200=BLOCKED_TOOLING_HIGH
+N3-MANUAL-SCREEN-READER-CRITICAL-JOURNEY=BLOCKED_TOOLING_HIGH
+```
+
+`BLOCKED_TOOLING` não pode ser convertido em PASS por inferência. Portanto N4 foi executado, mas o aceite consolidado permanece bloqueado até essas duas verificações manuais serem registradas.
+
+## Limites preservados
+
+```text
+NEW_DESIGN_UNIT_TESTS_EXECUTED=NO
+NEW_DESIGN_INTEGRATION_TESTS_EXECUTED=NO
+PRODUCTION_E2E_EXECUTED=NO
+PRODUCTION_HOMOLOGATION=NO
+```
+
+## Continuidade
+
+```text
+58_* J3
+↓
+61_* K3
+↓
+64_* L3
+↓
+67_* M3
+↓
+68_* N1
+↓
+69_* N2
+↓
+70_* N3
+↓
+71_* N4
+```
+
+## Guardrails
+
+```text
+DO_NOT_MERGE_WITHOUT_EXPLICIT_LEANDRO_APPROVAL
+DO_NOT_START_NF02
+DO_NOT_CHANGE_PRODUCTION_CODE
+DO_NOT_CHANGE_BACKEND
+DO_NOT_DEPLOY
+DO_NOT_DECLARE_LEGAL_COMPLIANCE
+```

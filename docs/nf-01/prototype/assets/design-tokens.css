@@ -1,0 +1,94 @@
+/* NF-01 Design Lab — tokens */
+:root {
+  --brand-900: #143d2b;
+  --brand-850: #173f2e;
+  --brand-800: #1b4d37;
+  --brand-700: #236647;
+  --brand-600: #2e7d57;
+  --brand-100: #e8f2ec;
+  --premium-700: #7a5c00;
+  --premium-500: #c7a33d;
+  --premium-100: #f8f1d9;
+
+  --surface-canvas: #f6f8f6;
+  --surface-canvas-top: #fbfcfb;
+  --surface-default: #ffffff;
+  --surface-subtle: #f1f4f2;
+  --surface-hover: #f7faf8;
+
+  --text-primary: #1f2933;
+  --text-secondary: #5f6b66;
+  --text-tertiary: #6e7b75;
+  --text-disabled: #7d8883;
+  --text-on-dark: #ffffff;
+
+  --border-default: #dce3de;
+  --border-strong: #aab7b0;
+  --border-soft: rgba(20, 61, 43, 0.10);
+
+  --success-strong: #1b5e20;
+  --success-soft: #eaf6ec;
+  --warning-strong: #7a4b00;
+  --warning-soft: #fff4db;
+  --error-strong: #b42318;
+  --error-soft: #fdecec;
+  --info-strong: #175cd3;
+  --info-soft: #eef4ff;
+  --unknown-strong: #475467;
+  --unknown-soft: #f2f4f7;
+
+  --font-sans: "Manrope", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 2rem;
+  --text-4xl: 2.5rem;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.875rem;
+  --radius-xl: 1.125rem;
+  --radius-full: 999px;
+
+  --sidebar-expanded: 248px;
+  --sidebar-collapsed: 72px;
+  --topbar-height: 64px;
+  --page-max: 1440px;
+
+  --control-sm: 40px;
+  --control-md: 44px;
+  --control-lg: 48px;
+  --control-kiosk: 56px;
+  --touch-min: 44px;
+
+  --shadow-xs: 0 1px 2px rgba(31, 41, 51, 0.06);
+  --shadow-sm: 0 1px 2px rgba(31, 41, 51, 0.05), 0 4px 12px rgba(31, 41, 51, 0.06);
+  --shadow-md: 0 2px 4px rgba(31, 41, 51, 0.05), 0 10px 28px rgba(31, 41, 51, 0.09);
+  --shadow-lg: 0 10px 24px rgba(31, 41, 51, 0.10), 0 28px 60px rgba(31, 41, 51, 0.10);
+  --shadow-inset-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.86);
+
+  --focus-color: #7a5c00;
+  --focus-width: 3px;
+  --focus-offset: 2px;
+
+  --motion-fast: 120ms;
+  --motion-base: 180ms;
+  --motion-slow: 250ms;
+  --ease-standard: cubic-bezier(.2, 0, 0, 1);
+}
