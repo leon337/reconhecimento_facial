@@ -108,12 +108,20 @@ async function activeElementSnapshot() {
       || el.getAttribute?.('title')
       || ''
     ).replace(/\s+/g, ' ').trim();
+    const tag = el.tagName || null;
+    const role = el.getAttribute?.('role') || null;
+    const interactive = Boolean(
+      ['A', 'BUTTON', 'INPUT', 'SELECT', 'TEXTAREA'].includes(tag)
+      || el.hasAttribute?.('tabindex')
+      || ['button', 'link', 'textbox', 'combobox', 'menuitem'].includes(role)
+    );
     return {
-      tag: el.tagName,
-      role: el.getAttribute?.('role') || null,
+      tag,
+      role,
       name,
       href: el.getAttribute?.('href') || null,
       ariaExpanded: el.getAttribute?.('aria-expanded') || null,
+      interactive,
     };
   });
 }
@@ -122,7 +130,7 @@ async function nativeTabUntil(label, needle, maxTabs = 45) {
   const wanted = needle.toLocaleLowerCase('pt-BR');
   for (let index = 0; index <= maxTabs; index += 1) {
     const snap = await activeElementSnapshot();
-    if ((snap.name || '').toLocaleLowerCase('pt-BR').includes(wanted)) {
+    if (snap.interactive && (snap.name || '').toLocaleLowerCase('pt-BR').includes(wanted)) {
       nativeScreenReaderJourney.push({
         label,
         target: needle,
