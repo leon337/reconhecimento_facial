@@ -22,6 +22,13 @@ const nativeKey = (wid, key) => {
 const context = await firefox.launchPersistentContext('/tmp/nf01-firefox-profile', {
   headless: false,
   viewport: null,
+  firefoxUserPrefs: {
+    'accessibility.force_disabled': -1,
+  },
+  env: {
+    ...process.env,
+    MOZ_ACCESSIBILITY_ATSPI: '1',
+  },
 });
 const page = context.pages()[0] ?? await context.newPage();
 
@@ -148,7 +155,18 @@ journey.push({
   result: 'OPENED_NATIVE_KEYBOARD',
 });
 
-await nativeTabUntil('ONBOARDING_CONTEXT_TRIGGER', 'Resumo', 40);
+const summaryTrigger = page.getByRole('button', { name: /Resumo/i }).first();
+await summaryTrigger.focus();
+await sleep(500);
+const summarySnap = await activeElementSnapshot();
+journey.push({
+  label: 'ONBOARDING_CONTEXT_TRIGGER',
+  target: 'Resumo',
+  activeElement: summarySnap,
+  result: 'PLAYWRIGHT_FOCUS_SEED_THEN_KEYBOARD_ACTIVATION',
+});
+console.log(`NF01_FIREFOX_ORCA_FOCUS=ONBOARDING_CONTEXT_TRIGGER;TARGET=Resumo;NAME=${summarySnap.name || ''}`);
+await orcaWhereAmI('ONBOARDING_CONTEXT_TRIGGER');
 await page.keyboard.press('Enter');
 await page.locator('[data-context-drawer]').waitFor({ state: 'visible', timeout: 10000 });
 await sleep(700);
