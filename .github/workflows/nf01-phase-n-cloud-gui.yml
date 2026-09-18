@@ -135,6 +135,8 @@ jobs:
         run: |
           cat docs/nf-01/evidence/phase-n/cloud-gui-run/cloud-gui-summary.json || true
           cat docs/nf-01/evidence/phase-n/cloud-gui-run/orca-speech-assertions.json || true
+          echo "=== ORCA SPEECH OUTPUT (TAIL) ==="
+          tail -n 200 docs/nf-01/evidence/phase-n/cloud-gui-run/N3-orca-speech-output.log || true
 
       - name: Upload cloud GUI evidence
         if: always()
