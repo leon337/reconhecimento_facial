@@ -165,6 +165,9 @@ Resta exatamente um resultado humano a registrar.
 
 ### H1 — Zoom real 200%
 
+Evidência técnica preparada:
+`docs/nf-01/evidence/phase-n/2026-09-18_H1_ZOOM200_TECHNICAL_EVIDENCE.md`
+
 ```text
 N2_MANUAL_BROWSER_ZOOM_200=PASS|FAIL
 ```
