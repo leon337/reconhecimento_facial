@@ -113,17 +113,19 @@ jobs:
           speech_file = evidence / 'N3-orca-speech-output.log'
           speech = speech_file.read_text(errors='ignore') if speech_file.exists() else ''
           expected = [
-              'Dashboard',
-              'Funcionários',
-              'Novo Funcionário',
-              'Resumo e controles do Design Lab',
+              '2 biometrias pendentes',
+              'Novo funcionário',
+              'Ver etapas',
+              'Fechar resumo',
               'Revise as informações desta etapa',
           ]
           result = {item: (item.lower() in speech.lower()) for item in expected}
           (evidence / 'orca-speech-assertions.json').write_text(json.dumps({
               'execution': 'CLOUD_ORCA_ASSISTED_EVIDENCE',
+              'assertion_policy': 'TASK_SPECIFIC_SPEECH_ONLY',
               'all_expected_announcements_found': all(result.values()),
               'assertions': result,
+              'manual_acceptance_claimed': False,
           }, indent=2, ensure_ascii=False))
           PY
           INNER
