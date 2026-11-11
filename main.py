@@ -61,6 +61,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
         PUNCH_DUPLICATE_WINDOW_SECONDS=60,
         LOGIN_RATE_LIMIT_ATTEMPTS=5,
         LOGIN_RATE_LIMIT_WINDOW_SECONDS=300,
+        COPILOT_ENABLED=os.environ.get("POTIGUAR_COPILOT_ENABLED", "0") == "1",
     )
 
     if test_config:
@@ -86,6 +87,10 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     csrf.init_app(app)
     init_observability(app)
     app.register_blueprint(admin_bp, url_prefix="/admin")
+
+    from app.copilot import bp as copilot_bp
+
+    app.register_blueprint(copilot_bp, url_prefix="/admin/copilot")
 
     from app.punch import bp as punch_bp
 

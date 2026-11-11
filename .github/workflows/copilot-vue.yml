@@ -1,0 +1,41 @@
+name: Copiloto Vue - Build and Tests
+
+on:
+  pull_request:
+    paths:
+      - 'frontend/copilot/**'
+      - 'static/copilot/**'
+      - '.github/workflows/copilot-vue.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  vue:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/copilot/package-lock.json
+
+      - name: Instalar dependências reprodutíveis
+        working-directory: frontend/copilot
+        run: npm ci --no-audit --no-fund
+
+      - name: Validar scripts, áudio e frontend
+        working-directory: frontend/copilot
+        run: |
+          npm run check
+          npm test
+          npm run build
+
+      - name: Conferir que o bundle versionado é reproduzível
+        run: git diff --exit-code -- static/copilot/

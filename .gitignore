@@ -41,3 +41,7 @@ uploads/
 .idea/
 .DS_Store
 *.swp
+
+# Copiloto Vue
+frontend/copilot/node_modules/
+frontend/copilot/dist/

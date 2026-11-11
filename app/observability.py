@@ -91,12 +91,18 @@ def init_observability(app):
         response.headers["X-Request-ID"] = request_id
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
-        response.headers["Referrer-Policy"] = "same-origin"
-        response.headers["Permissions-Policy"] = "camera=(self), microphone=(), geolocation=()"
-        response.headers["Content-Security-Policy"] = (
+        # Padrões rígidos para as rotas existentes; um endpoint específico
+        # pode definir cabeçalhos ainda restritos ao seu próprio propósito
+        # (ex.: microfone apenas na página autenticada do copiloto).
+        response.headers.setdefault("Referrer-Policy", "same-origin")
+        response.headers.setdefault(
+            "Permissions-Policy", "camera=(self), microphone=(), geolocation=()"
+        )
+        response.headers.setdefault(
+            "Content-Security-Policy",
             "default-src 'self'; img-src 'self' data:; "
             "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
-            "script-src 'self'; frame-ancestors 'none'"
+            "script-src 'self'; frame-ancestors 'none'",
         )
         if current_app.config.get("SESSION_COOKIE_SECURE"):
             response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"

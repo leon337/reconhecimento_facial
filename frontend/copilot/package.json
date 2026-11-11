@@ -1,0 +1,19 @@
+{
+  "name": "@potiguar/copiloto-live",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "test": "node --test test/*.test.js",
+    "check": "node --check src/main.js && node --check src/live.js && node --check src/audio.js"
+  },
+  "dependencies": {
+    "@google/genai": "3.1.0",
+    "vue": "3.5.45"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.10",
+    "vite": "8.3.8"
+  }
+}

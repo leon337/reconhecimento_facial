@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   production-validation:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 35
     services:
       postgres:
@@ -50,7 +50,8 @@ jobs:
       - name: Instalar dependências
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential cmake libopenblas-dev liblapack-dev postgresql-client
+          sudo apt-get install -y build-essential cmake libopenblas-dev liblapack-dev postgresql-client-16
+          echo '/usr/lib/postgresql/16/bin' >> "$GITHUB_PATH"
           python -m pip install --upgrade pip
           python -m pip install -r requirements-dev.txt
 
@@ -165,6 +166,9 @@ jobs:
       - name: Validar cliente PostgreSQL e conexão
         run: |
           pg_dump --version
+          pg_restore --version
+          test "$(pg_dump --version | awk '{print $3}' | cut -d. -f1)" = '16'
+          test "$(pg_restore --version | awk '{print $3}' | cut -d. -f1)" = '16'
           pg_isready -h 127.0.0.1 -p 5432 -U controle_ponto -d controle_ponto_hml
           psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c 'SELECT 1;'
 
