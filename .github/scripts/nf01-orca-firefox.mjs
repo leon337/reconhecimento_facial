@@ -110,6 +110,23 @@ async function nativeTabUntil(label, needle, maxTabs = 80) {
   throw new Error(`Native keyboard target not reached: ${label} / ${needle}; active=${snap.name || ''}`);
 }
 
+async function activateAfterOrca(locator, label) {
+  await locator.waitFor({ state: 'visible', timeout: 10000 });
+  const hadFocus = await locator.evaluate((el) => document.activeElement === el);
+  if (!hadFocus) await locator.focus();
+  const focused = await locator.evaluate((el) => document.activeElement === el);
+  console.log('NF01_FIREFOX_ORCA_ACTIVATION=' + label + ';RESEEDED=' + !hadFocus + ';FOCUSED=' + focused);
+  journey.push({
+    label: label + '_ACTIVATION',
+    action: 'ENTER_KEY',
+    focusReseededAfterOrca: !hadFocus,
+    input: 'PLAYWRIGHT_KEYBOARD_ASSISTED_WITH_ORCA',
+    result: focused ? 'TARGET_FOCUSED' : 'TARGET_NOT_FOCUSED',
+  });
+  if (!focused) throw new Error('Keyboard target not focused: ' + label);
+  await page.keyboard.press('Enter');
+}
+
 async function resetWebFocus() {
   activateWindow(wid);
   const skip = page.getByText('Ir para o conteúdo', { exact: false }).first();
@@ -133,20 +150,20 @@ checkpoint('JOURNEY_BEGIN');
 await resetWebFocus();
 
 await nativeTabUntil('DASHBOARD_ATTENTION', 'biometrias pendentes');
-await page.keyboard.press('Enter');
+await activateAfterOrca(page.locator('[data-cross-screen-handoff="biometric-missing"]'), 'DASHBOARD_ATTENTION');
 await page.waitForURL(/03\.01-funcionarios\.html\?biometric=missing/, { timeout: 10000 });
 await sleep(1100);
 journey.push({ label: 'DASHBOARD_TO_EMPLOYEES', url: page.url(), result: 'NAVIGATED_NATIVE_KEYBOARD' });
 
 await resetWebFocus();
 await nativeTabUntil('EMPLOYEES_NEW_EMPLOYEE', 'Novo funcionário');
-await page.keyboard.press('Enter');
+await activateAfterOrca(page.locator('[data-new-employee-link]'), 'EMPLOYEES_NEW_EMPLOYEE');
 await page.waitForURL(/03\.04-novo-funcionario-v2\.html/, { timeout: 10000 });
 await sleep(1100);
 
 await resetWebFocus();
 await nativeTabUntil('ONBOARDING_STEP_LIST', 'Ver etapas');
-await page.keyboard.press('Enter');
+await activateAfterOrca(page.locator('[data-toggle-step-list]'), 'ONBOARDING_STEP_LIST');
 await page.locator('[data-step-list]').waitFor({ state: 'visible', timeout: 10000 });
 await sleep(700);
 journey.push({
@@ -167,7 +184,7 @@ journey.push({
 });
 console.log(`NF01_FIREFOX_ORCA_FOCUS=ONBOARDING_CONTEXT_TRIGGER;TARGET=Resumo;NAME=${summarySnap.name || ''}`);
 await orcaWhereAmI('ONBOARDING_CONTEXT_TRIGGER');
-await page.keyboard.press('Enter');
+await activateAfterOrca(page.locator('[data-open-context]'), 'ONBOARDING_CONTEXT_TRIGGER');
 await page.locator('[data-context-drawer]').waitFor({ state: 'visible', timeout: 10000 });
 await sleep(700);
 
@@ -182,7 +199,7 @@ journey.push({
 });
 
 await nativeTabUntil('ONBOARDING_CONTINUE', 'Continuar', 60);
-await page.keyboard.press('Enter');
+await activateAfterOrca(page.locator('[data-next-step]'), 'ONBOARDING_CONTINUE');
 const errorSummary = page.locator('[data-error-summary]');
 await errorSummary.waitFor({ state: 'visible', timeout: 10000 });
 await sleep(1200);
@@ -197,10 +214,13 @@ journey.push({
 });
 console.log(`NF01_FIREFOX_ORCA_ERROR=${errorText}`);
 
-await page.keyboard.press('Alt+ArrowLeft');
+// Use the application's visible breadcrumb instead of browser history:
+ // assistive-technology key bindings may intercept Alt+ArrowLeft.
+const employeesBreadcrumb = page.locator('nav[aria-label="Breadcrumb"] a[href="03.01-funcionarios.html"]').last();
+await activateAfterOrca(employeesBreadcrumb, 'RETURN_TO_EMPLOYEES');
 await page.waitForURL(/03\.01-funcionarios\.html/, { timeout: 10000 });
 await sleep(900);
-journey.push({ label: 'RETURN_TO_EMPLOYEES', url: page.url(), result: 'RETURNED_NATIVE_KEYBOARD' });
+journey.push({ label: 'RETURN_TO_EMPLOYEES', url: page.url(), result: 'RETURNED_KEYBOARD_ASSISTED' });
 
 const summary = {
   execution: 'CLOUD_FIREFOX_ORCA_ASSISTED_EVIDENCE',
@@ -208,7 +228,7 @@ const summary = {
   interactionInput: 'PLAYWRIGHT_KEYBOARD_ASSISTED_WITH_ORCA',
   orcaPrompting: 'KP_ENTER_WHERE_AM_I',
   journey,
-  journeyCompleted: journey.some((x) => x.label === 'RETURN_TO_EMPLOYEES' && x.result === 'RETURNED_NATIVE_KEYBOARD'),
+  journeyCompleted: journey.some((x) => x.label === 'RETURN_TO_EMPLOYEES' && x.result === 'RETURNED_KEYBOARD_ASSISTED'),
   manualAcceptanceClaimed: false,
 };
 
