@@ -115,7 +115,11 @@ def test_ephemeral_credential_request_is_restricted_and_one_use(monkeypatch):
     monkeypatch.setattr(live, "urlopen", fake_open)
     assert live.provision_live_token("not-real", "gemini-3.8-live") == "ephemeral-secret"
     assert observed["body"]["uses"] == 1
-    assert observed["body"]["liveConnectConstraints"]["model"] == "models/gemini-3.8-live"
+    assert "liveConnectConstraints" not in observed["body"]
+    assert "newSessionExpireTime" in observed["body"]
+    assert "expireTime" in observed["body"]
+    # Restrição de modelo permanece no nosso backend: o serviço de tokens
+    # deste projeto não aceita ainda liveConnectConstraints em v1beta.
     assert observed["url"].startswith("https://")
     assert "not-real" not in observed["url"]
     with pytest.raises(ValueError):
