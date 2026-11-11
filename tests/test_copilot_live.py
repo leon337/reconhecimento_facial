@@ -45,6 +45,8 @@ def test_workspace_ships_with_feature_disabled(app, client):
     assert page.status_code == 200
     assert b"potiguar-copilot" in page.data
     assert b"no-store" in page.headers["Cache-Control"].encode()
+    # Proteção CSRF SSL_STRICT: Referer deve ser enviado nos POSTs same-origin.
+    assert page.headers["Referrer-Policy"] == "same-origin"
     assert "wss://generativelanguage.googleapis.com" in page.headers["Content-Security-Policy"]
     assert "microphone=(self)" in page.headers["Permissions-Policy"]
     assert "microphone=()" in client.get("/health").headers["Permissions-Policy"]

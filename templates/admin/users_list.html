@@ -1,84 +1,80 @@
-<!DOCTYPE html>
-<html lang="pt-br">
+<!doctype html>
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Usuários Cadastrados</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#175b43">
+  <title>Funcionários — Potiguar</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='admin-mobile.css') }}">
 </head>
-<body class="min-h-screen bg-gray-100 p-4 md:p-6">
-  <main class="mx-auto max-w-5xl rounded bg-white p-6 shadow">
-    <h1 class="mb-4 text-2xl font-bold">Usuários Cadastrados</h1>
+<body>
+  <div class="container">
+    <header class="header">
+      <a class="brand" href="{{ url_for('admin.list_users') }}" aria-label="Potiguar — funcionários">
+        <span class="brand-mark" aria-hidden="true">P</span>
+        <span><strong>POTIGUAR</strong><small>Gestão de ponto</small></span>
+      </a>
+      <nav class="top-actions" aria-label="Navegação principal">
+        <a href="{{ url_for('admin.list_users') }}" aria-current="page">Funcionários</a>
+        <a class="primary" href="{{ url_for('copilot.workspace') }}">✦ Copiloto de IA</a>
+      </nav>
+    </header>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        <div class="mb-4 space-y-2">
-          {% for category, msg in messages %}
-            <div class="rounded p-2 {{ 'bg-green-200 text-green-800' if category=='success' else 'bg-red-200 text-red-800' }}">
-              {{ msg }}
-            </div>
-          {% endfor %}
+    <main>
+      <div class="page-heading">
+        <span class="eyebrow">GESTÃO DE PESSOAS</span>
+        <h1>Funcionários cadastrados</h1>
+        <p class="subtitle">Consulte cadastros e utilize as funções autorizadas. O Copiloto pode orientar por texto ou voz quando habilitado.</p>
+      </div>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+        <p class="flash {{ 'error' if category != 'success' else '' }}" role="status">{{ message }}</p>
+        {% endfor %}
+      {% endwith %}
+      <section class="panel" aria-label="Lista de funcionários">
+        <div class="actions">
+          <a class="action primary" href="{{ url_for('admin.new_user') }}">+ Novo funcionário</a>
+          <a class="action secondary" href="{{ url_for('copilot.workspace') }}">✦ Conversar com o Copiloto</a>
         </div>
-      {% endif %}
-    {% endwith %}
-
-    <a href="{{ url_for('admin.new_user') }}"
-       class="mb-4 inline-block rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700">
-      + Novo Funcionário
-    </a>
-
-    <a href="{{ url_for('copilot.workspace') }}"
-       class="mb-4 ml-2 inline-block rounded bg-teal-700 px-4 py-2 text-white hover:bg-teal-800">
-      ✦ Copiloto Potiguar (prévia)
-    </a>
-
-    <div class="overflow-x-auto">
-      <table class="w-full table-auto border-collapse">
-        <thead>
-          <tr class="bg-gray-200">
-            <th class="border px-2 py-1">ID</th>
-            <th class="border px-2 py-1">Username</th>
-            <th class="border px-2 py-1">Nome</th>
-            <th class="border px-2 py-1">Biometria</th>
-            <th class="border px-2 py-1">Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for u in users %}
-          {% set has_biometric = (u.biometric_profile and u.biometric_profile.active) or u.face_encoding %}
-          <tr class="hover:bg-gray-100">
-            <td class="border px-2 py-1">{{ u.id }}</td>
-            <td class="border px-2 py-1">{{ u.username }}</td>
-            <td class="border px-2 py-1">{{ u.name or '-' }}</td>
-            <td class="border px-2 py-1">
-              <span class="font-semibold {{ 'text-green-700' if has_biometric else 'text-gray-500' }}">
-                {{ 'Ativa' if has_biometric else 'Não cadastrada' }}
-              </span>
-            </td>
-            <td class="border px-2 py-1">
-              <div class="flex flex-wrap gap-2">
-                <a href="{{ url_for('admin.biometric_form', user_id=u.id) }}"
-                   class="rounded bg-blue-600 px-2 py-1 text-white hover:bg-blue-700">
-                  {{ 'Recadastrar' if has_biometric else 'Cadastrar' }}
-                </a>
-                {% if has_biometric %}
-                  <form method="post"
-                        action="{{ url_for('admin.remove_biometric', user_id=u.id) }}"
-                        onsubmit="return confirm('Remover a biometria deste usuário?');">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <button type="submit"
-                            class="rounded bg-red-600 px-2 py-1 text-white hover:bg-red-700">
-                      Remover
-                    </button>
-                  </form>
-                {% endif %}
-              </div>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </main>
+        <div class="table-scroll">
+          <table class="users-table">
+            <thead>
+              <tr><th scope="col">ID</th><th scope="col">Usuário</th><th scope="col">Nome</th><th scope="col">Biometria</th><th scope="col">Ações</th></tr>
+            </thead>
+            <tbody>
+              {% for u in users %}
+              {% set has_biometric = (u.biometric_profile and u.biometric_profile.active) or u.face_encoding %}
+              <tr>
+                <td data-label="ID">{{ u.id }}</td>
+                <td data-label="Usuário">{{ u.username }}</td>
+                <td data-label="Nome">{{ u.name or 'Não informado' }}</td>
+                <td data-label="Biometria">
+                  <span class="{{ 'status-active' if has_biometric else 'status-empty' }}">
+                    {{ 'Ativa' if has_biometric else 'Não cadastrada' }}
+                  </span>
+                </td>
+                <td data-label="Ações">
+                  <div class="row-actions">
+                    <a class="inline-button" href="{{ url_for('admin.biometric_form', user_id=u.id) }}">
+                      {{ 'Recadastrar biometria' if has_biometric else 'Cadastrar biometria' }}
+                    </a>
+                    {% if has_biometric %}
+                    <form class="remove-form" method="post" action="{{ url_for('admin.remove_biometric', user_id=u.id) }}" onsubmit="return confirm('Remover a biometria deste usuário?');">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <button type="submit">Remover</button>
+                    </form>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+              {% else %}
+              <tr><td colspan="5"><p class="empty-state">Nenhum funcionário cadastrado.</p></td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
 </body>
 </html>
