@@ -6,25 +6,29 @@
   <meta name="theme-color" content="#102e28">
   <meta name="robots" content="noindex,nofollow,noarchive">
   <link rel="stylesheet" href="/assets/portal.css">
-  <title>Acesso protegido — Copiloto Potiguar</title>
+  <script src="/assets/submit.js" defer></script>
+  <title>Configurar Gemini — Copiloto Potiguar</title>
 </head>
 <body>
-  <main class="shell">
+  <main class="shell" id="portal">
     <div class="brand"><span class="mark" aria-hidden="true">P</span><span><strong>POTIGUAR</strong><small>COFRE DE CONFIGURAÇÃO</small></span></div>
-    <div class="eyebrow">CONFIGURAÇÃO REMOTA • ACESSO TEMPORÁRIO</div>
+    <div class="eyebrow">VERSÃO SIMPLIFICADA • ACESSO TEMPORÁRIO</div>
     <h1>Conectar o Gemini ao Potiguar</h1>
-    <p class="intro">Use o código de acesso fornecido pelo MESTRE. A chave API será enviada posteriormente em uma sessão protegida, sem aparecer na conversa.</p>
-    <section class="panel" aria-labelledby="gate-title">
-      <div class="panel-header"><span aria-hidden="true">🔐</span><h2 id="gate-title">Validar acesso</h2></div>
-      {% if error %}<p class="error" role="alert">Código incorreto ou acesso indisponível. Confira o código e tente novamente.</p>{% endif %}
-      <form action="{{ url_for('unlock') }}" method="post" autocomplete="off">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-        <label for="code">Código temporário</label>
-        <input id="code" type="password" name="code" required minlength="18" maxlength="256" autocapitalize="off" autocorrect="off" spellcheck="false" autocomplete="off" placeholder="Cole o código fornecido" autofocus>
-        <button type="submit">Continuar com segurança</button>
+    <p class="intro">Agora é tudo em <strong>uma única tela</strong>. Cole primeiro o código temporário e depois a chave API do Google. A chave é criptografada antes do envio.</p>
+    <section class="panel" aria-label="Configurar acesso Gemini">
+      <form id="key-form" data-challenge="{{ csrf_token }}" autocomplete="off">
+        <div class="panel-header"><span aria-hidden="true">🔐</span><h2>Dados de acesso</h2></div>
+        <label for="access-code">1. Código temporário do MESTRE</label>
+        <input id="access-code" name="code" type="password" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" required maxlength="256" placeholder="Cole o código temporário">
+        <label for="api-key" style="margin-top:20px">2. Chave API do Google AI Studio</label>
+        <input id="api-key" name="api_key" type="password" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" required minlength="20" maxlength="512" placeholder="Cole a chave do Gemini">
+        <p class="microcopy">Os campos são diferentes. O código autoriza o acesso; a chave conecta o Gemini.</p>
+        <button id="submit-key" type="submit">Salvar chave com segurança</button>
+        <p id="status" class="status" role="status" aria-live="polite"></p>
       </form>
     </section>
-    <p class="foot">O acesso expira automaticamente. Não compartilhe sua chave do Gemini pelo chat ou por mensagens.</p>
+    <div class="privacy"><strong>🔒 Proteção ativa</strong><p>Chave cifrada no navegador, acesso de uso único e SQLite criptografado. Não compartilhe a chave no ChatGPT ou em mensagens.</p></div>
+    <p class="foot">Este formulário não ativa o copiloto automaticamente, nem modifica registros de ponto.</p>
   </main>
 </body>
 </html>

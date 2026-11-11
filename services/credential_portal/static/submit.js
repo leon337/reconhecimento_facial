@@ -1,81 +1,92 @@
-/* Nunca transmitir a chave em texto simples nem gravá-la no browser. */
+/* Formulário único: autenticação e depósito cifrado sem cookies e sem redirects. */
 (() => {
-  const container = document.querySelector('#key-form');
-  const input = document.querySelector('#api-key');
-  const button = document.querySelector('#submit-key');
+  const form = document.querySelector('#key-form');
+  const access = document.querySelector('#access-code');
+  const keyInput = document.querySelector('#api-key');
   const status = document.querySelector('#status');
-  if (!container || !input || !button || !status) return;
+  const submit = document.querySelector('#submit-key');
+  if (!form || !access || !keyInput || !status || !submit) return;
 
   const setStatus = (message, failed = false) => {
     status.textContent = message;
     status.classList.toggle('error', failed);
   };
 
-  const publicKeyToBytes = (pem) => {
-    const base64 = pem.replace(/-----BEGIN PUBLIC KEY-----|-----END PUBLIC KEY-----|\s/g, '');
-    const raw = atob(base64);
-    return Uint8Array.from(raw, (item) => item.charCodeAt(0));
+  const toBytes = (pem) => {
+    const compact = pem.replace(/-----BEGIN PUBLIC KEY-----|-----END PUBLIC KEY-----|\s/g, '');
+    return Uint8Array.from(atob(compact), (character) => character.charCodeAt(0));
   };
 
   const toBase64 = (bytes) => {
-    let text = '';
+    let result = '';
     for (let pos = 0; pos < bytes.length; pos += 4096) {
-      text += String.fromCharCode(...bytes.slice(pos, pos + 4096));
+      result += String.fromCharCode(...bytes.subarray(pos, pos + 4096));
     }
-    return btoa(text);
+    return btoa(result);
   };
 
-  button.addEventListener('click', async () => {
-    const key = input.value.trim();
-    if (key.length < 20 || key.length > 512 || /\s/.test(key)) {
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const code = access.value.trim();
+    const apiKey = keyInput.value.trim();
+
+    if (code.length < 10 || code.length > 256) {
+      setStatus('Confira o código temporário fornecido pelo MESTRE.', true);
+      access.focus();
+      return;
+    }
+    if (apiKey.length < 20 || apiKey.length > 512 || /\s/.test(apiKey)) {
       setStatus('Confira a chave copiada do Google AI Studio.', true);
+      keyInput.focus();
       return;
     }
-    if (!window.isSecureContext || !crypto?.subtle) {
-      setStatus('É necessária uma conexão HTTPS para criptografar a chave.', true);
+    if (!window.isSecureContext || !window.crypto?.subtle) {
+      setStatus('Abra o endereço HTTPS do portal para criptografar a chave.', true);
       return;
     }
-    button.disabled = true;
-    input.disabled = true;
-    setStatus('Criptografando a chave antes do envio...');
+
+    submit.disabled = true;
+    setStatus('Criptografando e validando seu acesso...');
     try {
-      const response = await fetch('/public-key', {
-        method: 'GET', credentials: 'omit', cache: 'no-store',
-        headers: { 'X-Portal-Ticket': container.dataset.accessTicket },
+      const publicResponse = await fetch('/public-key', {
+        method: 'GET', cache: 'no-store', credentials: 'omit',
       });
-      if (!response.ok) throw new Error('Sessão de configuração encerrada.');
-      const data = await response.json();
-      const cryptoKey = await crypto.subtle.importKey(
-        'spki', publicKeyToBytes(data.publicKey), { name: 'RSA-OAEP', hash: 'SHA-256' },
+      if (!publicResponse.ok) throw new Error('O portal expirou. Solicite uma nova sessão.');
+      const { publicKey } = await publicResponse.json();
+      const key = await crypto.subtle.importKey(
+        'spki', toBytes(publicKey), { name: 'RSA-OAEP', hash: 'SHA-256' },
         false, ['encrypt'],
       );
-      const ciphertext = await crypto.subtle.encrypt(
-        { name: 'RSA-OAEP' }, cryptoKey, new TextEncoder().encode(key),
+      const encrypted = await crypto.subtle.encrypt(
+        { name: 'RSA-OAEP' }, key, new TextEncoder().encode(apiKey),
       );
-      // Limpar antes mesmo de transmitir: a solicitação leva só ciphertext.
-      input.value = '';
-      setStatus('Salvando no cofre criptografado...');
-      const saved = await fetch('/submit', {
+      // O valor digitado não deve permanecer na página após a tentativa.
+      keyInput.value = '';
+      const response = await fetch('/submit-once', {
         method: 'POST', cache: 'no-store', credentials: 'omit',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': container.dataset.csrf,
-          'X-Portal-Ticket': container.dataset.accessTicket,
-        },
-        body: JSON.stringify({ encrypted: toBase64(new Uint8Array(ciphertext)) }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          challenge: form.dataset.challenge,
+          code,
+          encrypted: toBase64(new Uint8Array(encrypted)),
+        }),
       });
-      if (!saved.ok) {
-        const info = await saved.json().catch(() => ({}));
-        throw new Error(info.error || 'Não foi possível salvar a chave.');
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(body.error || 'Não foi possível salvar. Tente novamente.');
       }
-      setStatus('Chave armazenada. Finalizando acesso...');
-      window.location.replace('/complete');
+      access.value = '';
+      form.replaceChildren();
+      const result = document.createElement('p');
+      result.setAttribute('role', 'status');
+      result.style.fontSize = '18px';
+      result.style.lineHeight = '1.6';
+      result.textContent = '✅ Chave recebida com segurança. O acesso foi encerrado. Volte à conversa e informe apenas que concluiu.';
+      form.appendChild(result);
     } catch (error) {
-      input.value = '';
       setStatus(error.message || 'Erro na configuração. Tente novamente.', true);
     } finally {
-      button.disabled = false;
-      input.disabled = false;
+      submit.disabled = false;
     }
   });
 })();

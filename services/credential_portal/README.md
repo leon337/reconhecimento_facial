@@ -1,3 +1,17 @@
+## Fluxo móvel simplificado — atualização 11/11/2026
+
+A versão atual do portal usa **uma única página**, com dois campos:
+(1) código temporário emitido pelo MESTRE e (2) chave API obtida no Google AI Studio.
+O usuário clica uma vez em **Salvar chave com segurança**.
+
+O navegador importa a chave pública RSA e cifra a API key antes de enviar
+`POST /submit-once`; o servidor valida, no mesmo pedido, o desafio assinado
+sem cookies, o código de uso único e a cifra. Não há redirecionamento ou
+página intermediária, e a confirmação é exibida sem mudar de página.
+A rota antiga `/unlock` devolve 409 para informar que o formulário
+anterior ficou desatualizado. Caso o navegador ainda apresente duas telas,
+reabra o endereço com uma query de versão para evitar conteúdo antigo em cache.
+
 # Portal temporário de credenciais do Copiloto Potiguar
 
 **Situação:** implementação em branch de proposta, sem merge e sem deploy de produção.

@@ -1,12 +1,12 @@
-"""Portal temporário para receber uma API key Gemini fora de chats e do Git.
+"""Portal de uso único sem cookies: formulário simples e chave cifrada no navegador.
 
-Executar somente em 127.0.0.1, atrás de HTTPS, com senha de uso único.
-O navegador cifra a chave usando RSA-OAEP; o servidor a guarda em SQLite
-com Fernet e chave mestra em arquivo separado, ambos privados.
+Abre somente em 127.0.0.1 atrás de túnel HTTPS. Nenhuma chave é registrada
+em logs, em texto simples no SQLite, na URL ou no repositório Git.
 """
 from __future__ import annotations
 
 import base64
+import binascii
 import hashlib
 import hmac
 import json
@@ -28,8 +28,6 @@ from services.credential_portal.vault import (
     store_gemini_api_key,
 )
 
-ACCESS_FILE = "setup-access.json"
-PRIVATE_KEY_FILE = "transport-private.pem"
 MAX_FAILED_ATTEMPTS = 8
 
 
@@ -37,72 +35,30 @@ def create_app(private_directory: str, *, testing: bool = False) -> Flask:
     root = _private_root(private_directory)
     secret_file = root / "portal-session.key"
     if not secret_file.is_file():
-        raise RuntimeError("é necessário preparar o acesso antes de abrir o portal")
-    app = Flask(__name__, template_folder="templates", static_folder="static", static_url_path="/assets")
-    app.config.update(
-        SECRET_KEY=secret_file.read_bytes(),
-        SESSION_COOKIE_HTTPONLY=True,
-        SESSION_COOKIE_SAMESITE="Strict",
-        SESSION_COOKIE_SECURE=not testing,
-        MAX_CONTENT_LENGTH=8192,
-        TESTING=testing,
-    )
+        raise RuntimeError("portal não foi inicializado")
+
+    app = Flask(__name__, template_folder="templates", static_folder="static",
+                static_url_path="/assets")
+    app.config.update(TESTING=testing, MAX_CONTENT_LENGTH=8192)
     state_lock = threading.Lock()
-
-    # O acesso precisa funcionar em navegadores que bloqueiam cookies:
-    # tokens assinados têm escopo, expiração e nunca vão para a URL.
-    def signer(purpose: str) -> URLSafeTimedSerializer:
-        return URLSafeTimedSerializer(app.secret_key, salt="potiguar-key-portal:" + purpose)
-
-    def new_login_challenge() -> str:
-        return signer("login").dumps({"nonce": secrets.token_urlsafe(18)})
-
-    def valid_login_challenge(raw: str | None) -> bool:
-        if not isinstance(raw, str) or len(raw) > 512:
-            return False
-        try:
-            value = signer("login").loads(raw, max_age=600)
-            return isinstance(value.get("nonce"), str)
-        except (BadSignature, TypeError, AttributeError):
-            return False
-
-    def issue_access_ticket() -> tuple[str, str]:
-        ticket = signer("access").dumps({"nonce": secrets.token_urlsafe(22)})
-        csrf = signer("post").dumps({"ticket": ticket})
-        return ticket, csrf
-
-    def valid_ticket(raw: str | None) -> bool:
-        if not isinstance(raw, str) or len(raw) > 2048 or not active():
-            return False
-        try:
-            value = signer("access").loads(raw, max_age=900)
-            return isinstance(value.get("nonce"), str)
-        except (BadSignature, TypeError, AttributeError):
-            return False
-
-    def valid_post_csrf(raw: str | None, ticket: str) -> bool:
-        if not isinstance(raw, str) or len(raw) > 4096:
-            return False
-        try:
-            value = signer("post").loads(raw, max_age=900)
-            return hmac.compare_digest(value["ticket"], ticket)
-        except (BadSignature, TypeError, KeyError):
-            return False
+    form_signer = URLSafeTimedSerializer(
+        secret_file.read_bytes(), salt="potiguar-single-page-form-v1"
+    )
 
     def get_state() -> dict:
-        file = root / ACCESS_FILE
-        if not file.exists() or file.stat().st_mode & 0o077:
-            raise RuntimeError("estado privado do portal indisponível")
-        return json.loads(file.read_text(encoding="utf-8"))
+        path = root / "setup-access.json"
+        if not path.is_file() or path.stat().st_mode & 0o077:
+            raise RuntimeError("estado de acesso indisponível")
+        return json.loads(path.read_text(encoding="utf-8"))
 
-    def save_state(data: dict) -> None:
-        temporary = root / "setup-access-tmp.json"
-        fd = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
-        with os.fdopen(fd, "w", encoding="utf-8") as output:
-            json.dump(data, output)
-            output.flush()
-            os.fsync(output.fileno())
-        os.replace(temporary, root / ACCESS_FILE)
+    def save_state(state: dict) -> None:
+        path = root / "setup-access-tmp.json"
+        fd = os.open(str(path), os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+        with os.fdopen(fd, "w", encoding="utf-8") as handle:
+            json.dump(state, handle)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(path, root / "setup-access.json")
 
     def active() -> bool:
         try:
@@ -111,20 +67,26 @@ def create_app(private_directory: str, *, testing: bool = False) -> Flask:
         except (OSError, ValueError, KeyError, RuntimeError):
             return False
 
-    def check_origin() -> None:
-        # Navegadores móveis / VPNs podem retirar o cabeçalho Origin de
-        # formulários HTML. Ainda assim exigimos o CSRF aleatório da
-        # sessão (verificado pelo chamador) e SameSite=Strict.
-        # Se Origin ou Referer vierem presentes, devem corresponder ao host.
-        # Cabeçalhos explicitamente divergentes nunca são aceitos.
-        origin = request.headers.get("Origin") or request.headers.get("Referer")
-        if not origin:
-            return
-        parsed = urlparse(origin)
-        if parsed.netloc != request.host or (
-            parsed.scheme != "https" and not testing
-        ):
-            abort(403)
+    def verify_origin() -> bool:
+        for source in ("Origin", "Referer"):
+            value = request.headers.get(source)
+            if not value:
+                continue
+            parsed = urlparse(value)
+            if parsed.netloc != request.host:
+                return False
+            if parsed.scheme != "https" and not testing:
+                return False
+        return True
+
+    def verify_form(raw: str | None) -> bool:
+        if not isinstance(raw, str) or len(raw) > 512:
+            return False
+        try:
+            value = form_signer.loads(raw, max_age=600)
+            return isinstance(value.get("nonce"), str)
+        except (BadSignature, ValueError, TypeError, AttributeError):
+            return False
 
     @app.after_request
     def security_headers(response):
@@ -137,7 +99,7 @@ def create_app(private_directory: str, *, testing: bool = False) -> Flask:
         response.headers["Content-Security-Policy"] = (
             "default-src 'none'; script-src 'self'; style-src 'self'; "
             "connect-src 'self'; img-src 'self' data:; "
-            "base-uri 'none'; form-action 'self'; frame-ancestors 'none'"
+            "form-action 'self'; base-uri 'none'; frame-ancestors 'none'"
         )
         return response
 
@@ -149,116 +111,93 @@ def create_app(private_directory: str, *, testing: bool = False) -> Flask:
     def index():
         if not active():
             return render_template("closed.html"), 410
-        return render_template("unlock.html", csrf_token=new_login_challenge())
-
-    @app.post("/unlock")
-    def unlock():
-        check_origin()
-        if not valid_login_challenge(request.form.get("csrf_token")):
-            abort(403)
-        code = request.form.get("code", "")
-        if len(code) > 256:
-            abort(403)
-        with state_lock:
-            state = get_state()
-            if state["used"] or time.time() >= state["expires_at"]:
-                return render_template("closed.html"), 410
-            if state["failures"] >= MAX_FAILED_ATTEMPTS:
-                return render_template("closed.html"), 429
-            try:
-                incoming_hash = hashlib.sha256(
-                    bytes.fromhex(state["salt"]) + code.encode("utf-8")
-                ).hexdigest()
-                match = hmac.compare_digest(incoming_hash, state["code_hash"])
-            except (ValueError, TypeError):
-                match = False
-            if not match:
-                state["failures"] += 1
-                save_state(state)
-                return render_template(
-                    "unlock.html", csrf_token=new_login_challenge(), error=True
-                ), 403
-        # Sem redirecionamento ou dependência de cookie: a própria resposta
-        # do POST entrega a segunda tela com ticket autenticado efêmero.
-        ticket, post_csrf = issue_access_ticket()
-        return render_template("setup.html", csrf_token=post_csrf, access_ticket=ticket)
-
-    @app.get("/setup")
-    def setup_page():
-        # Esta tela só é entregue por POST com código correto, nunca por URL.
-        abort(403)
+        return render_template("unlock.html", csrf_token=form_signer.dumps({
+            "nonce": secrets.token_urlsafe(22)
+        }))
 
     @app.get("/public-key")
     def public_key():
-        if not valid_ticket(request.headers.get("X-Portal-Ticket")):
-            abort(403)
+        if not active():
+            return jsonify(error="Este acesso não está disponível."), 410
         private = serialization.load_pem_private_key(
-            (root / PRIVATE_KEY_FILE).read_bytes(), password=None
+            (root / "transport-private.pem").read_bytes(), password=None
         )
-        pem = private.public_key().public_bytes(
+        public = private.public_key().public_bytes(
             encoding=serialization.Encoding.PEM,
             format=serialization.PublicFormat.SubjectPublicKeyInfo,
-        ).decode("ascii")
-        return jsonify(publicKey=pem)
+        )
+        # A chave RSA aqui é PUBLICA: sozinha não dá acesso ao cofre.
+        return jsonify(publicKey=public.decode("ascii"))
 
-    @app.post("/submit")
-    def submit():
-        ticket = request.headers.get("X-Portal-Ticket")
-        if not valid_ticket(ticket):
-            abort(403)
-        check_origin()
-        if not valid_post_csrf(request.headers.get("X-CSRFToken"), ticket):
-            abort(403)
-        payload = request.get_json(silent=True)
-        if not isinstance(payload, dict) or not isinstance(payload.get("encrypted"), str):
-            return jsonify(error="Dados inválidos."), 400
-        try:
-            encrypted = base64.b64decode(payload["encrypted"], validate=True)
-            private = serialization.load_pem_private_key(
-                (root / PRIVATE_KEY_FILE).read_bytes(), password=None
-            )
-            plaintext = private.decrypt(
-                encrypted,
-                padding.OAEP(
-                    mgf=padding.MGF1(algorithm=hashes.SHA256()),
-                    algorithm=hashes.SHA256(),
-                    label=None,
-                ),
-            ).decode("utf-8")
-            if not 20 <= len(plaintext) <= 512 or any(c.isspace() for c in plaintext):
-                raise ValueError("invalid input")
-        except (ValueError, TypeError):
-            return jsonify(error="A chave informada não pôde ser processada."), 400
-        # A chave não é incluída em logs, respostas HTTP nem mensagens do chat.
+    @app.post("/submit-once")
+    def submit_once():
+        if not request.is_json:
+            return jsonify(error="Reabra o formulário atualizado."), 415
+        body = request.get_json(silent=True)
+        if not isinstance(body, dict):
+            return jsonify(error="Formulário inválido."), 400
+        if not verify_origin() or not verify_form(body.get("challenge")):
+            return jsonify(error="Sessão expirada. Reabra o portal."), 403
+
+        code = body.get("code")
+        cipher_text = body.get("encrypted")
+        if not isinstance(code, str) or len(code) > 256:
+            return jsonify(error="Código de acesso inválido."), 400
+        if not isinstance(cipher_text, str) or len(cipher_text) > 4096:
+            return jsonify(error="Chave API inválida."), 400
+
         with state_lock:
             state = get_state()
             if state["used"] or time.time() >= state["expires_at"]:
-                return jsonify(error="Acesso expirado."), 410
+                return jsonify(error="Este acesso já foi usado ou expirou."), 410
+            if state["failures"] >= MAX_FAILED_ATTEMPTS:
+                return jsonify(error="Limite de tentativas atingido."), 429
+            salt = bytes.fromhex(state["salt"])
+            attempt = hashlib.sha256(salt + code.encode("utf-8")).hexdigest()
+            if not hmac.compare_digest(attempt, state["code_hash"]):
+                state["failures"] += 1
+                save_state(state)
+                return jsonify(error="Código temporário incorreto."), 403
+
             try:
-                store_gemini_api_key(root, plaintext)
+                encrypted = base64.b64decode(cipher_text, validate=True)
+                private = serialization.load_pem_private_key(
+                    (root / "transport-private.pem").read_bytes(), password=None
+                )
+                key = private.decrypt(
+                    encrypted,
+                    padding.OAEP(
+                        mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                        algorithm=hashes.SHA256(),
+                        label=None,
+                    ),
+                ).decode("utf-8")
+                if not 20 <= len(key) <= 512 or any(c.isspace() for c in key):
+                    raise ValueError("invalid key")
+            except (ValueError, TypeError, binascii.Error):
+                return jsonify(error="Chave API inválida. Confira e tente novamente."), 400
+            try:
+                store_gemini_api_key(root, key)
             except CredentialVaultError:
-                return jsonify(error="Cofre local indisponível."), 503
+                return jsonify(error="Cofre indisponível. Tente novamente."), 503
             state["used"] = True
             save_state(state)
-        return jsonify(saved=True, message="Chave recebida e armazenada com criptografia."), 201
+        return jsonify(saved=True, message="Chave recebida com segurança."), 201
+
+    @app.post("/unlock")
+    @app.post("/submit")
+    def old_form():
+        return jsonify(error="Formulário anterior desatualizado. Reabra o endereço do portal."), 409
 
     @app.get("/complete")
     def complete():
-        # Nenhum segredo é exibido; o endpoint informa apenas que o
-        # portal encerrou após um salvamento bem-sucedido.
         if not get_state().get("used"):
-            abort(403)
+            return render_template("closed.html"), 403
         return render_template("complete.html")
 
-    @app.errorhandler(403)
-    def retry_access(exc):
-        # Um pedido sem sessão válida não significa que o código expirou.
-        return render_template("retry.html"), 403
-
-    @app.errorhandler(404)
     @app.errorhandler(413)
-    def generic_error(exc):
-        return render_template("closed.html"), getattr(exc, "code", 403)
+    def too_large(_):
+        return jsonify(error="Envio muito grande. Confira a chave."), 413
 
     return app
 
