@@ -4,7 +4,7 @@ from datetime import timedelta
 from pathlib import Path
 from typing import Any
 
-from flask import Flask
+from flask import Flask, redirect, url_for
 from flask_migrate import Migrate
 from flask_wtf.csrf import CSRFProtect
 
@@ -87,6 +87,11 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     csrf.init_app(app)
     init_observability(app)
     app.register_blueprint(admin_bp, url_prefix="/admin")
+
+    @app.get("/")
+    def home():
+        """O endereço público abre o login; sem redirecionar para página inexistente."""
+        return redirect(url_for("admin.login"))
 
     from app.copilot import bp as copilot_bp
 
