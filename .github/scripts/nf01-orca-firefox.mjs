@@ -214,10 +214,13 @@ journey.push({
 });
 console.log(`NF01_FIREFOX_ORCA_ERROR=${errorText}`);
 
-await page.keyboard.press('Alt+ArrowLeft');
+// Use the application's visible breadcrumb instead of browser history:
+ // assistive-technology key bindings may intercept Alt+ArrowLeft.
+const employeesBreadcrumb = page.locator('nav[aria-label="Breadcrumb"] a[href="03.01-funcionarios.html"]').last();
+await activateAfterOrca(employeesBreadcrumb, 'RETURN_TO_EMPLOYEES');
 await page.waitForURL(/03\.01-funcionarios\.html/, { timeout: 10000 });
 await sleep(900);
-journey.push({ label: 'RETURN_TO_EMPLOYEES', url: page.url(), result: 'RETURNED_NATIVE_KEYBOARD' });
+journey.push({ label: 'RETURN_TO_EMPLOYEES', url: page.url(), result: 'RETURNED_KEYBOARD_ASSISTED' });
 
 const summary = {
   execution: 'CLOUD_FIREFOX_ORCA_ASSISTED_EVIDENCE',
@@ -225,7 +228,7 @@ const summary = {
   interactionInput: 'PLAYWRIGHT_KEYBOARD_ASSISTED_WITH_ORCA',
   orcaPrompting: 'KP_ENTER_WHERE_AM_I',
   journey,
-  journeyCompleted: journey.some((x) => x.label === 'RETURN_TO_EMPLOYEES' && x.result === 'RETURNED_NATIVE_KEYBOARD'),
+  journeyCompleted: journey.some((x) => x.label === 'RETURN_TO_EMPLOYEES' && x.result === 'RETURNED_KEYBOARD_ASSISTED'),
   manualAcceptanceClaimed: false,
 };
 

@@ -241,13 +241,16 @@ async function nativeScreenReaderCriticalJourney() {
   });
   console.log(`NF01_NATIVE_SR_ERROR=${nativeScreenReaderJourney.at(-1).errorText}`);
 
-  nativeKey(wid, 'alt+Left');
+  // Browser-history shortcuts may be consumed by Orca, so activate the
+  // actual UI breadcrumb with keyboard input and explicit focus provenance.
+  const employeesBreadcrumb = page.locator('nav[aria-label="Breadcrumb"] a[href="03.01-funcionarios.html"]').last();
+  await activateAfterOrca(employeesBreadcrumb, 'NATIVE_RETURN_TO_EMPLOYEES');
   await page.waitForURL(/03\.01-funcionarios\.html/, { timeout: 10000 });
   await sleep(1000);
   nativeScreenReaderJourney.push({
     label: 'RETURN_TO_EMPLOYEES',
     url: page.url(),
-    result: 'RETURNED_NATIVE_KEYBOARD',
+    result: 'RETURNED_KEYBOARD_ASSISTED',
   });
   checkpoint('NATIVE_SCREEN_READER_COMPLETE');
 }
@@ -402,7 +405,7 @@ await inspect('Retorno a Funcionários');
 interactions.push({ case: 'RETURN_TO_EMPLOYEES', input: 'PLAYWRIGHT_KEYBOARD', result: 'PASS_ASSISTED' });
 
 await nativeScreenReaderCriticalJourney();
-if (!nativeScreenReaderJourney.some((row) => row.label === 'RETURN_TO_EMPLOYEES' && row.result === 'RETURNED_NATIVE_KEYBOARD')) throw new Error('Assisted screen reader journey did not complete');
+if (!nativeScreenReaderJourney.some((row) => row.label === 'RETURN_TO_EMPLOYEES' && row.result === 'RETURNED_KEYBOARD_ASSISTED')) throw new Error('Assisted screen reader journey did not complete');
 writePartial('COMPLETE_ASSISTED_EVIDENCE');
 checkpoint('SUMMARY_WRITTEN');
 await context.close();
