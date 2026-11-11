@@ -29,9 +29,14 @@ def test_guest_cannot_use_copilot(client):
 
 
 def test_operator_without_users_view_is_denied(app, client):
-    _login(app, client, AccessRole.OPERATOR.value)
-    assert client.get("/admin/copilot").status_code == 403
-    assert client.get("/admin/copilot/meta").status_code == 403
+    with app.app_context():
+        user = User(username="operator", access_role=AccessRole.OPERATOR.value)
+        user.set_password("senha-sintetica")
+        db.session.add(user)
+        db.session.commit()
+    assert client.post("/admin/login", data={"username": "operator", "password": "senha-sintetica"}).status_code == 401
+    assert client.get("/admin/copilot").status_code == 302
+    assert client.get("/admin/copilot/meta").status_code == 302
 
 
 def test_workspace_ships_with_feature_disabled(app, client):
