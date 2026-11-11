@@ -1,3 +1,4 @@
+import { VoiceActivityGate } from "./vad.js";
 /* Conversão de áudio em memória: PCM 16kHz para entrada, 24kHz para saída. */
 export function encodePcm16(samples, sourceRate) {
   if (!Number.isFinite(sourceRate) || sourceRate <= 0) throw new Error('Taxa de áudio inválida.');
@@ -18,8 +19,12 @@ export function encodePcm16(samples, sourceRate) {
 }
 
 export class Microphone {
-  constructor(sendAudio) {
+  constructor(sendAudio, { mode = 'automatic', onSpeechState = () => {}, onTurnEnd = () => {} } = {}) {
     this.sendAudio = sendAudio;
+    this.mode = mode === 'manual' ? 'manual' : 'automatic';
+    this.onSpeechState = onSpeechState;
+    this.onTurnEnd = onTurnEnd;
+    this.voiceGate = new VoiceActivityGate();
     this.stream = null;
     this.context = null;
   }
@@ -39,10 +44,19 @@ export class Microphone {
       const gain = this.context.createGain();
       gain.gain.value = 0;
       processor.port.onmessage = ({ data }) => {
-        if (data?.pcm) this.sendAudio({
-          data: encodePcm16(data.pcm, data.sampleRate),
+        if (!data?.pcm) return;
+        const frames = this.mode === 'manual'
+          ? { frames: [data.pcm], started: false, ended: false, active: true }
+          : this.voiceGate.process(data.pcm, data.sampleRate);
+        for (const frame of frames.frames) this.sendAudio({
+          data: encodePcm16(frame, data.sampleRate),
           mimeType: 'audio/pcm;rate=16000',
         });
+        if (frames.started) this.onSpeechState('speaking');
+        if (frames.ended) {
+          this.onSpeechState('listening');
+          this.onTurnEnd();
+        }
       };
       source.connect(processor);
       processor.connect(gain);
@@ -55,6 +69,8 @@ export class Microphone {
   }
 
   async stop() {
+    this.voiceGate.finish();
+    this.onSpeechState('stopped');
     this.stream?.getTracks().forEach((track) => track.stop());
     this.stream = null;
     const context = this.context;

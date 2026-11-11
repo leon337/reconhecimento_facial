@@ -64,6 +64,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
         LOGIN_RATE_LIMIT_ATTEMPTS=5,
         LOGIN_RATE_LIMIT_WINDOW_SECONDS=300,
         COPILOT_ENABLED=os.environ.get("POTIGUAR_COPILOT_ENABLED", "0") == "1",
+        COPILOT_ACTIONS_ENABLED=os.environ.get("POTIGUAR_COPILOT_ACTIONS_ENABLED", "0") == "1",
     )
 
     if test_config:
