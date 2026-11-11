@@ -133,9 +133,18 @@ async function toggleMic() {
 }
 
 function ask(prompt) {
-  textInput.value = prompt;
-  if (connected.value) send();
-  else document.getElementById('question')?.focus();
+  if (connected.value) {
+    textInput.value = prompt;
+    send();
+    return;
+  }
+  const localGuidance = {
+    'Como cadastro um novo funcionário?': 'Na barra lateral, acesse Funcionários e selecione Novo funcionário. O cadastro e a biometria são concluídos no fluxo oficial, com permissões e validação.',
+    'Onde encontro a lista de funcionários?': 'Use Funcionários na barra lateral para consultar a lista disponível à sua conta. O acesso e os resultados são controlados pelo sistema.',
+    'Como funciona a validação do ponto eletrônico?': 'O registro oficial exige os controles de identidade, horário e jornada definidos pelo sistema. A conversa com IA não registra ponto por conta própria.',
+  };
+  pushMessage('user', prompt);
+  pushMessage('guide', localGuidance[prompt] || 'Utilize os links oficiais da barra lateral. Para outras perguntas, peça ao administrador que habilite a IA.');
 }
 
 function resetConversation() {

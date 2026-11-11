@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
+    "test": "node --test test/*.test.js",
     "check": "node --check src/main.js && node --check src/live.js && node --check src/audio.js"
   },
   "dependencies": {

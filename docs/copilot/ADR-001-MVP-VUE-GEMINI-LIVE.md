@@ -15,7 +15,7 @@
 - **Segurança do escopo:** sem tools de escrita, sem consulta a dados pessoais, sem listas de usuários expostas à IA, sem alterações de cadastros, ponto, folha, jornada ou biometria.
 - **Privacidade:** o envio de mensagens ou áudio depende de consentimento explícito; nada é guardado em `localStorage`, e não há gravação ou armazenamento de áudio no servidor Potiguar.
 - **Acessibilidade:** áudio, entrada de texto, legendas/transcrições, labels, foco visível, redução de movimento e layouts responsivos; o assistente não substitui teclado nem leitor de tela.
-- **Disponibilidade:** funcionalidade `OFF` por padrão. Mesmo desligada, a página pode ser vista como **prévia**, sem chamadas Gemini.
+- **Disponibilidade:** funcionalidade `OFF` por padrão. Mesmo desligada, a página oferece uma **prévia com respostas locais de orientação** ao clicar nas sugestões, sem chamadas Gemini.
 
 ## Rotas
 
