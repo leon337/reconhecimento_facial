@@ -54,6 +54,9 @@ export class PotiguarLive {
           onerror: () => this.handlers.onError?.('A conexão de voz apresentou uma falha.'),
           onclose: () => {
             this.session = null;
+            // Nunca manter o microfone aberto após uma queda de rede.
+            this.stopMic().catch(() => {});
+            this.player.close().catch(() => {});
             this.handlers.onStatus?.('disconnected');
           },
         },
