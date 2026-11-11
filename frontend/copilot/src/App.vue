@@ -187,7 +187,7 @@ onUnmounted(() => { live.disconnect(); });
       <div class="content-grid">
         <section class="conversation" aria-label="Conversa com o copiloto">
           <div class="conversation-top">
-            <div><span class="small-caps">CONVERSA</span><p>Suas mensagens ficam somente nesta sessão do navegador.</p></div>
+            <div><span class="small-caps">CONVERSA</span><p>O histórico não é salvo aqui. Quando conectado, suas mensagens são processadas pelo Gemini.</p></div>
             <button class="clear-button" type="button" @click="resetConversation" aria-label="Limpar mensagens desta sessão">Limpar</button>
           </div>
 

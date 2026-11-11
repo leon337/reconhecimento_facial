@@ -46,6 +46,8 @@ def test_workspace_ships_with_feature_disabled(app, client):
     assert b"potiguar-copilot" in page.data
     assert b"no-store" in page.headers["Cache-Control"].encode()
     assert "wss://generativelanguage.googleapis.com" in page.headers["Content-Security-Policy"]
+    assert "microphone=(self)" in page.headers["Permissions-Policy"]
+    assert "microphone=()" in client.get("/health").headers["Permissions-Policy"]
     info = client.get("/admin/copilot/meta").json
     assert info["enabled"] is False
     assert info["can_create_user"] is False
