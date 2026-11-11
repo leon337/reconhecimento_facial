@@ -17,7 +17,7 @@
     <p class="intro">Sua chave será criptografada neste dispositivo <strong>antes do envio</strong> e armazenada criptografada em SQLite no computador de desenvolvimento.</p>
     <section class="panel" aria-labelledby="form-title">
       <div class="panel-header"><span aria-hidden="true">🔑</span><h2 id="form-title">Chave API</h2></div>
-      <div id="key-form" data-csrf="{{ csrf_token }}">
+      <div id="key-form" data-csrf="{{ csrf_token }}" data-access-ticket="{{ access_ticket }}">
         <label for="api-key">Cole sua chave do Google AI Studio</label>
         <input id="api-key" name="api_key" type="password" required minlength="20" maxlength="512" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Cole a chave aqui">
         <p class="microcopy">A chave não aparece no endereço, no chat, nem será gravada em texto simples no SQLite.</p>

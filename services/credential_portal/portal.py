@@ -19,7 +19,8 @@ from urllib.parse import urlparse
 
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding
-from flask import Flask, abort, jsonify, redirect, render_template, request, session, url_for
+from flask import Flask, abort, jsonify, render_template, request
+from itsdangerous import URLSafeTimedSerializer, BadSignature
 
 from services.credential_portal.vault import (
     CredentialVaultError,
@@ -48,6 +49,46 @@ def create_app(private_directory: str, *, testing: bool = False) -> Flask:
     )
     state_lock = threading.Lock()
 
+    # O acesso precisa funcionar em navegadores que bloqueiam cookies:
+    # tokens assinados têm escopo, expiração e nunca vão para a URL.
+    def signer(purpose: str) -> URLSafeTimedSerializer:
+        return URLSafeTimedSerializer(app.secret_key, salt="potiguar-key-portal:" + purpose)
+
+    def new_login_challenge() -> str:
+        return signer("login").dumps({"nonce": secrets.token_urlsafe(18)})
+
+    def valid_login_challenge(raw: str | None) -> bool:
+        if not isinstance(raw, str) or len(raw) > 512:
+            return False
+        try:
+            value = signer("login").loads(raw, max_age=600)
+            return isinstance(value.get("nonce"), str)
+        except (BadSignature, TypeError, AttributeError):
+            return False
+
+    def issue_access_ticket() -> tuple[str, str]:
+        ticket = signer("access").dumps({"nonce": secrets.token_urlsafe(22)})
+        csrf = signer("post").dumps({"ticket": ticket})
+        return ticket, csrf
+
+    def valid_ticket(raw: str | None) -> bool:
+        if not isinstance(raw, str) or len(raw) > 2048 or not active():
+            return False
+        try:
+            value = signer("access").loads(raw, max_age=900)
+            return isinstance(value.get("nonce"), str)
+        except (BadSignature, TypeError, AttributeError):
+            return False
+
+    def valid_post_csrf(raw: str | None, ticket: str) -> bool:
+        if not isinstance(raw, str) or len(raw) > 4096:
+            return False
+        try:
+            value = signer("post").loads(raw, max_age=900)
+            return hmac.compare_digest(value["ticket"], ticket)
+        except (BadSignature, TypeError, KeyError):
+            return False
+
     def get_state() -> dict:
         file = root / ACCESS_FILE
         if not file.exists() or file.stat().st_mode & 0o077:
@@ -69,14 +110,6 @@ def create_app(private_directory: str, *, testing: bool = False) -> Flask:
             return not state["used"] and time.time() < state["expires_at"]
         except (OSError, ValueError, KeyError, RuntimeError):
             return False
-
-    def authenticated() -> bool:
-        return bool(session.get("portal_authenticated") is True and active())
-
-    def verify_csrf(name: str, received: str | None) -> None:
-        stored = session.get(name, "")
-        if not stored or not received or not hmac.compare_digest(stored, received):
-            abort(403)
 
     def check_origin() -> None:
         # Navegadores móveis / VPNs podem retirar o cabeçalho Origin de
@@ -116,14 +149,13 @@ def create_app(private_directory: str, *, testing: bool = False) -> Flask:
     def index():
         if not active():
             return render_template("closed.html"), 410
-        challenge = session.get("login_csrf") or secrets.token_urlsafe(25)
-        session["login_csrf"] = challenge
-        return render_template("unlock.html", csrf_token=challenge)
+        return render_template("unlock.html", csrf_token=new_login_challenge())
 
     @app.post("/unlock")
     def unlock():
         check_origin()
-        verify_csrf("login_csrf", request.form.get("csrf_token"))
+        if not valid_login_challenge(request.form.get("csrf_token")):
+            abort(403)
         code = request.form.get("code", "")
         if len(code) > 256:
             abort(403)
@@ -143,21 +175,22 @@ def create_app(private_directory: str, *, testing: bool = False) -> Flask:
             if not match:
                 state["failures"] += 1
                 save_state(state)
-                return render_template("unlock.html", csrf_token=session["login_csrf"], error=True), 403
-        session.clear()
-        session["portal_authenticated"] = True
-        session["post_csrf"] = secrets.token_urlsafe(25)
-        return redirect(url_for("setup_page"), code=303)
+                return render_template(
+                    "unlock.html", csrf_token=new_login_challenge(), error=True
+                ), 403
+        # Sem redirecionamento ou dependência de cookie: a própria resposta
+        # do POST entrega a segunda tela com ticket autenticado efêmero.
+        ticket, post_csrf = issue_access_ticket()
+        return render_template("setup.html", csrf_token=post_csrf, access_ticket=ticket)
 
     @app.get("/setup")
     def setup_page():
-        if not authenticated():
-            abort(403)
-        return render_template("setup.html", csrf_token=session["post_csrf"])
+        # Esta tela só é entregue por POST com código correto, nunca por URL.
+        abort(403)
 
     @app.get("/public-key")
     def public_key():
-        if not authenticated():
+        if not valid_ticket(request.headers.get("X-Portal-Ticket")):
             abort(403)
         private = serialization.load_pem_private_key(
             (root / PRIVATE_KEY_FILE).read_bytes(), password=None
@@ -170,10 +203,12 @@ def create_app(private_directory: str, *, testing: bool = False) -> Flask:
 
     @app.post("/submit")
     def submit():
-        if not authenticated():
+        ticket = request.headers.get("X-Portal-Ticket")
+        if not valid_ticket(ticket):
             abort(403)
         check_origin()
-        verify_csrf("post_csrf", request.headers.get("X-CSRFToken"))
+        if not valid_post_csrf(request.headers.get("X-CSRFToken"), ticket):
+            abort(403)
         payload = request.get_json(silent=True)
         if not isinstance(payload, dict) or not isinstance(payload.get("encrypted"), str):
             return jsonify(error="Dados inválidos."), 400
@@ -205,13 +240,13 @@ def create_app(private_directory: str, *, testing: bool = False) -> Flask:
                 return jsonify(error="Cofre local indisponível."), 503
             state["used"] = True
             save_state(state)
-        session.clear()
-        session["completed"] = True
         return jsonify(saved=True, message="Chave recebida e armazenada com criptografia."), 201
 
     @app.get("/complete")
     def complete():
-        if session.get("completed") is not True:
+        # Nenhum segredo é exibido; o endpoint informa apenas que o
+        # portal encerrou após um salvamento bem-sucedido.
+        if not get_state().get("used"):
             abort(403)
         return render_template("complete.html")
 

@@ -40,7 +40,8 @@
     setStatus('Criptografando a chave antes do envio...');
     try {
       const response = await fetch('/public-key', {
-        method: 'GET', credentials: 'same-origin', cache: 'no-store',
+        method: 'GET', credentials: 'omit', cache: 'no-store',
+        headers: { 'X-Portal-Ticket': container.dataset.accessTicket },
       });
       if (!response.ok) throw new Error('Sessão de configuração encerrada.');
       const data = await response.json();
@@ -55,8 +56,12 @@
       input.value = '';
       setStatus('Salvando no cofre criptografado...');
       const saved = await fetch('/submit', {
-        method: 'POST', cache: 'no-store', credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': container.dataset.csrf },
+        method: 'POST', cache: 'no-store', credentials: 'omit',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': container.dataset.csrf,
+          'X-Portal-Ticket': container.dataset.accessTicket,
+        },
         body: JSON.stringify({ encrypted: toBase64(new Uint8Array(ciphertext)) }),
       });
       if (!saved.ok) {

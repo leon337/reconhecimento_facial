@@ -14,10 +14,10 @@ descriptografa apenas em memória e a guarda no SQLite local com Fernet.
 
 ## Proteções implementadas
 
-- Código de acesso aleatório, gerado uma vez, apresentado somente na preparação.
+- Código de acesso aleatório, gerado uma vez, apresentado somente na preparação. Não confundir o código de acesso ao portal com a API key Gemini.
 - Prazo limitado, 8 tentativas incorretas totais e revogação ao primeiro salvamento.
-- Cookie de sessão assinado, HttpOnly, Secure (HTTPS), SameSite=Strict.
-- CSRF de entrada e de submissão; validação estrita do Origin.
+- **Login sem cookies de sessão:** formulário inicial com desafio assinado com expiração de 10 minutos; após confirmação do código, a própria resposta exibe o formulário de chave com um ticket assinado de 15 minutos em memória, sem redirecionamento nem valores sensíveis na URL.
+- CSRF separado no acesso e na submissão, vinculado ao ticket e com validade curta; rejeita Origin e Referer de outros domínios.
 - O browser cifra a API key com RSA-OAEP/SHA-256 (public key do servidor).
   O envio POST contém somente ciphertext Base64, não o valor original.
 - O servidor decripta em memória e cifra novamente com Fernet, chave-mestra
