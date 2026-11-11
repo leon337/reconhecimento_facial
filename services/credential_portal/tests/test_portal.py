@@ -158,3 +158,15 @@ def test_api_key_not_exposed_on_get_or_public_key(app_data):
         assert code not in r.get_data(as_text=True)
         assert "Private" not in r.get_data(as_text=True)
         assert "no-store" in r.headers["Cache-Control"]
+
+def test_existing_vault_can_be_read_without_write_permissions(app_data, monkeypatch):
+    from services.credential_portal import vault
+    directory, code, client = app_data
+    fake_key = "AIza" + "R" * 39
+    assert submit(client, code, ch=challenge(client), encrypted=encrypted_value(client, fake_key)).status_code == 201
+
+    def do_not_call_db(_):
+        raise AssertionError("read-only vault must not attempt schema creation or chmod")
+
+    monkeypatch.setattr(vault, "_db", do_not_call_db)
+    assert vault.load_gemini_api_key(directory) == fake_key

@@ -93,10 +93,16 @@ def load_gemini_api_key(directory: str | Path) -> str | None:
         return None
     if db_path.stat().st_mode & 0o077 or master.stat().st_mode & 0o077:
         raise CredentialVaultError("cofre não está com permissões privadas")
-    with _db(root) as connection:
-        row = connection.execute(
-            "SELECT ciphertext FROM credentials WHERE provider=?", ("gemini",)
-        ).fetchone()
+    # A aplicação de ponto recebe este cofre como bind mount SOMENTE LEITURA.
+    # Não abrir via _db(), que cria esquema e chama chmod em cada acesso.
+    # A preparação/escrita continua exclusiva do portal de provisionamento.
+    try:
+        with sqlite3.connect(f"file:{db_path}?mode=ro", uri=True, timeout=5) as connection:
+            row = connection.execute(
+                "SELECT ciphertext FROM credentials WHERE provider=?", ("gemini",)
+            ).fetchone()
+    except sqlite3.DatabaseError as exc:
+        raise CredentialVaultError("cofre SQLite inválido ou inacessível") from exc
     if not row:
         return None
     try:

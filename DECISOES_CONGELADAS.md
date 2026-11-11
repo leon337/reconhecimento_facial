@@ -1,6 +1,6 @@
 # Controle de Ponto Potiguar — Decisões Congeladas
 
-Versão: 1.0  
+Versão: 1.1 (adendo de continuidade em 2026-11-11)
 Vigência: 2026-08-10  
 Autoridade humana: Leandro  
 Repositório: `leon337/reconhecimento_facial`  
@@ -16,6 +16,18 @@ PRODUCTION_HOMOLOGATION=BLOCKED
 LEGAL_CONFORMITY_DECLARED=NO
 ```
 
+
+## Adendo 2026-11-11 — gate explícito de LEANDRO para o Copiloto Potiguar
+
+**Decisão humana posterior e mais específica:** em 11/11/2026, LEANDRO autorizou MESTRE a executar testes do Copiloto Potiguar e, **condicionalmente ao funcionamento comprovado**, realizar merge e deploy. Essa instrução é o gate humano explícito para uma **frente de MVP isolada**, com rastreabilidade em PR #36 (interface Vue + Gemini Live) e PR #37 (portal cifrado SQLite), sem reclassificar NF-01 como encerrada ou iniciar a NF-02.
+
+**Motivo:** reduzir barreiras de interação e oferecer assistência acessível por voz/texto, preservando a base Flask/PostgreSQL e sem IA escrever dados de ponto.
+
+**Impacto e salvaguardas:** integração de código experimental atrás de feature flag \`OFF\` por padrão; sem mudanças de jornadas, autorizações de pagamento, dados biométricos ou ferramenta autônoma de escrita. A autorização de deploy não substitui requisitos de produção preexistentes (LGPD especializada, banco e domínio de produção confirmados, backup/restore, infraestrutura, HTTPS, smoke/monitoramento, auditoria e rollback). **A publicação em homologação sintética/local pode ser executada sem abrir produção.** A liberação de produção continua condicionada a esses itens efetivamente comprovados; não inventar um ambiente que não existe.
+
+**Critério de verdade:** o resultado dos testes e o estado de merge/deploy são os registrados nos commits, checks do GitHub e ambiente efetivamente observado. Em particular, falhas externas de CI por DNS não podem ser reclassificadas silenciosamente como PASS.
+
+---
 ## 1. Finalidade
 
 Este documento consolida as decisões estratégicas, arquiteturais, operacionais e de governança que não podem ser reinterpretadas por um novo chat, agente, documento secundário ou implementação futura sem um novo gate humano explícito.

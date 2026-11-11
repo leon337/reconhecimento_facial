@@ -30,3 +30,20 @@ Para publicação comercial: revisar a implementação de escopo do Google, cont
 - Deploy em produção com domínio, TLS, banco de jornada persistente e requisitos legais.
 
 **Política de integração:** somente após checks completos; a aplicação preserva a flag de IA desligada por padrão. A autorização geral de merge/deploy dada por LEANDRO não torna a conformidade legal ou a infraestrutura de produção automaticamente aprovadas.
+
+## Rodadas adicionais de voz bidirecional e homologação isolada
+
+- Áudio **sintético** criado a partir da resposta falada do Gemini Live, convertido de PCM mono 24 kHz para PCM mono 16 kHz sem dados de usuário.
+- O mesmo áudio foi enviado pela Live API como entrada real PCM 16 kHz.
+- **Gemini 3.8 Live:** áudio de entrada recebido e transcrito; 9 blocos de áudio de resposta, transcrição de saída, conclusão normal da interação.
+- **Gemini 3.8 Live Extended Thinking:** configuração explícita de thinkingLevel=low; áudio de entrada recebido e transcrito; 13 blocos de áudio de resposta, transcrição de saída, conclusão normal.
+- **163/163 testes Python passaram** em execução independente de contêiner usando o código atual da proposta, sem acesso a banco de produção.
+- **12/12 testes do portal criptografado passaram**, incluindo leitura de SQLite sem qualquer escrita no arquivo do cofre.
+- **3/3 testes JavaScript PCM passaram**; a compilação Vite reproduziu os arquivos estáticos versionados.
+- A homologação técnica isolada no notebook atende apenas localhost (127.0.0.1:18951) e emprega banco SQLite sintético, conta fictícia e cofre da API montado somente para leitura.
+- Smoke HTTP do contêiner: /health HTTP 200, acesso de visitante ao copiloto redirecionado ao login, workspace e metadados de gestor fictício HTTP 200, feature habilitada e cofre configurado; POST /admin/copilot/session-token com sessão e CSRF de teste retornou HTTP 200 e cabeçalhos no-store.
+- **Limite desta homologação:** utiliza runtime de imagem de base anterior com módulos da proposta montados para validação. Não é um artefato imutável final, não contém banco trabalhista real, não está exposto publicamente e **não** autoriza produção.
+
+## Infraestrutura de CI externa
+
+Nos runs de PR #37 em 11/11/2026, jobs do GitHub que instalam bibliotecas do sistema estão sujeitos a falhas na resolução DNS de espelhos Ubuntu (ex.: azure.archive.ubuntu.com e security.ubuntu.com). O workflow independente de testes do portal passou. A suíte de 163 testes foi executada fora desses runners e não equivale a declarar verde o conjunto de checks ainda pendentes.
