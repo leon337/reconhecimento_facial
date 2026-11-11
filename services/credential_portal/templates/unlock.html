@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#102e28">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <link rel="stylesheet" href="/assets/portal.css">
+  <script src="/assets/submit.js" defer></script>
+  <title>Configurar Gemini — Copiloto Potiguar</title>
+</head>
+<body>
+  <main class="shell" id="portal">
+    <div class="brand"><span class="mark" aria-hidden="true">P</span><span><strong>POTIGUAR</strong><small>COFRE DE CONFIGURAÇÃO</small></span></div>
+    <div class="eyebrow">VERSÃO SIMPLIFICADA • ACESSO TEMPORÁRIO</div>
+    <h1>Conectar o Gemini ao Potiguar</h1>
+    <p class="intro">Agora é tudo em <strong>uma única tela</strong>. Cole primeiro o código temporário e depois a chave API do Google. A chave é criptografada antes do envio.</p>
+    <section class="panel" aria-label="Configurar acesso Gemini">
+      <form id="key-form" data-challenge="{{ csrf_token }}" autocomplete="off">
+        <div class="panel-header"><span aria-hidden="true">🔐</span><h2>Dados de acesso</h2></div>
+        <label for="access-code">1. Código temporário do MESTRE</label>
+        <input id="access-code" name="code" type="password" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" required maxlength="256" placeholder="Cole o código temporário">
+        <label for="api-key" style="margin-top:20px">2. Chave API do Google AI Studio</label>
+        <input id="api-key" name="api_key" type="password" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" required minlength="20" maxlength="512" placeholder="Cole a chave do Gemini">
+        <p class="microcopy">Os campos são diferentes. O código autoriza o acesso; a chave conecta o Gemini.</p>
+        <button id="submit-key" type="submit">Salvar chave com segurança</button>
+        <p id="status" class="status" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+    <div class="privacy"><strong>🔒 Proteção ativa</strong><p>Chave cifrada no navegador, acesso de uso único e SQLite criptografado. Não compartilhe a chave no ChatGPT ou em mensagens.</p></div>
+    <p class="foot">Este formulário não ativa o copiloto automaticamente, nem modifica registros de ponto.</p>
+  </main>
+</body>
+</html>

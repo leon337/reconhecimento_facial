@@ -17,7 +17,19 @@ def _available() -> bool:
 
 
 def _api_key() -> str:
-    return str(current_app.config.get("COPILOT_GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY") or "")
+    explicit = current_app.config.get("COPILOT_GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY")
+    if explicit:
+        return str(explicit)
+    vault_dir = os.environ.get("POTIGUAR_COPILOT_VAULT_DIR")
+    if not vault_dir:
+        return ""
+    # O cofre é local; a chave é aberta apenas no servidor e nunca integra o HTML.
+    from services.credential_portal.vault import CredentialVaultError, load_gemini_api_key
+    try:
+        return load_gemini_api_key(vault_dir) or ""
+    except CredentialVaultError:
+        current_app.logger.warning("copilot.vault.unavailable")
+        return ""
 
 
 def _no_cache(response):

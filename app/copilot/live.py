@@ -20,7 +20,14 @@ class LiveProvisioningError(RuntimeError):
 
 
 def provision_live_token(api_key: str, model: str) -> str:
-    """Emite token efêmero restrito ao modelo autorizado, sem registrar chave."""
+    """Emite token efêmero de uso único, sem registrar a chave permanente.
+
+    O catálogo permite modelos 3.8 Live, mas a implementação v1beta do
+    auth_tokens do projeto rejeitou liveConnectConstraints (HTTP 400,
+    campo desconhecido) em 2026-11-11. Restringimos o modelo no servidor,
+    com token de uma única sessão, início em 60 s e validade máxima de
+    15 min; o provedor NÃO restringe o modelo neste contrato.
+    """
     if model not in ALLOWED_MODELS:
         raise ValueError("modelo não autorizado")
     if not api_key:
@@ -31,7 +38,6 @@ def provision_live_token(api_key: str, model: str) -> str:
         "uses": 1,
         "newSessionExpireTime": (now + timedelta(seconds=60)).isoformat().replace("+00:00", "Z"),
         "expireTime": (now + timedelta(minutes=15)).isoformat().replace("+00:00", "Z"),
-        "liveConnectConstraints": {"model": f"models/{model}"},
     }
     req = Request(
         TOKEN_URL,
