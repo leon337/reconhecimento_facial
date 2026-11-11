@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#0c2825">
+    <meta name="description" content="Copiloto por voz e texto para orientação no Sistema de Ponto Potiguar">
+    <title>Copiloto Potiguar — Design Lab</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='copilot/style.css') }}">
+    <script type="module" src="{{ url_for('static', filename='copilot/app.js') }}"></script>
+  </head>
+  <body>
+    <div id="potiguar-copilot" data-csrf-token="{{ csrf_value }}"></div>
+    <noscript>Para usar o Copiloto Potiguar, habilite o JavaScript no navegador.</noscript>
+  </body>
+</html>
