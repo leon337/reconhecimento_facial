@@ -55,7 +55,9 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
         MAX_CONTENT_LENGTH=5 * 1024 * 1024,
         SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SAMESITE="Lax",
-        SESSION_COOKIE_SECURE=app_env == "production",
+        SESSION_COOKIE_SECURE=(
+            app_env == "production" or os.environ.get("POTIGUAR_HML_PUBLIC_HTTPS") == "1"
+        ),
         PERMANENT_SESSION_LIFETIME=timedelta(minutes=30),
         WTF_CSRF_TIME_LIMIT=3600,
         PUNCH_DUPLICATE_WINDOW_SECONDS=60,

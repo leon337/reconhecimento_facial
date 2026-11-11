@@ -1,30 +1,77 @@
-<!DOCTYPE html>
-<html lang="pt-br">
+<!doctype html>
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Adicionar Funcionário</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#175b43">
+  <title>Novo funcionário — Potiguar</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='admin-mobile.css') }}">
 </head>
-<body class="p-6 bg-gray-100 min-h-screen">
-  <div class="max-w-md mx-auto bg-white p-6 rounded shadow">
-    <h1 class="text-2xl font-bold mb-4">Cadastrar Novo Funcionário</h1>
-    <form action="{{ url_for('admin.create_user') }}" method="post" class="space-y-4">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <input name="username" placeholder="Username" required class="w-full border p-2 rounded">
-      <input name="password" placeholder="Senha" type="password" required class="w-full border p-2 rounded">
-      <input name="name" placeholder="Nome completo" class="w-full border p-2 rounded">
-      <input name="registration" placeholder="Matrícula" class="w-full border p-2 rounded">
-      <input name="role" placeholder="Função" class="w-full border p-2 rounded">
-      <input name="schedule" placeholder="Horário (e.g. 08:00-17:00)" class="w-full border p-2 rounded">
-      <input name="address" placeholder="Endereço de residência" class="w-full border p-2 rounded">
-      <input name="pass_type" placeholder="Tipo de passagem" class="w-full border p-2 rounded">
-      <button type="submit" class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">
-        Salvar
-      </button>
-    </form>
-    <a href="{{ url_for('admin.list_users') }}" class="inline-block mt-4 text-blue-600 hover:underline">
-      ← Voltar à Lista
-    </a>
+<body>
+  <div class="container">
+    <header class="header">
+      <a class="brand" href="{{ url_for('admin.list_users') }}" aria-label="Potiguar — lista de funcionários">
+        <span class="brand-mark" aria-hidden="true">P</span>
+        <span><strong>POTIGUAR</strong><small>Gestão de ponto</small></span>
+      </a>
+      <nav class="top-actions" aria-label="Navegação principal">
+        <a href="{{ url_for('admin.list_users') }}">Funcionários</a>
+        <a class="primary" href="{{ url_for('copilot.workspace') }}">✦ Copiloto de IA</a>
+      </nav>
+    </header>
+
+    <main class="form-panel">
+      <div class="page-heading">
+        <span class="eyebrow">FUNCIONÁRIOS / NOVO CADASTRO</span>
+        <h1>Cadastrar funcionário</h1>
+        <p class="subtitle">Preencha as informações necessárias. O cadastro facial é uma etapa separada e exige autorização.</p>
+      </div>
+
+      <section class="panel" aria-label="Dados do novo funcionário">
+        <form action="{{ url_for('admin.create_user') }}" method="post">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div class="form-grid">
+            <div class="field">
+              <label for="username">Usuário de acesso *</label>
+              <input id="username" name="username" autocomplete="off" placeholder="Ex.: maria.silva" required maxlength="120">
+            </div>
+            <div class="field">
+              <label for="password">Senha inicial *</label>
+              <input id="password" name="password" type="password" autocomplete="new-password" required placeholder="Defina uma senha segura">
+            </div>
+            <div class="field full">
+              <label for="name">Nome completo</label>
+              <input id="name" name="name" autocomplete="name" placeholder="Nome e sobrenome">
+            </div>
+            <div class="field">
+              <label for="registration">Matrícula</label>
+              <input id="registration" name="registration" placeholder="Identificador funcional">
+            </div>
+            <div class="field">
+              <label for="role">Função</label>
+              <input id="role" name="role" placeholder="Ex.: atendente">
+            </div>
+            <div class="field">
+              <label for="schedule">Horário de trabalho</label>
+              <input id="schedule" name="schedule" placeholder="Ex.: 08:00–17:00">
+            </div>
+            <div class="field">
+              <label for="pass_type">Tipo de passagem</label>
+              <input id="pass_type" name="pass_type" placeholder="Se aplicável">
+            </div>
+            <div class="field full">
+              <label for="address">Endereço residencial</label>
+              <input id="address" name="address" autocomplete="street-address" placeholder="Se necessário">
+              <p class="help">Evite inserir informações pessoais reais em ambientes de homologação.</p>
+            </div>
+          </div>
+          <div class="form-footer">
+            <a class="action" href="{{ url_for('admin.list_users') }}">← Voltar à lista</a>
+            <button class="action primary" type="submit">Salvar funcionário</button>
+          </div>
+        </form>
+      </section>
+    </main>
   </div>
 </body>
 </html>

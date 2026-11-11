@@ -52,7 +52,12 @@ def workspace():
         "img-src 'self' data:; media-src 'self' blob:; worker-src 'self'; "
         "object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
     )
-    return _no_cache(response)
+    # Flask-WTF exige Referer de mesma origem em HTTPS para aceitar CSRF.
+    # no-referrer bloquearia o POST do cliente Vue antes da chamada Gemini.
+    # same-origin preserva o referenciador só dentro do nosso domínio.
+    response = _no_cache(response)
+    response.headers["Referrer-Policy"] = "same-origin"
+    return response
 
 
 @bp.get("/meta")
@@ -92,6 +97,25 @@ def session_token():
         return _no_cache(jsonify(error="Aguarde antes de iniciar outra sessão.")), 429
     # Reserva o intervalo antes da operação externa para evitar tentativas em rajada.
     session["copilot_last_token_at"] = now
+
+    # HML pública tem orçamento limitado de sessões por dia, atômico mesmo
+    # com várias sessões/abas e persistente após reinício do processo.
+    quota_setting = os.environ.get("POTIGUAR_COPILOT_DEMO_DAILY_LIMIT")
+    if quota_setting:
+        from app.copilot.demo_quota import (
+            DemoQuotaReached, DemoQuotaUnavailable, reserve_session,
+        )
+        try:
+            limit = int(quota_setting)
+            if not 1 <= limit <= 100:
+                raise ValueError("limite inválido")
+            reserve_session(current_app.instance_path, limit)
+        except DemoQuotaReached:
+            return _no_cache(jsonify(error="Limite de conversas da demonstração atingido hoje.")), 429
+        except (ValueError, DemoQuotaUnavailable):
+            current_app.logger.warning("copilot.demo_quota.unavailable")
+            return _no_cache(jsonify(error="Controle de uso da demonstração indisponível.")), 503
+
     try:
         token = provision_live_token(key, body["model"])
     except LiveProvisioningError:

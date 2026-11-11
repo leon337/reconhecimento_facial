@@ -1,0 +1,77 @@
+/* Potiguar — telas administrativas mobile-first, sem dependência de CDN */
+:root {
+  font-family: system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  color:#173a2e;background:#edf3ef;line-height:1.5;font-synthesis:none;
+}
+*{box-sizing:border-box}
+body{margin:0;min-width:280px;min-height:100vh}
+a{color:inherit}
+button,input{font:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #dca545;outline-offset:3px}
+.container{width:min(100% - 32px,1040px);margin:0 auto;padding:24px 0 60px}
+.header{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:24px}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none}
+.brand-mark{background:#175b43;color:white;display:grid;place-items:center;border-radius:12px;width:40px;height:40px;font-size:21px;font-weight:800}
+.brand strong{font-size:15px;letter-spacing:.13em}
+.brand small{display:block;color:#648675;font-size:11px;font-weight:600}
+.top-actions{display:flex;flex-wrap:wrap;gap:10px}
+.top-actions a{font-size:13px;font-weight:700;text-decoration:none;border-radius:9px;padding:10px 14px;background:#fff;border:1px solid #cadecf}
+.top-actions a:hover{border-color:#1e6b4c}
+.top-actions .primary{background:#175b43;color:#fff;border-color:#175b43}
+.page-heading{margin:0 0 23px}
+.eyebrow{font-size:11px;letter-spacing:.14em;color:#498563;font-weight:800;text-transform:uppercase}
+h1,h2,p{margin-top:0}
+h1{font-size:clamp(26px,4vw,38px);letter-spacing:-.045em;line-height:1.17;margin:9px 0}
+.subtitle{color:#5b7767;font-size:14px;line-height:1.65;max-width:650px}
+.panel{background:#fff;border-radius:17px;padding:clamp(20px,4vw,32px);border:1px solid #dbe8de;box-shadow:0 8px 35px #123e2410}
+.flash{padding:13px 16px;border-radius:10px;margin:0 0 18px;background:#e7f5e8;color:#285c3d}
+.flash.error{background:#fff0f0;color:#9f3434}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px}
+.action{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:11px 16px;min-height:44px;font-size:14px;font-weight:750;text-decoration:none;background:#eff5f0;color:#1d5540;border-radius:10px;border:1px solid #d9e9dc}
+.action.primary{background:#146044;color:#fff;border-color:#146044}
+.action.secondary{background:#ebf4f1;color:#196f5b}
+.action:hover{filter:brightness(.96);text-decoration:none}
+.form-panel{max-width:710px;margin:auto}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:17px}
+.field{display:flex;flex-direction:column;gap:7px;min-width:0}
+.field.full{grid-column:1/-1}
+.field label{font-size:13px;font-weight:750;color:#274638}
+.field input{width:100%;border-radius:10px;border:1px solid #b8d0c1;padding:12px 13px;background:#fcfefc;color:#153b2a;min-height:48px;font-size:16px}
+.field input::placeholder{color:#839a8b}
+.help{font-size:12px;color:#648475;margin:1px 0 0}
+.form-footer{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;border-top:1px solid #e4ede7;padding-top:20px;margin-top:25px}
+.form-footer .action{min-width:160px}
+.table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.users-table{border-collapse:collapse;width:100%;table-layout:auto;text-align:left}
+.users-table th{background:#edf3ef;color:#335849;font-size:13px;text-align:left;font-weight:800;padding:12px;border-bottom:1px solid #dbe7dc}
+.users-table td{padding:14px 12px;border-bottom:1px solid #e6eee8;font-size:14px;vertical-align:middle}
+.users-table td:first-child{color:#668475}
+.users-table td[data-label="Usuário"]{overflow-wrap:anywhere;font-weight:700}
+.status-empty{color:#677c71;font-weight:700;font-size:12px}
+.status-active{color:#21744f;font-weight:800;font-size:12px}
+.inline-button{display:inline-flex;text-decoration:none;background:#e9f1ff;color:#1852a7;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:800;min-height:40px;align-items:center}
+.remove-form{display:inline}
+.remove-form button{border:0;background:#fee9e8;color:#98342f;padding:8px 10px;border-radius:8px;font-size:13px}
+.row-actions{display:flex;gap:7px;flex-wrap:wrap}
+.empty-state{padding:32px 10px;text-align:center;color:#5c7867}
+@media(max-width:640px){
+ .container{width:min(100% - 24px,600px);padding-top:18px}
+ .header{align-items:flex-start;margin-bottom:24px}
+ .top-actions{width:100%}
+ .top-actions a{flex:1;white-space:nowrap;text-align:center}
+ .form-grid{grid-template-columns:1fr}
+ .field.full{grid-column:auto}
+ .panel{padding:18px 16px}
+ .actions .action{flex:1;white-space:nowrap}
+ .users-table,.users-table tbody,.users-table tr,.users-table td{display:block;width:100%}
+ .users-table thead{position:absolute;width:1px;height:1px;clip:rect(0,0,0,0);overflow:hidden;white-space:nowrap}
+ .users-table tr{border:1px solid #e0ebe2;border-radius:13px;margin-bottom:12px;padding:10px 14px;background:#fff}
+ .users-table td{display:flex;gap:16px;justify-content:space-between;align-items:flex-start;border-bottom:1px solid #edf3ee;padding:9px 0;text-align:right}
+ .users-table td:last-child{border:0;display:block}
+ .users-table td::before{content:attr(data-label);font-size:12px;color:#687c70;font-weight:700;text-align:left;flex:0 0 92px}
+ .users-table td:last-child::before{display:block;margin-bottom:9px}
+ .users-table td[data-label="Usuário"]{word-break:break-word}
+ .form-footer .action{width:100%}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important}}
