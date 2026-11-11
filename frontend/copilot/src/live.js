@@ -1,16 +1,17 @@
-import { GoogleGenAI, Modality } from '@google/genai';
+import { GoogleGenAI, Modality, StartSensitivity, EndSensitivity } from '@google/genai';
+import { registrationTool, REGISTRATION_FUNCTION_NAME, sanitizeRegistrationDraft } from './registration.js';
 import { AudioPlayer, Microphone } from './audio.js';
 
 const MODEL_IDS = ['gemini-3.8-live', 'gemini-3.8-live-extended-thinking'];
 const SYSTEM_INSTRUCTIONS = [
   'Você é o Copiloto Potiguar, assistente de navegação do Sistema de Ponto Potiguar.',
   'Fale sempre em português do Brasil com clareza e acessibilidade.',
-  'Este ambiente é uma prévia somente de orientação. Não possui ferramentas para alterar dados.',
+  'Este ambiente permite preparar um RASCUNHO de cadastro, mas o cadastro só ocorre após confirmação explícita do humano.',
   'Ajude o usuário a entender onde consultar funcionários, iniciar um cadastro ou buscar informações.',
-  'Nunca diga que registrou ponto, aprovou ajuste, cadastrou funcionário, reconheceu rosto ou executou qualquer operação real.',
-  'Não peça senha, chave, imagem facial, documento sensível nem informações pessoais de funcionários.',
+  'Nunca diga que registrou ponto, aprovou ajuste, cadastrou funcionário, reconheceu rosto ou executou qualquer operação real. O resultado da ferramenta de rascunho não é criação.',
+  'Não peça senhas, chaves, documentos oficiais ou imagem facial. Se a pessoa pedir o cadastro, obtenha nome, usuário e dados funcionais mínimos, com consentimento para processamento externo.',
   'Quando necessário, recomende o uso dos controles oficiais da interface e de seus mecanismos de validação.',
-  'Se for solicitado a realizar ações, explique que o usuário deve confirmá-las no fluxo oficial.',
+  'Se o usuário pedir cadastro de funcionário, use prepare_employee_registration somente para preparar o rascunho na interface. A confirmação e persistência ocorrem exclusivamente fora do modelo.',
 ].join('\n');
 
 export class PotiguarLive {
@@ -20,11 +21,15 @@ export class PotiguarLive {
     this.microphone = null;
     this.player = new AudioPlayer();
     this.audioEnabled = false;
+    this.allowEmployeeActions = false;
   }
 
-  async connect(model, csrf) {
+  async connect(model, csrf, { allowEmployeeActions = false } = {}) {
     if (!MODEL_IDS.includes(model)) throw new Error('Modelo não autorizado.');
     if (this.session) return;
+    // Extended Thinking não emitiu toolCall no teste real 11/11/2026.
+    // Cadastro por voz exige o modelo Live padrão; Extended mantém orientação.
+    this.allowEmployeeActions = Boolean(allowEmployeeActions) && model === 'gemini-3.8-live';
     const response = await fetch('/admin/copilot/session-token', {
       method: 'POST',
       credentials: 'same-origin',
@@ -45,7 +50,22 @@ export class PotiguarLive {
           responseModalities: [Modality.AUDIO],
           inputAudioTranscription: {},
           outputAudioTranscription: {},
-          systemInstruction: SYSTEM_INSTRUCTIONS,
+          systemInstruction: this.allowEmployeeActions
+            ? SYSTEM_INSTRUCTIONS
+            : SYSTEM_INSTRUCTIONS.replace(
+                'use prepare_employee_registration somente para preparar o rascunho na interface.',
+                'oriente a abrir o cartão de cadastro assistido, sem afirmar que cadastrou.',
+              ),
+          realtimeInputConfig: {
+            automaticActivityDetection: {
+              disabled: false,
+              startOfSpeechSensitivity: StartSensitivity.START_SENSITIVITY_LOW,
+              endOfSpeechSensitivity: EndSensitivity.END_SENSITIVITY_LOW,
+              prefixPaddingMs: 220,
+              silenceDurationMs: 750,
+            },
+          },
+          ...(this.allowEmployeeActions ? { tools: [registrationTool] } : {}),
           ...(model.endsWith('extended-thinking') ? { thinkingConfig: { thinkingLevel: 'medium' } } : {}),
         },
         callbacks: {
@@ -69,6 +89,7 @@ export class PotiguarLive {
   }
 
   handleMessage(message) {
+    if (message.toolCall?.functionCalls?.length) this.handleToolCalls(message.toolCall.functionCalls);
     const content = message.serverContent || {};
     if (content.interrupted) this.player.interrupt();
     if (content.inputTranscription?.text) {
@@ -90,6 +111,41 @@ export class PotiguarLive {
     if (message.interactionStatus) this.handlers.onStatusDetail?.(message.interactionStatus);
   }
 
+  handleToolCalls(calls) {
+    const functionResponses = [];
+    for (const call of calls) {
+      if (!call?.id || !call?.name) continue;
+      if (call.name !== REGISTRATION_FUNCTION_NAME || !this.allowEmployeeActions) {
+        functionResponses.push({
+          id: call.id, name: call.name,
+          response: { status: 'denied', reason: 'function_not_allowed' },
+        });
+        continue;
+      }
+      try {
+        const raw = typeof call.args === 'string' ? JSON.parse(call.args) : call.args;
+        const draft = sanitizeRegistrationDraft(raw);
+        this.handlers.onEmployeeDraft?.(draft);
+        functionResponses.push({
+          id: call.id, name: call.name,
+          response: { status: 'awaiting_human_review', created: false },
+        });
+      } catch {
+        functionResponses.push({
+          id: call.id, name: call.name,
+          response: { status: 'invalid_draft', created: false },
+        });
+      }
+    }
+    if (functionResponses.length) {
+      try {
+        this.session?.sendToolResponse({ functionResponses });
+      } catch {
+        this.handlers.onError?.('O Gemini não conseguiu preparar o cadastro assistido.');
+      }
+    }
+  }
+
   sendText(text) {
     if (!this.session) throw new Error('Conecte-se antes de enviar uma mensagem.');
     this.session.sendClientContent({
@@ -98,11 +154,18 @@ export class PotiguarLive {
     });
   }
 
-  async startMic() {
+  async startMic(mode = 'automatic') {
     if (!this.session) throw new Error('Conecte-se antes de ativar o microfone.');
     if (this.microphone) return;
     this.microphone = new Microphone((audio) => {
       try { this.session?.sendRealtimeInput({ audio }); } catch { /* Sessão encerrada. */ }
+    }, {
+      mode,
+      onSpeechState: (state) => this.handlers.onSpeechState?.(state),
+      onTurnEnd: () => {
+        try { this.session?.sendRealtimeInput({ audioStreamEnd: true }); }
+        catch { /* Sessão encerrada. */ }
+      },
     });
     try {
       await this.microphone.start();
@@ -117,8 +180,11 @@ export class PotiguarLive {
     const mic = this.microphone;
     this.microphone = null;
     this.audioEnabled = false;
+    const shouldEndTurn = mic && (mic.mode === 'manual' || mic.voiceGate.active);
     if (mic) await mic.stop();
-    try { this.session?.sendRealtimeInput({ audioStreamEnd: true }); } catch { /* Sessão encerrada. */ }
+    if (shouldEndTurn) {
+      try { this.session?.sendRealtimeInput({ audioStreamEnd: true }); } catch { /* Sessão encerrada. */ }
+    }
   }
 
   async disconnect() {

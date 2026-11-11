@@ -69,12 +69,75 @@ def metadata():
         "configured": bool(_api_key()),
         "models": sorted(ALLOWED_MODELS),
         "can_create_user": user.can(Permission.USERS_CREATE),
+        "can_create_with_ai": bool(
+            _available()
+            and current_app.config.get("COPILOT_ACTIONS_ENABLED", False)
+            and user.can(Permission.USERS_CREATE)
+        ),
+        "demo_synthetic_only": bool(os.environ.get("POTIGUAR_COPILOT_DEMO_DAILY_LIMIT")),
         "links": {
             "users": url_for("admin.list_users"),
             "new_user": url_for("admin.new_user") if user.can(Permission.USERS_CREATE) else None,
         },
         "mode": "guidance_only",
     }))
+
+
+@bp.post("/employee-create")
+@permission_required(Permission.USERS_CREATE)
+def employee_create():
+    """Somente confirmação humana autenticada, nunca chamada direta do modelo."""
+    if not _available() or not current_app.config.get("COPILOT_ACTIONS_ENABLED"):
+        return _no_cache(jsonify(error="Cadastro assistido não habilitado.")), 503
+    if not request.is_json:
+        return _no_cache(jsonify(error="Envie JSON.")), 415
+    if request.content_length is not None and request.content_length > 4096:
+        return _no_cache(jsonify(error="Cadastro excede o tamanho permitido.")), 413
+    from app.copilot.actions import (
+        InvalidDraft, DuplicateEmployee, create_employee, validate_draft,
+    )
+    try:
+        draft = validate_draft(request.get_json(silent=True))
+    except InvalidDraft as exc:
+        return _no_cache(jsonify(error=str(exc))), 400
+
+    # HML exposta por túnel tem credenciais de teste compartilhadas:
+    # exigir identificadores sintéticos para evitar dados reais no SQLite.
+    if os.environ.get("POTIGUAR_COPILOT_DEMO_DAILY_LIMIT"):
+        if not (
+            (draft.name.lower().endswith(" de teste") or draft.name.lower().startswith("teste "))
+            and (draft.username.endswith(".teste") or draft.username.startswith("teste."))
+            and (draft.registration or "").upper().startswith("TEST-")
+        ):
+            return _no_cache(jsonify(
+                error="Nesta homologação, use somente dados fictícios: nome terminando em 'de Teste', usuário terminado em '.teste' e matrícula 'TEST-...'."
+            )), 400
+        from app.copilot.demo_quota import (
+            DemoQuotaReached, DemoQuotaUnavailable, reserve_session,
+        )
+        try:
+            reserve_session(current_app.instance_path, 5, category="employee")
+        except DemoQuotaReached:
+            return _no_cache(jsonify(error="Limite diário de cadastros de teste atingido.")), 429
+        except DemoQuotaUnavailable:
+            return _no_cache(jsonify(error="Controle de cadastros indisponível.")), 503
+
+    try:
+        user, temporary_password = create_employee(
+            draft, actor=g.admin_user,
+            company_id=session.get("admin_company_id"),
+            worksite_id=session.get("admin_worksite_id"),
+        )
+    except DuplicateEmployee as exc:
+        return _no_cache(jsonify(error=str(exc))), 409
+    return _no_cache(jsonify({
+        "id": user.id,
+        "username": user.username,
+        "name": user.name,
+        "temporary_password": temporary_password,
+        "requires_biometric_enrollment": True,
+        "message": "Cadastro criado após sua confirmação. A biometria permanece pendente.",
+    })), 201
 
 
 @bp.post("/session-token")

@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref, nextTick } from 'vue';
 import { PotiguarLive } from './live.js';
+import { validRegistrationDraft } from './registration.js';
 
 const props = defineProps({ csrf: { type: String, required: true } });
 const meta = ref({ enabled: false, configured: false, can_create_user: false, links: {}, models: [] });
@@ -8,6 +9,12 @@ const loading = ref(true);
 const connected = ref(false);
 const busy = ref(false);
 const micActive = ref(false);
+const micMode = ref('automatic');
+const speechState = ref('idle');
+const employeeDraft = ref(null);
+const registeredEmployee = ref(null);
+const registrationBusy = ref(false);
+const draftCard = ref(null);
 const consent = ref(false);
 const model = ref('gemini-3.8-live');
 const textInput = ref('');
@@ -23,6 +30,21 @@ const messages = ref(initial());
 let assistantIndex = -1;
 let voiceIndex = -1;
 const available = computed(() => meta.value.enabled && meta.value.configured);
+const canRegister = computed(() => Boolean(meta.value.can_create_with_ai));
+const registrationErrors = computed(() => {
+  if (!employeeDraft.value) return [];
+  const errors = validRegistrationDraft(employeeDraft.value);
+  if (meta.value.demo_synthetic_only) {
+    const d = employeeDraft.value;
+    if (!((d.name || '').toLowerCase().endsWith(' de teste') || (d.name || '').toLowerCase().startsWith('teste '))
+        || !((d.username || '').endsWith('.teste') || (d.username || '').startsWith('teste.'))
+        || !(d.registration || '').toUpperCase().startsWith('TEST-')) {
+      errors.push('Homologação: utilize somente nomes de Teste, usuário .teste e matrícula TEST-.');
+    }
+  }
+  return errors;
+});
+
 const statusLabel = computed(() => connected.value ? (micActive.value ? 'Ouvindo o microfone' : 'Conversa conectada')
   : available.value ? 'Pronto para conectar' : 'Prévia — IA desativada');
 
@@ -63,6 +85,14 @@ const live = new PotiguarLive({
     assistantIndex = -1;
     voiceIndex = -1;
   },
+  onEmployeeDraft(draft) {
+    if (!canRegister.value) return;
+    registeredEmployee.value = null;
+    employeeDraft.value = { ...draft, request_id: crypto.randomUUID() };
+    pushMessage('guide', 'Preparei um rascunho. Revise os campos no cartão e clique em Confirmar e cadastrar quando estiver correto.');
+    nextTick(() => draftCard.value?.scrollIntoView({ block: 'center', behavior: 'smooth' }));
+  },
+  onSpeechState(state) { speechState.value = state; },
   onError(message) { error.value = message; },
 });
 
@@ -80,6 +110,42 @@ async function loadMeta() {
   }
 }
 
+function startEmployeeDraft() {
+  if (!canRegister.value || registrationBusy.value) return;
+  registeredEmployee.value = null;
+  employeeDraft.value = {
+    request_id: crypto.randomUUID(), name: '', username: '',
+    registration: '', job_title: '', schedule: '',
+  };
+  nextTick(() => draftCard.value?.scrollIntoView({ block: 'center', behavior: 'smooth' }));
+}
+
+async function confirmEmployee() {
+  if (!canRegister.value || !employeeDraft.value || registrationErrors.value.length || registrationBusy.value) return;
+  error.value = '';
+  registrationBusy.value = true;
+  try {
+    const response = await fetch('/admin/copilot/employee-create', {
+      method: 'POST', credentials: 'same-origin', cache: 'no-store',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': props.csrf },
+      body: JSON.stringify(employeeDraft.value),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || 'Cadastro não autorizado.');
+    registeredEmployee.value = data;
+    employeeDraft.value = null;
+    pushMessage('guide', 'O servidor confirmou o cadastro. A senha inicial está no cartão seguro; a biometria ainda precisa do fluxo oficial.');
+  } catch (e) {
+    error.value = e.message;
+  } finally {
+    registrationBusy.value = false;
+  }
+}
+
+function cancelEmployeeDraft() {
+  employeeDraft.value = null;
+}
+
 async function toggleConnection() {
   error.value = '';
   if (busy.value) return;
@@ -91,7 +157,7 @@ async function toggleConnection() {
     } else {
       if (!consent.value) throw new Error('Confirme o aviso de privacidade para iniciar.');
       if (!available.value) throw new Error('O administrador ainda não habilitou a integração por IA.');
-      await live.connect(model.value, props.csrf);
+      await live.connect(model.value, props.csrf, { allowEmployeeActions: canRegister.value });
       pushMessage('guide', 'Conexão ativa. Você pode digitar ou ativar o microfone. Para registrar dados reais, utilize as telas oficiais.');
     }
   } catch (e) {
@@ -123,7 +189,7 @@ async function toggleMic() {
       await live.stopMic();
       micActive.value = false;
     } else {
-      await live.startMic();
+      await live.startMic(micMode.value);
       micActive.value = true;
     }
   } catch (e) {
@@ -151,6 +217,7 @@ function resetConversation() {
   messages.value = initial();
   assistantIndex = -1;
   voiceIndex = -1;
+  // Se há confirmação pendente, mantê-la visível até decisão humana.
 }
 
 onMounted(loadMeta);
@@ -226,7 +293,8 @@ onUnmounted(() => { live.disconnect(); });
                 <span aria-hidden="true">{{ micActive ? '◼' : '🎙' }}</span>
                 {{ micActive ? 'Parar microfone' : 'Conversar por voz' }}
               </button>
-              <span>Sem registro automático de ponto</span>
+              <span v-if="micActive && micMode === 'automatic'" aria-live="polite">{{ speechState === 'speaking' ? 'Fala detectada' : 'Aguardando fala — ruídos filtrados' }}</span>
+              <span v-else>Sem registro automático de ponto</span>
             </div>
           </div>
         </section>
@@ -246,9 +314,18 @@ onUnmounted(() => { live.disconnect(); });
               <option value="gemini-3.8-live">Gemini 3.8 Live · rápido</option>
               <option value="gemini-3.8-live-extended-thinking">Gemini 3.8 Live · raciocínio avançado</option>
             </select>
+            <p v-if="canRegister && model.endsWith('extended-thinking')" class="config-note">
+              Para preparar cadastros automaticamente pela conversa, selecione Gemini 3.8 Live · rápido. O Extended Thinking não passou no teste de ferramentas.
+            </p>
+            <label for="mic-mode">Modo do microfone</label>
+            <select id="mic-mode" v-model="micMode" :disabled="micActive">
+              <option value="automatic">Automático — filtrar ruídos (VAD)</option>
+              <option value="manual">Manual — tocar para iniciar/parar</option>
+            </select>
+            <p class="config-note">Em ambientes barulhentos, prefira o modo manual. O VAD automático pode não distinguir toda música ou fala distante.</p>
             <label class="consent">
               <input type="checkbox" v-model="consent" :disabled="connected">
-              <span>Entendo que minhas falas e mensagens serão processadas pelo provedor Gemini. Não informarei senhas nem dados sensíveis.</span>
+              <span>Consinto no processamento das minhas falas e, se eu ditar um cadastro, do nome e dos dados funcionais informados pelo Gemini. Não direi senhas, documentos ou informações biométricas.</span>
             </label>
             <button class="connect-button" type="button" :disabled="loading || busy || (!connected && (!available || !consent))"
               @click="toggleConnection">
@@ -257,6 +334,43 @@ onUnmounted(() => { live.disconnect(); });
             <p v-if="!loading && !available" class="config-note">
               A integração está desativada ou sem credencial. Esta é uma prévia visual; o administrador pode habilitá-la em ambiente de teste.
             </p>
+          </div>
+
+          <div v-if="canRegister" class="panel-card registration-panel" ref="draftCard">
+            <h2>Cadastro assistido</h2>
+            <p class="registration-note">Diga ao Gemini: “Cadastre uma funcionária chamada Maria de Teste, usuário maria.teste, matrícula TEST-101”. Ele prepara os campos; só você confirma a gravação.</p>
+            <p v-if="meta.demo_synthetic_only" class="registration-note">Ambiente de homologação: somente dados fictícios. Use um nome terminado em “de Teste”, usuário “.teste” e matrícula “TEST-...”.</p>
+            <button v-if="!employeeDraft && !registeredEmployee" class="connect-button" type="button" @click="startEmployeeDraft">
+              Iniciar cadastro assistido
+            </button>
+            <form v-if="employeeDraft" class="registration-form" @submit.prevent="confirmEmployee" aria-label="Revisar cadastro proposto pela IA">
+              <label for="emp-name">Nome completo *</label>
+              <input id="emp-name" v-model="employeeDraft.name" maxlength="120" required autocomplete="off">
+              <label for="emp-username">Usuário de acesso *</label>
+              <input id="emp-username" v-model="employeeDraft.username" maxlength="64" required autocapitalize="off" autocomplete="off">
+              <label for="emp-registration">Matrícula</label>
+              <input id="emp-registration" v-model="employeeDraft.registration" maxlength="50" autocomplete="off">
+              <label for="emp-role">Função</label>
+              <input id="emp-role" v-model="employeeDraft.job_title" maxlength="80">
+              <label for="emp-schedule">Horário</label>
+              <input id="emp-schedule" v-model="employeeDraft.schedule" maxlength="120">
+              <p v-if="registrationErrors.length" class="error" role="status">{{ registrationErrors[0] }}</p>
+              <p class="registration-note">A senha inicial será gerada somente após confirmar. Nenhuma biometria ou marcação de ponto será criada.</p>
+              <div class="registration-actions">
+                <button type="button" @click="cancelEmployeeDraft" :disabled="registrationBusy">Cancelar</button>
+                <button type="submit" class="connect-button" :disabled="registrationBusy || registrationErrors.length > 0">
+                  {{ registrationBusy ? 'Salvando…' : 'Confirmar e cadastrar' }}
+                </button>
+              </div>
+            </form>
+            <div v-if="registeredEmployee" class="registration-result" role="status">
+              <strong>Funcionário cadastrado após confirmação</strong>
+              <p>{{ registeredEmployee.name }} ({{ registeredEmployee.username }})</p>
+              <label for="initial-password">Senha inicial (mostrar somente ao administrador)</label>
+              <input id="initial-password" :value="registeredEmployee.temporary_password" readonly autocomplete="off">
+              <p class="registration-note">Entregue a senha por canal seguro. Ela não será enviada ao Gemini e desaparecerá ao sair da página. A biometria continua pendente.</p>
+              <button class="connect-button" type="button" @click="registeredEmployee = null; startEmployeeDraft()">Novo cadastro</button>
+            </div>
           </div>
 
           <div class="panel-card suggestions">

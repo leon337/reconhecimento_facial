@@ -133,3 +133,26 @@ h1 { font-weight: 800; font-size: clamp(28px, 3vw, 36px); margin-bottom: 4px; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
 }
+
+/* O cadastro assistido é uma revisão humana, nunca uma escrita do Gemini. */
+.registration-panel h2{margin:0 0 12px;font-size:17px}
+.registration-note{color:#687f73;font-size:12px;line-height:1.7;margin:6px 0 15px}
+.registration-form{display:flex;flex-direction:column;gap:7px}
+.registration-form label,.registration-result label{font-size:12px;font-weight:750;color:#405f4d}
+.registration-form input,.registration-result input{
+ width:100%;min-width:0;min-height:44px;border-radius:9px;border:1px solid #c5d9ce;
+ background:#fbfdfb;color:#173d2b;font-size:16px;padding:10px 11px;
+ margin-bottom:7px
+}
+.registration-form .error{margin:6px 0;color:#a5233a}
+.registration-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.registration-actions button{border:1px solid #d8e6da;background:#eef5f0;color:#214c3d;padding:12px;border-radius:10px;font-size:13px;font-weight:750}
+.registration-actions .connect-button{flex:1;margin-top:0;color:white;background:#185940}
+.registration-result{border:1px solid #b6dfc6;background:#f3fbf5;border-radius:12px;padding:13px}
+.registration-result strong{color:#276b48;font-size:13px}
+.registration-result p{font-size:12px;margin:10px 0}
+.registration-result input{font-family:monospace;letter-spacing:.03em}
+@media(max-width:570px){
+ .registration-actions{flex-direction:column}
+ .registration-actions button{width:100%}
+}
