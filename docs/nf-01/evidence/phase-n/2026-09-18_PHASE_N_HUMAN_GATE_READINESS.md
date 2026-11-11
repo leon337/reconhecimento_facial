@@ -1,3 +1,9 @@
+<!-- NF01-2026-11-11-RECONCILIATION -->
+> **Atualização de continuidade — 11/11/2026 (prevalece sobre os estados históricos abaixo):**
+> A **Fase N da NF-01** teve seus requisitos de evidência reconciliados. H1: teste técnico real no Brave com zoom 200% executado pelo MESTRE e **evidência expressamente aceita por LEANDRO** em 11/11/2026 — sem alegar operação presencial por LEANDRO. N3: sessão real Orca previamente documentada como PASS. N4: consolidação aprovada no nível de evidência, preservados os limites de executor. **Fase O não iniciada, NF-01 como um todo não encerrada, PR #32 sem autorização para merge, nenhum deploy ou NF-02 autorizado.**
+> Registro canônico: docs/nf-01/72_NF01_PHASE_N_RECONCILIATION_2026-11-11.md e docs/nf-01/73_NF01_PHASE_N_MESTRE_TECHNICAL_REVIEW_2026-11-11.md. Evidências em docs/nf-01/evidence/phase-n/2026-11-11/.
+> Os estados BLOCKED_TOOLING, IN_PROGRESS e PENDING preservados abaixo são retratos de seus momentos de escrita, não o estado de aceitação da Fase N após 11/11/2026.
+
 # NF-01 — Fase N — Human Gate Readiness
 
 **Data:** 2026-09-18  
