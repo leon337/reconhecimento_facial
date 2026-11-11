@@ -140,3 +140,39 @@ def test_cross_origin_and_bad_cipher_rejected(enrollment):
         headers={"Origin": "http://localhost", "X-CSRFToken": post_csrf},
     )
     assert r.status_code == 400
+
+
+def test_mobile_browser_without_origin_requires_valid_csrf(enrollment):
+    folder, code, client = enrollment
+    client.get("/")
+    with client.session_transaction() as s:
+        csrf = s["login_csrf"]
+    assert client.post(
+        "/unlock", data={"code": code, "csrf_token": "invalid-csrf"},
+    ).status_code == 403
+    # Este é o caso de browsers móveis que omitem Origin no POST HTML.
+    response = client.post(
+        "/unlock", data={"code": code, "csrf_token": csrf},
+    )
+    assert response.status_code == 303
+    assert client.get("/setup").status_code == 200
+
+
+def test_explicit_cross_site_referer_rejected(enrollment):
+    _, code, client = enrollment
+    client.get("/")
+    with client.session_transaction() as s:
+        csrf = s["login_csrf"]
+    response = client.post(
+        "/unlock", data={"code": code, "csrf_token": csrf},
+        headers={"Referer": "https://attacker.example/"},
+    )
+    assert response.status_code == 403
+
+
+def test_missing_session_shows_retry_not_false_expiration(enrollment):
+    _, code, client = enrollment
+    response = client.get("/setup")
+    assert response.status_code == 403
+    assert "Não foi possível confirmar sua sessão." in response.get_data(as_text=True)
+    assert "Voltar ao início" in response.get_data(as_text=True)

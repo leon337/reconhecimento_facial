@@ -79,10 +79,16 @@ def create_app(private_directory: str, *, testing: bool = False) -> Flask:
             abort(403)
 
     def check_origin() -> None:
-        origin = request.headers.get("Origin", "")
-        # Comparação de host e protocolo para evitar envio por páginas terceiras.
+        # Navegadores móveis / VPNs podem retirar o cabeçalho Origin de
+        # formulários HTML. Ainda assim exigimos o CSRF aleatório da
+        # sessão (verificado pelo chamador) e SameSite=Strict.
+        # Se Origin ou Referer vierem presentes, devem corresponder ao host.
+        # Cabeçalhos explicitamente divergentes nunca são aceitos.
+        origin = request.headers.get("Origin") or request.headers.get("Referer")
+        if not origin:
+            return
         parsed = urlparse(origin)
-        if not origin or parsed.netloc != request.host or (
+        if parsed.netloc != request.host or (
             parsed.scheme != "https" and not testing
         ):
             abort(403)
@@ -210,6 +216,10 @@ def create_app(private_directory: str, *, testing: bool = False) -> Flask:
         return render_template("complete.html")
 
     @app.errorhandler(403)
+    def retry_access(exc):
+        # Um pedido sem sessão válida não significa que o código expirou.
+        return render_template("retry.html"), 403
+
     @app.errorhandler(404)
     @app.errorhandler(413)
     def generic_error(exc):
