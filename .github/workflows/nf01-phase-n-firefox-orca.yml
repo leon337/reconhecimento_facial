@@ -8,6 +8,12 @@ on:
       - '.github/workflows/nf01-phase-n-firefox-orca.yml'
       - '.github/scripts/nf01-orca-firefox.mjs'
       - 'docs/nf-01/prototype/**'
+  pull_request:
+    branches:
+      - docs/nf-01-produto-design-system
+    paths:
+      - '.github/workflows/nf01-phase-n-firefox-orca.yml'
+      - '.github/scripts/nf01-orca-firefox.mjs'
   workflow_dispatch:
 
 permissions:
@@ -15,7 +21,7 @@ permissions:
 
 jobs:
   firefox-orca-evidence:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
 
     steps:

@@ -163,6 +163,23 @@ async function nativeTabUntil(label, needle, maxTabs = 45) {
   return null;
 }
 
+async function activateAfterOrca(locator, label) {
+  await locator.waitFor({ state: 'visible', timeout: 10000 });
+  const hadFocus = await locator.evaluate((el) => document.activeElement === el);
+  if (!hadFocus) await locator.focus();
+  const focused = await locator.evaluate((el) => document.activeElement === el);
+  console.log('NF01_CLOUD_ACTIVATION=' + label + ';RESEEDED=' + !hadFocus + ';FOCUSED=' + focused);
+  nativeScreenReaderJourney.push({
+    label: label + '_ACTIVATION',
+    action: 'ENTER_KEY',
+    focusReseededAfterOrca: !hadFocus,
+    input: 'PLAYWRIGHT_KEYBOARD_ASSISTED_WITH_ORCA',
+    result: focused ? 'TARGET_FOCUSED' : 'TARGET_NOT_FOCUSED',
+  });
+  if (!focused) throw new Error('Keyboard target not focused: ' + label);
+  await page.keyboard.press('Enter');
+}
+
 async function nativeScreenReaderCriticalJourney() {
   checkpoint('NATIVE_SCREEN_READER_BEGIN');
   await page.goto(`${base}/02.01-dashboard.html`, { waitUntil: 'networkidle' });
@@ -172,29 +189,29 @@ async function nativeScreenReaderCriticalJourney() {
   await sleep(700);
 
   const attention = await nativeTabUntil('DASHBOARD_ATTENTION', 'biometrias pendentes', 35);
-  if (!attention) return;
-  nativeKey(wid, 'Return');
+  if (!attention) throw new Error('Native keyboard dashboard attention not found');
+  await activateAfterOrca(page.locator('[data-cross-screen-handoff="biometric-missing"]'), 'NATIVE_DASHBOARD_ATTENTION');
   await page.waitForURL(/03\.01-funcionarios\.html\?biometric=missing/, { timeout: 10000 });
   await sleep(1200);
 
   nativeKey(wid, 'F6');
   await sleep(650);
   const createEmployee = await nativeTabUntil('EMPLOYEES_NEW_EMPLOYEE', 'Novo funcionário', 40);
-  if (!createEmployee) return;
-  nativeKey(wid, 'Return');
+  if (!createEmployee) throw new Error('Native keyboard new employee link not found');
+  await activateAfterOrca(page.locator('[data-new-employee-link]'), 'NATIVE_EMPLOYEES_NEW_EMPLOYEE');
   await page.waitForURL(/03\.04-novo-funcionario-v2\.html/, { timeout: 10000 });
   await sleep(1200);
 
   nativeKey(wid, 'F6');
   await sleep(650);
   const steps = await nativeTabUntil('ONBOARDING_STEP_LIST', 'Ver etapas', 50);
-  if (!steps) return;
-  nativeKey(wid, 'Return');
+  if (!steps) throw new Error('Native keyboard step list not found');
+  await activateAfterOrca(page.locator('[data-toggle-step-list]'), 'NATIVE_ONBOARDING_STEP_LIST');
   await sleep(1200);
 
   const summary = await nativeTabUntil('ONBOARDING_CONTEXT_TRIGGER', 'Resumo', 25);
-  if (!summary) return;
-  nativeKey(wid, 'Return');
+  if (!summary) throw new Error('Native keyboard context trigger not found');
+  await activateAfterOrca(page.locator('[data-open-context]'), 'NATIVE_ONBOARDING_CONTEXT_TRIGGER');
   await page.locator('[data-context-drawer]').waitFor({ state: 'visible', timeout: 10000 });
   await sleep(900);
 
@@ -210,8 +227,8 @@ async function nativeScreenReaderCriticalJourney() {
   });
 
   const next = await nativeTabUntil('ONBOARDING_CONTINUE', 'Continuar', 45);
-  if (!next) return;
-  nativeKey(wid, 'Return');
+  if (!next) throw new Error('Native keyboard continue not found');
+  await activateAfterOrca(page.locator('[data-next-step]'), 'NATIVE_ONBOARDING_CONTINUE');
   await page.locator('[data-error-summary]').waitFor({ state: 'visible', timeout: 10000 });
   await sleep(1800);
   const errorSnap = await activeElementSnapshot();
@@ -329,7 +346,7 @@ const summary = page.locator('[data-open-context]');
 const drawer = page.locator('[data-context-drawer]');
 await summary.focus();
 await atspiFocusForOrca('Resumo');
-await page.keyboard.press('Enter');
+await activateAfterOrca(summary, 'ASSISTED_CONTEXT_DRAWER');
 await drawer.waitFor({ state: 'visible', timeout: 10000 });
 await sleep(500);
 const drawerState = await drawer.evaluate((el) => ({
@@ -385,6 +402,7 @@ await inspect('Retorno a Funcionários');
 interactions.push({ case: 'RETURN_TO_EMPLOYEES', input: 'PLAYWRIGHT_KEYBOARD', result: 'PASS_ASSISTED' });
 
 await nativeScreenReaderCriticalJourney();
+if (!nativeScreenReaderJourney.some((row) => row.label === 'RETURN_TO_EMPLOYEES' && row.result === 'RETURNED_NATIVE_KEYBOARD')) throw new Error('Assisted screen reader journey did not complete');
 writePartial('COMPLETE_ASSISTED_EVIDENCE');
 checkpoint('SUMMARY_WRITTEN');
 await context.close();
