@@ -74,6 +74,7 @@ def metadata():
             and current_app.config.get("COPILOT_ACTIONS_ENABLED", False)
             and user.can(Permission.USERS_CREATE)
         ),
+        "demo_synthetic_only": bool(os.environ.get("POTIGUAR_COPILOT_DEMO_DAILY_LIMIT")),
         "links": {
             "users": url_for("admin.list_users"),
             "new_user": url_for("admin.new_user") if user.can(Permission.USERS_CREATE) else None,

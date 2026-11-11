@@ -25,3 +25,7 @@ Usuário com `USERS_CREATE` pede ao Gemini 3.8 Live: "Cadastre Maria de Teste, u
 - O VAD é heurístico local, não equivalente à identificação de voz humana. Pode falhar com música, fala distante, microfone ruim ou ruído tonal. A solução anterior do assistente **R** não foi identificada em repositório ou módulo verificável desta sessão e **não está sendo descrita como reutilizada**.
 - A chave Gemini não entra no repositório, build ou logs. A confirmação depende do login e de um clique humano na UI.
 - Para uso oficial de ponto, ainda são necessárias as etapas de homologação legal/LGPD, backup/restore PostgreSQL, infraestrutura durável e validação presencial de acessibilidade.
+
+## Refinamento de usabilidade
+
+A HML informa no metadata `demo_synthetic_only=true`, exibe a regra de identidades fictícias no cartão e impede o envio de formulários incompatíveis, além da validação independente no servidor.

@@ -31,7 +31,19 @@ let assistantIndex = -1;
 let voiceIndex = -1;
 const available = computed(() => meta.value.enabled && meta.value.configured);
 const canRegister = computed(() => Boolean(meta.value.can_create_with_ai));
-const registrationErrors = computed(() => employeeDraft.value ? validRegistrationDraft(employeeDraft.value) : []);
+const registrationErrors = computed(() => {
+  if (!employeeDraft.value) return [];
+  const errors = validRegistrationDraft(employeeDraft.value);
+  if (meta.value.demo_synthetic_only) {
+    const d = employeeDraft.value;
+    if (!((d.name || '').toLowerCase().endsWith(' de teste') || (d.name || '').toLowerCase().startsWith('teste '))
+        || !((d.username || '').endsWith('.teste') || (d.username || '').startsWith('teste.'))
+        || !(d.registration || '').toUpperCase().startsWith('TEST-')) {
+      errors.push('Homologação: utilize somente nomes de Teste, usuário .teste e matrícula TEST-.');
+    }
+  }
+  return errors;
+});
 
 const statusLabel = computed(() => connected.value ? (micActive.value ? 'Ouvindo o microfone' : 'Conversa conectada')
   : available.value ? 'Pronto para conectar' : 'Prévia — IA desativada');
@@ -326,7 +338,8 @@ onUnmounted(() => { live.disconnect(); });
 
           <div v-if="canRegister" class="panel-card registration-panel" ref="draftCard">
             <h2>Cadastro assistido</h2>
-            <p class="registration-note">Diga ao Gemini: “Cadastre uma funcionária chamada Maria de Teste, usuário maria.teste”. Ele prepara os campos; só você confirma a gravação.</p>
+            <p class="registration-note">Diga ao Gemini: “Cadastre uma funcionária chamada Maria de Teste, usuário maria.teste, matrícula TEST-101”. Ele prepara os campos; só você confirma a gravação.</p>
+            <p v-if="meta.demo_synthetic_only" class="registration-note">Ambiente de homologação: somente dados fictícios. Use um nome terminado em “de Teste”, usuário “.teste” e matrícula “TEST-...”.</p>
             <button v-if="!employeeDraft && !registeredEmployee" class="connect-button" type="button" @click="startEmployeeDraft">
               Iniciar cadastro assistido
             </button>
