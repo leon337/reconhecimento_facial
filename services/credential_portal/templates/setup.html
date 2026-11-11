@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#102e28">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <link rel="stylesheet" href="/assets/portal.css">
+  <script defer src="/assets/submit.js"></script>
+  <title>Adicionar chave Gemini — Copiloto Potiguar</title>
+</head>
+<body>
+  <main class="shell">
+    <div class="brand"><span class="mark" aria-hidden="true">P</span><span><strong>POTIGUAR</strong><small>COFRE DE CONFIGURAÇÃO</small></span></div>
+    <div class="eyebrow">ACESSO AUTORIZADO • ENVIO DE USO ÚNICO</div>
+    <h1>Adicionar chave do Gemini</h1>
+    <p class="intro">Sua chave será criptografada neste dispositivo <strong>antes do envio</strong> e armazenada criptografada em SQLite no computador de desenvolvimento.</p>
+    <section class="panel" aria-labelledby="form-title">
+      <div class="panel-header"><span aria-hidden="true">🔑</span><h2 id="form-title">Chave API</h2></div>
+      <div id="key-form" data-csrf="{{ csrf_token }}">
+        <label for="api-key">Cole sua chave do Google AI Studio</label>
+        <input id="api-key" name="api_key" type="password" required minlength="20" maxlength="512" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Cole a chave aqui">
+        <p class="microcopy">A chave não aparece no endereço, no chat, nem será gravada em texto simples no SQLite.</p>
+        <button id="submit-key" type="button">Salvar chave com criptografia</button>
+        <p id="status" class="status" role="status" aria-live="polite"></p>
+      </div>
+    </section>
+    <div class="privacy"><strong>Privacidade preservada</strong><p>A credencial não será utilizada para registrar ponto, modificar funcionários ou ativar automaticamente a IA. A configuração do copiloto continuará desligada até aprovação.</p></div>
+    <p class="foot">Esta configuração utiliza HTTPS e criptografia adicional no navegador. Encerre a página ao concluir.</p>
+  </main>
+</body>
+</html>

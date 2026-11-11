@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#102e28">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <link rel="stylesheet" href="/assets/portal.css">
+  <title>Acesso protegido — Copiloto Potiguar</title>
+</head>
+<body>
+  <main class="shell">
+    <div class="brand"><span class="mark" aria-hidden="true">P</span><span><strong>POTIGUAR</strong><small>COFRE DE CONFIGURAÇÃO</small></span></div>
+    <div class="eyebrow">CONFIGURAÇÃO REMOTA • ACESSO TEMPORÁRIO</div>
+    <h1>Conectar o Gemini ao Potiguar</h1>
+    <p class="intro">Use o código de acesso fornecido pelo MESTRE. A chave API será enviada posteriormente em uma sessão protegida, sem aparecer na conversa.</p>
+    <section class="panel" aria-labelledby="gate-title">
+      <div class="panel-header"><span aria-hidden="true">🔐</span><h2 id="gate-title">Validar acesso</h2></div>
+      {% if error %}<p class="error" role="alert">Código incorreto ou acesso indisponível. Confira o código e tente novamente.</p>{% endif %}
+      <form action="{{ url_for('unlock') }}" method="post" autocomplete="off">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <label for="code">Código temporário</label>
+        <input id="code" type="password" name="code" required minlength="18" maxlength="256" autocapitalize="off" autocorrect="off" spellcheck="false" autocomplete="off" placeholder="Cole o código fornecido" autofocus>
+        <button type="submit">Continuar com segurança</button>
+      </form>
+    </section>
+    <p class="foot">O acesso expira automaticamente. Não compartilhe sua chave do Gemini pelo chat ou por mensagens.</p>
+  </main>
+</body>
+</html>

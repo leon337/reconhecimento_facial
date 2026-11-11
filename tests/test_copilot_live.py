@@ -120,3 +120,19 @@ def test_ephemeral_credential_request_is_restricted_and_one_use(monkeypatch):
     assert "not-real" not in observed["url"]
     with pytest.raises(ValueError):
         live.provision_live_token("not-real", "untrusted-model")
+
+
+def test_copilot_uses_private_sqlite_vault_when_env_key_is_absent(app, client, tmp_path, monkeypatch):
+    """O cofre SQLite funciona sem expor o segredo à interface."""
+    from app.copilot.routes import _api_key
+    from services.credential_portal.vault import store_gemini_api_key
+
+    secret = "AIza" + "s" * 39  # Valor sintético de teste.
+    directory = tmp_path / "cofre"
+    store_gemini_api_key(directory, secret)
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    monkeypatch.setenv("POTIGUAR_COPILOT_VAULT_DIR", str(directory))
+    with app.app_context():
+        app.config["COPILOT_GEMINI_API_KEY"] = None
+        assert _api_key() == secret
+    assert secret.encode() not in (directory / "credentials.sqlite3").read_bytes()
