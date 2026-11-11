@@ -1,0 +1,95 @@
+schema_version: 1
+mission_id: CPP-NF-01-PRODUTO-DESIGN-SYSTEM
+runtime_id: CPP-FRONTEND-MISSION-RUNTIME-001
+project_id: controle-ponto
+scope: FRONTEND_ONLY
+framework: MCF
+
+objective: >-
+  Conclude and govern the NF-01 frontend Product + Design System work with
+  reproducible evidence, explicit human gates, parallel workstreams and
+  cross-chat continuity.
+
+state_machine:
+  mission:
+    allowed:
+      - PLANNED
+      - EXECUTING
+      - WAITING_EXTERNAL
+      - BLOCKED_RISK
+      - RECOVERING
+      - COMPLETED
+      - CANCELLED
+  phase:
+    allowed:
+      - PLANNED
+      - EXECUTING
+      - WAITING_EVIDENCE
+      - RECOVERING
+      - COMPLETED
+      - FAILED
+
+human_authority:
+  id: LEANDRO
+  final: true
+  required_for:
+    - manual_acceptance
+    - merge_pr_32
+    - phase_o_boundary
+    - nf02_start
+
+workstreams:
+  A:
+    name: accessibility_and_gui_evidence
+    may:
+      - run_tests
+      - collect_evidence
+      - propose_test_infrastructure_changes
+    may_not:
+      - change_product_ui
+      - claim_manual_pass
+      - merge
+  B:
+    name: regression_and_ci
+    may:
+      - run_ci
+      - inspect_workflows
+      - report_failures
+    may_not:
+      - claim_production_homologation
+      - merge
+  C:
+    name: governance_and_invariants
+    may:
+      - audit_diff
+      - verify_invariants
+      - update_documentation
+    may_not:
+      - weaken_gates
+      - merge
+  D:
+    name: human_gate_and_continuity
+    may:
+      - prepare_human_gate
+      - maintain_handoff
+      - synchronize_runtime_state
+    may_not:
+      - infer_human_acceptance
+      - merge
+
+evidence_policy:
+  automated_is_manual: false
+  assisted_is_manual: false
+  real_human_directed_screen_reader_can_satisfy_manual_contract: true
+  false_green_allowed: false
+
+communications:
+  voicehub:
+    enabled: true
+    identity_prefix: "Mestre — missão Controle de Ponto"
+    cadence: SIGNIFICANT_ADVANCE
+    required_fields:
+      - completed
+      - current_state
+      - next_step
+      - human_action_required

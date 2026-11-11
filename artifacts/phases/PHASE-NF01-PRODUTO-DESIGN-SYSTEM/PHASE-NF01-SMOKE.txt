@@ -1,0 +1,5 @@
+PHASE=NF01
+SMOKE_TEST=NOT_APPLICABLE_TO_NEW_DESIGN
+REASON=NF-01 is documentation/design specification only and changes no production UI/backend.
+EXISTING_SUITE_EXECUTION=DELEGATED_TO_CI_ON_PR
+CLAIM_OF_NEW_UI_SMOKE=NO

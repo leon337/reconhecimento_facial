@@ -1,0 +1,112 @@
+{
+  "checked_at": "2026-11-11",
+  "commit": "f14c4c55e966227fb53799cbf95c4ce5894589ef",
+  "browser": "Brave headed Xvfb",
+  "window_id": "10485764",
+  "screens": [
+    {
+      "title": "AppShell I3 — NF-01 Design Lab",
+      "dpr": 2,
+      "width": 692,
+      "scrollWidth": 692,
+      "overflow": false,
+      "bodyOverflow": false,
+      "buttons": 4,
+      "h1": "Substrato reutilizável do AppShell",
+      "focused": "BODY",
+      "ready": "complete",
+      "page": "appshell"
+    },
+    {
+      "title": "Dashboard Canônico M2 — NF-01 Design Lab",
+      "dpr": 2,
+      "width": 692,
+      "scrollWidth": 692,
+      "overflow": false,
+      "bodyOverflow": false,
+      "buttons": 5,
+      "h1": "Dashboard",
+      "focused": "BODY",
+      "ready": "complete",
+      "page": "dashboard"
+    },
+    {
+      "title": "Funcionários Canônico K2 — NF-01 Design Lab",
+      "dpr": 2,
+      "width": 692,
+      "scrollWidth": 692,
+      "overflow": false,
+      "bodyOverflow": false,
+      "buttons": 11,
+      "h1": "Funcionários",
+      "focused": "BODY",
+      "ready": "complete",
+      "page": "employees"
+    },
+    {
+      "title": "Novo Funcionário — NF-01 Design Lab",
+      "dpr": 2,
+      "width": 692,
+      "scrollWidth": 692,
+      "overflow": false,
+      "bodyOverflow": false,
+      "buttons": 9,
+      "h1": "Novo funcionário",
+      "focused": "BODY",
+      "ready": "complete",
+      "page": "new_employee"
+    }
+  ],
+  "interactions": [
+    {
+      "step_list": {
+        "expanded": true,
+        "within": true,
+        "items": 8
+      }
+    },
+    {
+      "context_drawer": {
+        "expanded": true,
+        "within": true,
+        "aria": "false"
+      }
+    },
+    {
+      "drawer_close_focus": {
+        "closed": true,
+        "focusReturned": true
+      }
+    },
+    {
+      "error_summary": {
+        "shown": true,
+        "text": "Revise as informações desta etapa.\nSelecione uma opção para continuar.",
+        "within": true,
+        "focus": true
+      }
+    },
+    {
+      "footer_actions": {
+        "withinX": true,
+        "withinY": true,
+        "rect": {
+          "top": 314.8671875,
+          "bottom": 451.8671875,
+          "left": 17,
+          "right": 675.5
+        }
+      }
+    }
+  ],
+  "files": [
+    "new_employee_step_list.jpg",
+    "appshell.jpg",
+    "new_employee_drawer.jpg",
+    "new_employee.jpg",
+    "dashboard.jpg",
+    "new_employee_error.jpg",
+    "employees.jpg",
+    "new_employee_footer.jpg"
+  ]
+}

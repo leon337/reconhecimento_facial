@@ -1,0 +1,68 @@
+name: NF01 Phase N Validation
+
+on:
+  push:
+    branches:
+      - docs/nf-01-produto-design-system
+    paths:
+      - 'docs/nf-01/prototype/**'
+      - 'docs/nf-01/validation/phase-n/**'
+      - '.github/workflows/nf01-phase-n-validation.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'docs/nf-01/prototype/**'
+      - 'docs/nf-01/validation/phase-n/**'
+      - '.github/workflows/nf01-phase-n-validation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-design-lab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: docs/nf-01/validation/phase-n/package.json
+
+      - name: Install validation dependencies
+        working-directory: docs/nf-01/validation/phase-n
+        run: npm install --no-audit --no-fund
+
+      - name: Install Chromium
+        working-directory: docs/nf-01/validation/phase-n
+        run: npx playwright install --with-deps chromium
+
+      - name: Execute N2 and N3 validation matrix
+        working-directory: docs/nf-01/validation/phase-n
+        run: |
+          python3 -m http.server 4173 --directory ../../prototype > /tmp/nf01-phase-n-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill ${SERVER_PID} || true' EXIT
+          sleep 2
+          set +e
+          node run-phase-n.mjs
+          MAIN_EXIT=$?
+          set -e
+          echo "Base matrix exit=${MAIN_EXIT}; executing focused retests for superseded cases."
+          node run-phase-n-followup.mjs
+
+      - name: Upload Phase N evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nf01-phase-n-evidence
+          path: docs/nf-01/evidence/phase-n/automation-run/
+          if-no-files-found: warn
+          retention-days: 30

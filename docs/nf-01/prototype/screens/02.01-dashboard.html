@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Dashboard Canônico M2 — NF-01 Design Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/design-tokens.css">
+  <link rel="stylesheet" href="../assets/components.css">
+  <link rel="stylesheet" href="../assets/app-shell.css">
+  <link rel="stylesheet" href="../assets/dashboard-v3.css">
+</head>
+<body
+  data-app-shell-active="dashboard"
+  data-app-shell-context-title="Potiguar Locações"
+  data-app-shell-context-subtitle="Galpão principal · contexto demonstrativo"
+  data-app-shell-profile-name="Administrador Demo"
+  data-app-shell-profile-role="Admin · perfil fictício"
+  data-app-shell-profile-avatar="AD"
+  data-dashboard-demo-role="admin"
+  data-dashboard-demo-permissions="users:view users:create biometrics:manage punch:view punch:create">
+
+  <svg class="icon-sprite" aria-hidden="true">
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-scan" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="3.5" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 19c.6-3.2 2.4-5 5.5-5s4.9 1.8 5.5 5M15 6.5c2 .2 3.2 1.4 3.2 3.1S17 12.5 15 12.8M17 14.2c2 .6 3 2.1 3.5 4.3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 3v4M16 3v4M4 10h16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 4 3.5 19h17z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 9v4M12 16h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 10v6M12 7h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  </svg>
+
+  <main class="page dashboard-page" id="conteudo" data-app-shell-content>
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">Visão geral da operação</p>
+        <h1 class="page-title">Dashboard</h1>
+        <p class="page-subtitle">Acompanhe pessoas, registros e pendências do contexto autorizado.</p>
+      </div>
+      <div class="date-pill"><svg class="icon" aria-hidden="true"><use href="#i-calendar"/></svg><span data-current-date>17 de agosto de 2026</span></div>
+    </header>
+
+    <div class="demo-notice" role="note">
+      <svg class="icon" aria-hidden="true"><use href="#i-info"/></svg>
+      <span><strong>Dados demonstrativos.</strong> M2 usa a mesma amostra local de Funcionários para identidade, unidade e pendências. Produção só poderá renderizar valores após fonte válida e escopada.</span>
+    </div>
+
+    <section class="kpi-grid" aria-label="Indicadores principais">
+      <article class="kpi-card" data-dashboard-metric="employees" data-state="ready" data-source="fixture:employees-k2">
+        <div class="kpi-card__top">
+          <div class="kpi-card__identity">
+            <div class="icon-chip icon-chip--brand"><svg class="icon icon--lg" aria-hidden="true"><use href="#i-users"/></svg></div>
+            <div><p class="kpi-card__label">Funcionários cadastrados</p><p class="kpi-card__value">6</p></div>
+          </div>
+          <span class="metric-state">READY · demo</span>
+        </div>
+        <p class="kpi-card__help">Pessoas na amostra compartilhada do contexto demonstrativo atual.</p>
+        <div class="metric-card__meta">
+          <span>Origem: fixture:employees-k2 · 6 pessoas</span>
+          <span>Escopo: Galpão principal</span>
+        </div>
+      </article>
+
+      <article class="kpi-card" data-dashboard-metric="punches-today" data-state="ready" data-source="design-lab.punches">
+        <div class="kpi-card__top">
+          <div class="kpi-card__identity">
+            <div class="icon-chip icon-chip--info"><svg class="icon icon--lg" aria-hidden="true"><use href="#i-clock"/></svg></div>
+            <div><p class="kpi-card__label">Registros hoje</p><p class="kpi-card__value">37</p></div>
+          </div>
+          <span class="metric-state">READY · demo</span>
+        </div>
+        <p class="kpi-card__help">Marcações demonstrativas recebidas hoje no contexto atual.</p>
+        <div class="metric-card__meta">
+          <span>Origem: fixture Registros</span>
+          <time datetime="2026-08-17T12:04:00-03:00">Atualizado: 12:04</time>
+        </div>
+      </article>
+
+      <article class="kpi-card" data-dashboard-metric="biometrics-pending" data-state="warning" data-source="fixture:employees-k2">
+        <div class="kpi-card__top">
+          <div class="kpi-card__identity">
+            <div class="icon-chip icon-chip--warning"><svg class="icon icon--lg" aria-hidden="true"><use href="#i-scan"/></svg></div>
+            <div><p class="kpi-card__label">Biometrias pendentes</p><p class="kpi-card__value">2</p></div>
+          </div>
+          <span class="status-pill status-pill--warning">Requer atenção · demo</span>
+        </div>
+        <p class="kpi-card__help">Duas pessoas da mesma amostra compartilhada ainda não possuem biometria ativa.</p>
+        <div class="metric-card__meta">
+          <span>Origem: fixture:employees-k2</span>
+          <span>Estado: WARNING</span>
+        </div>
+      </article>
+    </section>
+
+    <div class="dashboard-grid">
+      <section class="panel panel--primary" id="atividade" aria-labelledby="atividade-titulo" data-dashboard-surface="recent-activity" data-state="ready">
+        <header class="panel__header">
+          <div>
+            <h2 class="panel__title" id="atividade-titulo">Atividade recente</h2>
+            <p class="panel__subtitle">Últimas marcações do contexto atual · fixture demonstrativa</p>
+          </div>
+          <button class="text-action" type="button" data-required-permission="punch:view" data-demo-action="Consultar registros">Ver registros <svg class="icon icon--sm" aria-hidden="true"><use href="#i-chevron"/></svg></button>
+        </header>
+
+        <div class="activity-list" role="table" aria-label="Registros recentes demonstrativos">
+          <div class="activity-head" role="row">
+            <span role="columnheader">Funcionário</span><span role="columnheader">Tipo</span><span role="columnheader">Horário</span><span role="columnheader">Unidade</span><span role="columnheader">Status</span>
+          </div>
+
+          <div class="activity-row" role="row">
+            <div class="person" role="cell"><span class="person__avatar">JS</span><span><span class="person__name">João Souza</span><span class="person__meta">Matrícula 00124</span></span></div>
+            <div class="activity-cell cell-type" role="cell"><span class="status-pill status-pill--success">Entrada</span></div>
+            <div class="activity-cell cell-time" role="cell">08:02</div>
+            <div class="activity-cell cell-unit" role="cell">Galpão principal</div>
+            <div class="activity-cell cell-status" role="cell"><span class="status-pill status-pill--success"><span class="status-pill__dot"></span>Confirmado</span></div>
+          </div>
+
+          <div class="activity-row" role="row">
+            <div class="person" role="cell"><span class="person__avatar">MS</span><span><span class="person__name">Maria Silva</span><span class="person__meta">Matrícula 00123</span></span></div>
+            <div class="activity-cell cell-type" role="cell"><span class="status-pill status-pill--success">Entrada</span></div>
+            <div class="activity-cell cell-time" role="cell">08:05</div>
+            <div class="activity-cell cell-unit" role="cell">Galpão principal</div>
+            <div class="activity-cell cell-status" role="cell"><span class="status-pill status-pill--success"><span class="status-pill__dot"></span>Confirmado</span></div>
+          </div>
+
+          <div class="activity-row" role="row">
+            <div class="person" role="cell"><span class="person__avatar">LS</span><span><span class="person__name">Lucas Santos</span><span class="person__meta">Matrícula 00131</span></span></div>
+            <div class="activity-cell cell-type" role="cell"><span class="status-pill status-pill--info">Saída</span></div>
+            <div class="activity-cell cell-time" role="cell">12:01</div>
+            <div class="activity-cell cell-unit" role="cell">Galpão principal</div>
+            <div class="activity-cell cell-status" role="cell"><span class="status-pill status-pill--success"><span class="status-pill__dot"></span>Confirmado</span></div>
+          </div>
+
+          <div class="activity-row" role="row">
+            <div class="person" role="cell"><span class="person__avatar">AP</span><span><span class="person__name">Ana Paula</span><span class="person__meta">Matrícula 00142</span></span></div>
+            <div class="activity-cell cell-type" role="cell"><span class="status-pill status-pill--info">Saída</span></div>
+            <div class="activity-cell cell-time" role="cell">12:04</div>
+            <div class="activity-cell cell-unit" role="cell">Galpão principal</div>
+            <div class="activity-cell cell-status" role="cell"><span class="status-pill status-pill--success"><span class="status-pill__dot"></span>Confirmado</span></div>
+          </div>
+
+          <div class="activity-footer">
+            <span>4 registros demonstrativos · pessoas da fixture:employees-k2</span>
+          </div>
+        </div>
+      </section>
+
+      <aside class="side-stack" aria-label="Atenções operacionais">
+        <section class="panel panel--secondary" aria-labelledby="atencao-titulo" data-dashboard-surface="attention" data-state="warning">
+          <header class="panel__header">
+            <div>
+              <h2 class="panel__title" id="atencao-titulo">Atenção necessária</h2>
+              <p class="panel__subtitle">Somente itens com fonte confirmada devem aparecer aqui</p>
+            </div>
+          </header>
+          <div class="attention-list">
+            <a class="attention-item attention-item--warning" href="03.01-funcionarios.html?biometric=missing&amp;source=dashboard" data-required-permission="users:view" data-cross-screen-handoff="biometric-missing">
+              <span class="attention-icon"><svg class="icon" aria-hidden="true"><use href="#i-scan"/></svg></span>
+              <span class="attention-copy"><strong>2 biometrias pendentes</strong><p>A mesma amostra compartilhada possui duas pessoas sem biometria ativa.</p><span class="attention-link">Ver funcionários filtrados</span></span>
+              <svg class="icon icon--sm attention-chevron" aria-hidden="true"><use href="#i-chevron"/></svg>
+            </a>
+
+            <div class="attention-policy" role="note">
+              <svg class="icon icon--sm" aria-hidden="true"><use href="#i-info"/></svg>
+              <span>O Dashboard não infere “tudo certo” quando não há fonte suficiente. Ausência de sinal deve virar estado explícito, nunca falso verde.</span>
+            </div>
+          </div>
+        </section>
+      </aside>
+    </div>
+
+    <!-- Contratos de estado do Design Lab: não são conteúdo vivo nem entram no DOM renderizado enquanto permanecem em <template>. -->
+    <template data-dashboard-state-template="metric-loading">
+      <article class="kpi-card dashboard-state" data-state="loading" aria-busy="true"><p>Carregando indicador…</p></article>
+    </template>
+    <template data-dashboard-state-template="metric-empty">
+      <article class="kpi-card dashboard-state" data-state="empty"><p>Nenhum dado disponível para este contexto.</p></article>
+    </template>
+    <template data-dashboard-state-template="metric-error">
+      <article class="kpi-card dashboard-state" data-state="error"><p>Não foi possível carregar este indicador. Tente novamente.</p></article>
+    </template>
+    <template data-dashboard-state-template="metric-offline">
+      <article class="kpi-card dashboard-state" data-state="offline"><p>Sem conexão. O indicador não foi atualizado.</p></article>
+    </template>
+    <template data-dashboard-state-template="metric-no-permission">
+      <article class="kpi-card dashboard-state" data-state="no_permission"><p>Você não possui acesso a este indicador.</p></article>
+    </template>
+    <template data-dashboard-state-template="metric-telemetry-unavailable">
+      <article class="kpi-card dashboard-state" data-state="telemetry_unavailable"><p>Não há sinal suficiente para avaliar esta informação.</p></article>
+    </template>
+
+    <template data-dashboard-state-template="activity-loading"><section class="dashboard-state" data-state="loading" aria-busy="true"><h2>Atividade recente</h2><p>Carregando registros…</p></section></template>
+    <template data-dashboard-state-template="activity-empty"><section class="dashboard-state" data-state="empty"><h2>Atividade recente</h2><p>Nenhum registro encontrado no contexto atual.</p></section></template>
+    <template data-dashboard-state-template="activity-error"><section class="dashboard-state" data-state="error"><h2>Atividade recente</h2><p>Não foi possível carregar os registros. Tente novamente.</p></section></template>
+    <template data-dashboard-state-template="activity-offline"><section class="dashboard-state" data-state="offline"><h2>Atividade recente</h2><p>Sem conexão. Os registros recentes não puderam ser atualizados.</p></section></template>
+    <template data-dashboard-state-template="activity-no-permission"><section class="dashboard-state" data-state="no_permission"><h2>Acesso insuficiente</h2><p>Seu perfil não possui permissão para consultar registros.</p></section></template>
+    <template data-dashboard-state-template="dashboard-no-permission"><section class="dashboard-state" data-state="no_permission"><h2>Acesso insuficiente</h2><p>Este perfil não possui acesso ao Dashboard administrativo.</p></section></template>
+
+    <!-- Contrato RBAC do mock: admin/super_admin = leitura + mutações permitidas pelo backend; manager = leitura/usuários sem biometria; auditor = leitura; operator = sem shell administrativo. -->
+    <p class="page-footnote">NF-01 · Design Lab HTML-first · Dashboard M2 coerente com Funcionários · estados/origem/RBAC explícitos · sem backend de produção.</p>
+  </main>
+
+  <div class="toast" role="status" aria-live="polite" data-toast></div>
+  <script src="../assets/interactions.js" defer></script>
+  <script src="../assets/app-shell.js" defer></script>
+</body>
+</html>

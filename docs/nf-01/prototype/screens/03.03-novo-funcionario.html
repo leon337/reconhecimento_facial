@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Novo Funcionário Desktop V1 — NF-01 Design Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/design-tokens.css">
+  <link rel="stylesheet" href="../assets/components.css">
+  <link rel="stylesheet" href="../assets/legacy-shell.css">
+  <link rel="stylesheet" href="../assets/new-employee-v1.css">
+</head>
+<body data-legacy-shell>
+  <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+
+  <svg class="icon-sprite" aria-hidden="true">
+    <symbol id="i-grid" viewBox="0 0 24 24"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-scan" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 0-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="3.5" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 19c.6-3.2 2.4-5 5.5-5s4.9 1.8 5.5 5M15 6.5c2 .2 3.2 1.4 3.2 3.1S17 12.5 15 12.8M17 14.2c2 .6 3 2.1 3.5 4.3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-building" viewBox="0 0 24 24"><path d="M5 21V5l7-2v18M12 8h7v13M3 21h18M8 8h1M8 12h1M8 16h1M15 12h1M15 16h1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-pulse" viewBox="0 0 24 24"><path d="M3 12h4l2-5 3 10 2-6 2 3h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h11M8 12h11M8 18h11M4 6h.01M4 12h.01M4 18h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M19 13.5v-3l-2-.7-.7-1.7.9-1.9-2.1-2.1-1.9.9-1.7-.7L10.5 3h-3l-.7 2-1.7.7-1.9-.9-2.1 2.1.9 1.9-.7 1.7H.3v3l2 .7.7 1.7-.9 1.9 2.1 2.1 1.9-.9 1.7.7.7 2h3l.7-2 1.7-.7 1.9.9 2.1-2.1-.9-1.9.7-1.7z" transform="translate(2 0) scale(.83)" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-external" viewBox="0 0 24 24"><path d="M13 5h6v6M19 5l-8 8M18 13v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 10a6 6 0 0 1 12 0v4l2 3H4l2-3zM10 20h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-person" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5 20c.8-4.1 3.1-6.2 7-6.2s6.2 2.1 7 6.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-briefcase" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9 7V5h6v2M3 12h18M10 12v2h4v-2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 10V7a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M3 12s3.2-5 9-5 9 5 9 5-3.2 5-9 5-9-5-9-5z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="2.4" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4 10-10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 11v5M12 8h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  </svg>
+
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Navegação principal">
+      <div class="sidebar__brand">
+        <div class="brand-mark">CP</div>
+        <div class="brand-copy"><strong>Controle de Ponto</strong><span>POTIGUAR</span></div>
+      </div>
+      <nav class="sidebar__nav">
+        <div class="nav-section"><div class="nav-list"><a class="nav-item" href="02.01-dashboard.html"><svg class="icon"><use href="#i-grid"/></svg>Dashboard</a></div></div>
+        <div class="nav-section">
+          <div class="nav-label">Operação</div>
+          <div class="nav-list">
+            <a class="nav-item" href="#" data-demo-action="Abrir Registros"><svg class="icon"><use href="#i-clock"/></svg>Registros</a>
+            <a class="nav-item" href="#" data-demo-action="Abrir Registrar Ponto"><svg class="icon"><use href="#i-scan"/></svg>Registrar Ponto<svg class="icon icon--sm nav-item__external"><use href="#i-external"/></svg></a>
+          </div>
+        </div>
+        <div class="nav-section">
+          <div class="nav-label">Gestão</div>
+          <div class="nav-list">
+            <a class="nav-item" href="03.01-funcionarios.html" aria-current="page"><svg class="icon"><use href="#i-users"/></svg>Funcionários</a>
+            <a class="nav-item" href="#" data-demo-action="Abrir Empresas e Obras"><svg class="icon"><use href="#i-building"/></svg>Empresas / Obras</a>
+          </div>
+        </div>
+        <div class="nav-section">
+          <div class="nav-label">Sistema</div>
+          <div class="nav-list">
+            <a class="nav-item" href="#" data-demo-action="Abrir Saúde operacional"><svg class="icon"><use href="#i-pulse"/></svg>Saúde operacional</a>
+            <a class="nav-item" href="#" data-demo-action="Abrir Eventos e Logs"><svg class="icon"><use href="#i-list"/></svg>Eventos / Logs</a>
+          </div>
+        </div>
+        <div class="nav-section"><div class="nav-list"><a class="nav-item" href="#" data-demo-action="Abrir Configurações"><svg class="icon"><use href="#i-settings"/></svg>Configurações</a></div></div>
+      </nav>
+    </aside>
+
+    <div class="app-main">
+      <header class="topbar">
+        <div class="topbar__start">
+          <button class="icon-button mobile-menu-button" type="button" aria-label="Abrir menu" aria-expanded="false" data-nav-toggle><svg class="icon"><use href="#i-menu"/></svg></button>
+          <button class="context-button" type="button" data-demo-action="Trocar contexto">
+            <svg class="icon" aria-hidden="true"><use href="#i-building"/></svg>
+            <strong>Potiguar Locações</strong>
+            <span>• Galpão principal</span>
+            <svg class="icon icon--sm chevron" aria-hidden="true"><use href="#i-chevron"/></svg>
+          </button>
+        </div>
+        <div class="topbar__end">
+          <span class="audit-badge">MOCKUP NF-01 · NOVO FUNCIONÁRIO V1</span>
+          <button class="icon-button" type="button" aria-label="Notificações" data-demo-action="Notificações"><svg class="icon"><use href="#i-bell"/></svg></button>
+          <button class="profile-button" type="button" data-demo-action="Perfil">
+            <span class="avatar">LC</span>
+            <span class="profile-copy"><strong>Leandro Carlos</strong><span>Administrador</span></span>
+            <svg class="icon icon--sm" aria-hidden="true"><use href="#i-chevron"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <main class="page page--form" id="conteudo">
+        <header class="page-header form-page-header">
+          <div>
+            <nav class="breadcrumb" aria-label="Breadcrumb">
+              <a href="03.01-funcionarios.html">Gestão</a><span>›</span><a href="03.01-funcionarios.html">Funcionários</a><span>›</span><span class="breadcrumb__current" aria-current="page">Novo</span>
+            </nav>
+            <h1 class="page-title">Cadastrar funcionário</h1>
+            <p class="page-subtitle">Preencha os dados disponíveis. Os campos obrigatórios nesta V1 refletem o formulário real atual; a NF-01 não altera regras de backend.</p>
+          </div>
+        </header>
+
+        <div class="demo-notice" role="note">
+          <svg class="icon" aria-hidden="true"><use href="#i-info"/></svg>
+          <span><strong>Protótipo interativo.</strong> Salvar valida apenas esta demonstração. Nenhum funcionário, senha ou dado pessoal é enviado ao backend.</span>
+        </div>
+
+        <div class="form-layout">
+          <form class="form-card" data-new-employee-form novalidate>
+            <div class="form-stack">
+              <section class="form-section" aria-labelledby="dados-pessoais-titulo">
+                <header class="form-section__header">
+                  <span class="section-icon"><svg class="icon icon--lg"><use href="#i-person"/></svg></span>
+                  <div>
+                    <h2 class="form-section__title" id="dados-pessoais-titulo">Dados pessoais</h2>
+                    <p class="form-section__description">Informações de identificação da pessoa.</p>
+                  </div>
+                </header>
+
+                <div class="form-grid">
+                  <div class="form-field form-field--wide">
+                    <div class="form-label-row"><label class="form-label" for="name">Nome completo</label><span class="field-flag">Opcional no backend atual</span></div>
+                    <div class="input-shell"><svg class="icon" aria-hidden="true"><use href="#i-person"/></svg><input id="name" name="name" autocomplete="name" placeholder="Ex.: Maria da Silva"></div>
+                    <p class="field-help">Quando informado, este nome identifica o funcionário nas telas administrativas.</p>
+                  </div>
+
+                  <div class="form-field form-field--wide">
+                    <div class="form-label-row"><label class="form-label" for="address">Endereço de residência</label><span class="field-flag">Opcional</span></div>
+                    <div class="input-shell"><textarea id="address" name="address" autocomplete="street-address" placeholder="Rua, número, bairro e cidade"></textarea></div>
+                    <p class="field-help">Campo preservado porque já existe no formulário atual.</p>
+                  </div>
+                </div>
+              </section>
+
+              <section class="form-section" aria-labelledby="vinculo-titulo">
+                <header class="form-section__header">
+                  <span class="section-icon"><svg class="icon icon--lg"><use href="#i-briefcase"/></svg></span>
+                  <div>
+                    <h2 class="form-section__title" id="vinculo-titulo">Vínculo operacional</h2>
+                    <p class="form-section__description">Dados usados para identificar o vínculo do funcionário com a operação.</p>
+                  </div>
+                </header>
+
+                <div class="form-grid">
+                  <div class="form-field">
+                    <div class="form-label-row"><label class="form-label" for="registration">Matrícula</label><span class="field-flag">Opcional</span></div>
+                    <div class="input-shell"><input id="registration" name="registration" inputmode="text" placeholder="Ex.: 00142"></div>
+                    <p class="field-help">Identificador interno quando a empresa utilizar matrícula.</p>
+                  </div>
+
+                  <div class="form-field">
+                    <div class="form-label-row"><label class="form-label" for="role">Função</label><span class="field-flag">Opcional</span></div>
+                    <div class="input-shell"><input id="role" name="role" placeholder="Ex.: Operador"></div>
+                    <p class="field-help">Função ou cargo operacional registrado atualmente como texto livre.</p>
+                  </div>
+
+                  <div class="form-field">
+                    <div class="form-label-row"><label class="form-label" for="schedule">Horário</label><span class="field-flag">Opcional</span></div>
+                    <div class="input-shell"><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg><input id="schedule" name="schedule" placeholder="Ex.: 08:00–17:00"></div>
+                    <p class="field-help">Mantido como texto porque o backend atual ainda recebe esse valor dessa forma.</p>
+                  </div>
+
+                  <div class="form-field">
+                    <div class="form-label-row"><label class="form-label" for="pass_type">Tipo de passagem</label><span class="field-flag">Opcional</span></div>
+                    <div class="input-shell"><input id="pass_type" name="pass_type" placeholder="Ex.: Entrada e saída"></div>
+                    <p class="field-help">Não criamos opções fixas enquanto o domínio não tiver valores formalmente definidos.</p>
+                  </div>
+                </div>
+              </section>
+
+              <section class="form-section" aria-labelledby="acesso-titulo">
+                <header class="form-section__header">
+                  <span class="section-icon"><svg class="icon icon--lg"><use href="#i-lock"/></svg></span>
+                  <div>
+                    <h2 class="form-section__title" id="acesso-titulo">Acesso</h2>
+                    <p class="form-section__description">Credenciais exigidas pelo fluxo administrativo atual.</p>
+                  </div>
+                </header>
+
+                <div class="form-grid">
+                  <div class="form-field">
+                    <div class="form-label-row"><label class="form-label" for="username">Usuário</label><span class="field-flag field-flag--required">Obrigatório</span></div>
+                    <div class="input-shell"><svg class="icon" aria-hidden="true"><use href="#i-person"/></svg><input id="username" name="username" autocomplete="username" placeholder="Ex.: maria.silva" data-required aria-describedby="username-help username-error"></div>
+                    <p class="field-help" id="username-help">Nome de usuário utilizado pelo cadastro atual.</p>
+                    <p class="field-error" id="username-error">Informe um usuário para continuar.</p>
+                  </div>
+
+                  <div class="form-field">
+                    <div class="form-label-row"><label class="form-label" for="password">Senha</label><span class="field-flag field-flag--required">Obrigatório</span></div>
+                    <div class="input-shell"><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg><input id="password" name="password" type="password" autocomplete="new-password" placeholder="Digite a senha" data-password data-required aria-describedby="password-help password-error"><button class="password-toggle" type="button" aria-label="Mostrar senha" aria-pressed="false" data-password-toggle><svg class="icon"><use href="#i-eye"/></svg></button></div>
+                    <p class="field-help" id="password-help">A NF-01 não inventa uma política de complexidade que ainda não esteja definida no backend.</p>
+                    <p class="field-error" id="password-error">Informe uma senha para continuar.</p>
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            <div class="form-actions">
+              <button class="button button--secondary" type="button" data-cancel-form>Cancelar</button>
+              <button class="button button--primary" type="submit"><svg class="icon icon--sm" aria-hidden="true"><use href="#i-check"/></svg>Salvar funcionário</button>
+            </div>
+          </form>
+
+          <aside class="context-stack" aria-label="Contexto do cadastro">
+            <section class="context-card">
+              <p class="context-card__eyebrow">Contexto atual</p>
+              <h2>Onde este cadastro será escopado</h2>
+              <div class="context-lines">
+                <div class="context-line">
+                  <span class="context-line__icon"><svg class="icon"><use href="#i-building"/></svg></span>
+                  <span><strong>Potiguar Locações</strong><span>Empresa do contexto administrativo atual</span></span>
+                </div>
+                <div class="context-line">
+                  <span class="context-line__icon"><svg class="icon"><use href="#i-briefcase"/></svg></span>
+                  <span><strong>Galpão principal</strong><span>Unidade / obra selecionada no header</span></span>
+                </div>
+              </div>
+            </section>
+
+            <section class="context-card">
+              <p class="context-card__eyebrow">Depois de salvar</p>
+              <h2>Próxima ação depende da permissão</h2>
+              <p>O cadastro do funcionário e o cadastro biométrico são capacidades diferentes.</p>
+              <div class="permission-note"><strong>Admin / Super Admin:</strong> pode receber o CTA “Cadastrar biometria agora” quando possuir <code>biometrics:manage</code>.</div>
+              <div class="permission-note"><strong>Manager:</strong> conclui o cadastro e retorna para Funcionários sem expor uma ação biométrica proibida.</div>
+            </section>
+          </aside>
+        </div>
+
+        <p class="page-footnote">NF-01 · Design Lab HTML-first · Novo Funcionário Desktop V1 · sem backend de produção.</p>
+      </main>
+    </div>
+  </div>
+
+  <dialog class="demo-dialog" data-success-dialog>
+    <div class="demo-dialog__body">
+      <span class="demo-dialog__icon"><svg class="icon icon--lg"><use href="#i-check"/></svg></span>
+      <h2>Funcionário cadastrado</h2>
+      <p>Estado demonstrativo da NF-01. Como o perfil visual desta tela é Administrador, a experiência pode oferecer o próximo passo biométrico.</p>
+      <div class="demo-dialog__actions">
+        <button class="button button--secondary" type="button" data-close-dialog>Voltar ao formulário</button>
+        <button class="button button--primary" type="button" data-demo-biometric>Cadastrar biometria agora</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div class="toast" role="status" aria-live="polite" data-toast></div>
+  <script src="../assets/legacy-shell.js" defer></script>
+  <script src="../assets/interactions.js" defer></script>
+  <script src="../assets/new-employee-v1.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Funcionários Canônico K2 — NF-01 Design Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/design-tokens.css">
+  <link rel="stylesheet" href="../assets/components.css">
+  <link rel="stylesheet" href="../assets/app-shell.css">
+  <link rel="stylesheet" href="../assets/employees-v1.css">
+</head>
+<body
+  data-app-shell-active="employees"
+  data-app-shell-context-title="Potiguar Locações"
+  data-app-shell-context-subtitle="Galpão principal · contexto demonstrativo"
+  data-app-shell-profile-name="Administrador Demo"
+  data-app-shell-profile-role="Admin · perfil fictício"
+  data-app-shell-profile-avatar="AD"
+  data-employee-demo-role="admin"
+  data-employee-demo-permissions="users:view users:create biometrics:manage punch:view punch:create"
+  data-employee-demo-state="ready"
+  data-employee-fixture-source="fixture:employees-k2">
+
+  <svg class="icon-sprite" aria-hidden="true">
+    <symbol id="i-scan" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="3.5" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 19c.6-3.2 2.4-5 5.5-5s4.9 1.8 5.5 5M15 6.5c2 .2 3.2 1.4 3.2 3.1S17 12.5 15 12.8M17 14.2c2 .6 3 2.1 3.5 4.3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 4 3.5 19h17z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 9v4M12 16h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m16 16 4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-filter" viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  </svg>
+
+  <main class="page" id="conteudo" data-app-shell-content>
+    <header class="page-header page-header--employees">
+      <div>
+        <nav class="breadcrumb" aria-label="Breadcrumb"><span>Gestão</span><span>›</span><span class="breadcrumb__current" aria-current="page">Funcionários</span></nav>
+        <h1 class="page-title">Funcionários</h1>
+        <p class="page-subtitle">Localize pessoas, acompanhe o estado do vínculo e da biometria e acesse somente as ações permitidas no contexto atual.</p>
+      </div>
+      <div class="page-header__actions">
+        <a class="button button--primary" href="03.04-novo-funcionario-v2.html" data-new-employee-link data-requires-permission="users:create"><svg class="icon icon--sm" aria-hidden="true"><use href="#i-plus"/></svg>Novo funcionário</a>
+      </div>
+    </header>
+
+    <div class="demo-notice demo-notice--compact" role="note">
+      <svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg>
+      <span><strong>Dados demonstrativos.</strong> Totais, unidades, status e ações abaixo vêm exclusivamente das fixtures locais desta tela. O backend continua sendo a autoridade de escopo e permissão.<span class="demo-notice__meta" data-employee-access-summary></span></span>
+    </div>
+
+    <section class="employee-summary" aria-label="Resumo demonstrativo de funcionários" data-employee-summary-region>
+      <article class="summary-card" data-employee-metric="total" data-source="fixture:employees-k2" data-state="ready">
+        <span class="summary-card__icon"><svg class="icon icon--lg" aria-hidden="true"><use href="#i-users"/></svg></span>
+        <span><strong class="summary-card__value" data-total-dataset>6</strong><span class="summary-card__label">total na amostra</span><span class="summary-card__meta">Fonte: fixtures locais · READY</span></span>
+      </article>
+      <article class="summary-card summary-card--warning" data-employee-metric="biometric-pending" data-source="fixture:employees-k2" data-state="ready">
+        <span class="summary-card__icon"><svg class="icon icon--lg" aria-hidden="true"><use href="#i-scan"/></svg></span>
+        <span><strong class="summary-card__value" data-biometric-pending>2</strong><span class="summary-card__label">biometrias pendentes</span><span class="summary-card__meta">Calculado da amostra · READY</span></span>
+      </article>
+    </section>
+
+    <section class="panel employee-panel" aria-labelledby="lista-funcionarios-titulo" data-employee-collection>
+      <header class="panel__header">
+        <div>
+          <h2 class="panel__title" id="lista-funcionarios-titulo">Lista de funcionários</h2>
+          <p class="panel__subtitle">Busca e filtros funcionam localmente sobre seis fixtures. Nenhuma paginação ou fonte remota é simulada.</p>
+        </div>
+      </header>
+
+      <div class="employee-state-stack" aria-live="polite" aria-atomic="true">
+        <section class="employee-state" data-employee-state-panel="loading" hidden>
+          <h3>Carregando funcionários</h3>
+          <p>A lista ainda não possui dados confirmados. Nenhum total é inferido enquanto a fonte está carregando.</p>
+        </section>
+        <section class="employee-state" data-employee-state-panel="empty" hidden>
+          <h3>Nenhum funcionário cadastrado</h3>
+          <p>A consulta foi concluída com uma coleção vazia. Este estado não representa falha.</p>
+          <a class="button button--primary" href="03.04-novo-funcionario-v2.html" data-requires-permission="users:create">Cadastrar primeiro funcionário</a>
+        </section>
+        <section class="employee-state employee-state--error" data-employee-state-panel="error" hidden>
+          <h3>Não foi possível carregar os funcionários</h3>
+          <p>A operação falhou. Tente novamente quando for seguro; não interprete a falha como lista vazia.</p>
+          <button class="button button--secondary" type="button" data-demo-action="Tentar carregar funcionários novamente">Tentar novamente</button>
+        </section>
+        <section class="employee-state employee-state--warning" data-employee-state-panel="offline" hidden>
+          <h3>Sem conexão</h3>
+          <p>Os dados da coleção não foram confirmados nesta sessão. O estado offline permanece explícito e não é substituído por toast.</p>
+        </section>
+        <section class="employee-state" data-employee-state-panel="no_permission" hidden>
+          <h3>Acesso insuficiente</h3>
+          <p>Seu perfil não possui autorização para consultar esta coleção. Nenhum dado restrito é exibido por este estado.</p>
+        </section>
+      </div>
+
+      <div data-employee-ready-content>
+        <div class="employee-toolbar" aria-label="Busca e filtros">
+          <label class="field-control">
+            <svg class="icon" aria-hidden="true"><use href="#i-search"/></svg>
+            <span class="sr-only">Buscar funcionário</span>
+            <input type="search" placeholder="Buscar por nome ou matrícula" aria-label="Buscar por nome ou matrícula" data-employee-search>
+          </label>
+
+          <label class="field-control">
+            <svg class="icon" aria-hidden="true"><use href="#i-filter"/></svg>
+            <select aria-label="Filtrar biometria" data-biometric-filter>
+              <option value="all">Biometria: todas</option>
+              <option value="active">Biometria ativa</option>
+              <option value="missing">Não cadastrada</option>
+            </select>
+          </label>
+
+          <label class="field-control">
+            <svg class="icon" aria-hidden="true"><use href="#i-users"/></svg>
+            <select aria-label="Filtrar função" data-function-filter>
+              <option value="all">Função: todas</option>
+              <option value="operadora">Operadora</option>
+              <option value="ajudante">Ajudante</option>
+              <option value="serralheiro">Serralheiro</option>
+              <option value="encarregado">Encarregado</option>
+            </select>
+          </label>
+
+          <button class="toolbar-clear" type="button" data-clear-filters>Limpar filtros</button>
+        </div>
+
+        <div class="employee-table-wrap" data-employee-table-wrap>
+          <table class="employee-table">
+            <thead>
+              <tr>
+                <th class="col-person">Funcionário</th>
+                <th class="col-unit">Unidade</th>
+                <th class="col-biometric">Biometria</th>
+                <th class="col-status">Status</th>
+                <th class="col-actions">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr data-employee-row data-name="maria silva" data-registration="00123" data-biometric="active" data-function="operadora" data-unit="galpao principal" data-status="active">
+                <td><div class="employee-person"><span class="employee-avatar">MS</span><span><span class="employee-name">Maria Silva</span><span class="employee-meta">Matrícula 00123 · Operadora</span><span class="employee-account">Conta: maria.silva</span></span></div></td>
+                <td data-label="Unidade"><span class="employee-secondary">Galpão principal</span></td>
+                <td data-label="Biometria"><span class="biometric-status biometric-status--active"><span class="biometric-status__dot"></span>Ativa</span></td>
+                <td data-label="Status"><span class="employment-status employment-status--active">Ativo</span></td>
+                <td data-label="Ações"><span class="row-actions"><button class="row-action" type="button" aria-label="Recadastrar biometria de Maria Silva" data-demo-action="Recadastrar biometria de Maria Silva" data-employee-mutation data-requires-permission="biometrics:manage">Recadastrar</button><span class="row-actions__readonly" data-employee-readonly hidden>Somente leitura</span></span></td>
+              </tr>
+
+              <tr data-employee-row data-name="joao souza" data-registration="00124" data-biometric="missing" data-function="ajudante" data-unit="galpao principal" data-status="active">
+                <td><div class="employee-person"><span class="employee-avatar">JS</span><span><span class="employee-name">João Souza</span><span class="employee-meta">Matrícula 00124 · Ajudante</span><span class="employee-account">Conta: joao.souza</span></span></div></td>
+                <td data-label="Unidade"><span class="employee-secondary">Galpão principal</span></td>
+                <td data-label="Biometria"><span class="biometric-status biometric-status--missing"><span class="biometric-status__dot"></span>Não cadastrada</span></td>
+                <td data-label="Status"><span class="employment-status employment-status--active">Ativo</span></td>
+                <td data-label="Ações"><span class="row-actions"><button class="row-action row-action--primary" type="button" aria-label="Cadastrar biometria de João Souza" data-demo-action="Cadastrar biometria de João Souza" data-employee-mutation data-requires-permission="biometrics:manage">Cadastrar</button><span class="row-actions__readonly" data-employee-readonly hidden>Somente leitura</span></span></td>
+              </tr>
+
+              <tr data-employee-row data-name="lucas santos" data-registration="00131" data-biometric="active" data-function="serralheiro" data-unit="galpao principal" data-status="active">
+                <td><div class="employee-person"><span class="employee-avatar">LS</span><span><span class="employee-name">Lucas Santos</span><span class="employee-meta">Matrícula 00131 · Serralheiro</span><span class="employee-account">Conta: lucas.santos</span></span></div></td>
+                <td data-label="Unidade"><span class="employee-secondary">Galpão principal</span></td>
+                <td data-label="Biometria"><span class="biometric-status biometric-status--active"><span class="biometric-status__dot"></span>Ativa</span></td>
+                <td data-label="Status"><span class="employment-status employment-status--active">Ativo</span></td>
+                <td data-label="Ações"><span class="row-actions"><button class="row-action" type="button" aria-label="Recadastrar biometria de Lucas Santos" data-demo-action="Recadastrar biometria de Lucas Santos" data-employee-mutation data-requires-permission="biometrics:manage">Recadastrar</button><span class="row-actions__readonly" data-employee-readonly hidden>Somente leitura</span></span></td>
+              </tr>
+
+              <tr data-employee-row data-name="ana paula" data-registration="00142" data-biometric="active" data-function="encarregado" data-unit="galpao principal" data-status="active">
+                <td><div class="employee-person"><span class="employee-avatar">AP</span><span><span class="employee-name">Ana Paula</span><span class="employee-meta">Matrícula 00142 · Encarregado</span><span class="employee-account">Conta: ana.paula</span></span></div></td>
+                <td data-label="Unidade"><span class="employee-secondary">Galpão principal</span></td>
+                <td data-label="Biometria"><span class="biometric-status biometric-status--active"><span class="biometric-status__dot"></span>Ativa</span></td>
+                <td data-label="Status"><span class="employment-status employment-status--active">Ativo</span></td>
+                <td data-label="Ações"><span class="row-actions"><button class="row-action" type="button" aria-label="Recadastrar biometria de Ana Paula" data-demo-action="Recadastrar biometria de Ana Paula" data-employee-mutation data-requires-permission="biometrics:manage">Recadastrar</button><span class="row-actions__readonly" data-employee-readonly hidden>Somente leitura</span></span></td>
+              </tr>
+
+              <tr data-employee-row data-name="carlos henrique" data-registration="00151" data-biometric="missing" data-function="ajudante" data-unit="galpao principal" data-status="active">
+                <td><div class="employee-person"><span class="employee-avatar">CH</span><span><span class="employee-name">Carlos Henrique</span><span class="employee-meta">Matrícula 00151 · Ajudante</span><span class="employee-account">Conta: carlos.h</span></span></div></td>
+                <td data-label="Unidade"><span class="employee-secondary">Galpão principal</span></td>
+                <td data-label="Biometria"><span class="biometric-status biometric-status--missing"><span class="biometric-status__dot"></span>Não cadastrada</span></td>
+                <td data-label="Status"><span class="employment-status employment-status--active">Ativo</span></td>
+                <td data-label="Ações"><span class="row-actions"><button class="row-action row-action--primary" type="button" aria-label="Cadastrar biometria de Carlos Henrique" data-demo-action="Cadastrar biometria de Carlos Henrique" data-employee-mutation data-requires-permission="biometrics:manage">Cadastrar</button><span class="row-actions__readonly" data-employee-readonly hidden>Somente leitura</span></span></td>
+              </tr>
+
+              <tr data-employee-row data-name="renata oliveira" data-registration="00157" data-biometric="active" data-function="operadora" data-unit="galpao principal" data-status="active">
+                <td><div class="employee-person"><span class="employee-avatar">RO</span><span><span class="employee-name">Renata Oliveira</span><span class="employee-meta">Matrícula 00157 · Operadora</span><span class="employee-account">Conta: renata.oliveira</span></span></div></td>
+                <td data-label="Unidade"><span class="employee-secondary">Galpão principal</span></td>
+                <td data-label="Biometria"><span class="biometric-status biometric-status--active"><span class="biometric-status__dot"></span>Ativa</span></td>
+                <td data-label="Status"><span class="employment-status employment-status--active">Ativo</span></td>
+                <td data-label="Ações"><span class="row-actions"><button class="row-action" type="button" aria-label="Recadastrar biometria de Renata Oliveira" data-demo-action="Recadastrar biometria de Renata Oliveira" data-employee-mutation data-requires-permission="biometrics:manage">Recadastrar</button><span class="row-actions__readonly" data-employee-readonly hidden>Somente leitura</span></span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="employee-empty" data-employee-filter-empty aria-live="polite" hidden>
+          <div>
+            <span class="employee-empty__icon"><svg class="icon icon--lg" aria-hidden="true"><use href="#i-search"/></svg></span>
+            <h3>Nenhum resultado para estes filtros</h3>
+            <p>A coleção existe, mas a combinação atual de busca e filtros retornou zero linhas. Isso não é `EMPTY_DATASET` nem erro.</p>
+          </div>
+        </div>
+
+        <footer class="employee-footer">
+          <span data-result-summary>Mostrando 6 de 6 funcionários demonstrativos</span>
+          <span class="employee-footer__source">Amostra local · sem paginação simulada</span>
+        </footer>
+      </div>
+    </section>
+
+    <p class="page-footnote">NF-01 · Design Lab HTML-first · Funcionários canônico K2 · AppShell compartilhado · sem backend de produção.</p>
+  </main>
+
+  <div class="toast" role="status" aria-live="polite" data-toast></div>
+  <script src="../assets/interactions.js" defer></script>
+  <script src="../assets/employees-v1.js" defer></script>
+  <script src="../assets/app-shell.js" defer></script>
+</body>
+</html>

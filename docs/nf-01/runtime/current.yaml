@@ -1,0 +1,46 @@
+schema_version: 1
+runtime_id: CPP-FRONTEND-MISSION-RUNTIME-001
+mission_id: CPP-NF-01-PRODUTO-DESIGN-SYSTEM
+mission_state: EXECUTING
+phase: N_DESIGN_LAB_VALIDATION
+phase_state: WAITING_EVIDENCE
+
+gate:
+  id: H1_MANUAL_BROWSER_ZOOM_200
+  state: WAITING_HUMAN
+  required_result: PASS
+  technical_evidence: PASS
+  human_acceptance: PENDING
+
+completed_gates:
+  N3_MANUAL_SCREEN_READER_CRITICAL_JOURNEY:
+    result: PASS
+    basis: REAL_ORCA_HUMAN_DIRECTED
+    evidence: docs/nf-01/evidence/phase-n/2026-09-18_N3_REAL_ORCA_HUMAN_DIRECTED_EVIDENCE.md
+
+checks_baseline:
+  source_head_before_runtime_materialization: 62b99ec1184dcb67cc73a3b3c42996c3126c9d84
+  validated_runtime_materialization_head: 78ec66b579130d2765dfe2abc40515ba95137814
+  production_validation_459: SUCCESS
+  phase_n_validation_60: SUCCESS
+  ci_606: SUCCESS
+
+invariants:
+  app_changed_by_runtime_materialization: false
+  templates_changed_by_runtime_materialization: false
+  static_changed_by_runtime_materialization: false
+  migrations_changed_by_runtime_materialization: false
+  backend_routes_changed_by_runtime_materialization: false
+  production_homologation: false
+  legal_conformity_declared: false
+  phase_o_started: false
+  nf02_started: false
+  merge_authorized: false
+
+voicehub:
+  reporting_enabled: true
+  speaker_identity: "Mestre — missão Controle de Ponto"
+  next_report: AFTER_RUNTIME_MATERIALIZATION_AND_CHECK_RECONCILIATION
+
+next_action: COMPLETE_H1_HUMAN_VISUAL_ACCEPTANCE
+human_authority: LEANDRO

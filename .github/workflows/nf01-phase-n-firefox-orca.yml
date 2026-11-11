@@ -1,0 +1,157 @@
+name: NF01 Phase N Firefox Orca Evidence
+
+on:
+  push:
+    branches:
+      - docs/nf-01-produto-design-system
+    paths:
+      - '.github/workflows/nf01-phase-n-firefox-orca.yml'
+      - '.github/scripts/nf01-orca-firefox.mjs'
+      - 'docs/nf-01/prototype/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  firefox-orca-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: docs/nf-01/validation/phase-n/package.json
+
+      - name: Install validation dependencies
+        working-directory: docs/nf-01/validation/phase-n
+        run: npm install --no-audit --no-fund
+
+      - name: Install Firefox and accessibility tooling
+        working-directory: docs/nf-01/validation/phase-n
+        run: |
+          npx playwright install --with-deps firefox
+          sudo apt-get update
+          sudo apt-get install -y xvfb openbox xdotool dbus-x11 at-spi2-core python3-pyatspi orca speech-dispatcher jq
+
+      - name: Run Firefox + Orca native keyboard journey
+        working-directory: docs/nf-01/validation/phase-n
+        shell: bash
+        run: |
+          set -euo pipefail
+          EVIDENCE="$GITHUB_WORKSPACE/docs/nf-01/evidence/phase-n/firefox-orca-run"
+          mkdir -p "$EVIDENCE"
+          export EVIDENCE DISPLAY=:98 XDG_RUNTIME_DIR=/tmp/nf01-firefox-runtime
+          mkdir -p "$XDG_RUNTIME_DIR"
+          chmod 700 "$XDG_RUNTIME_DIR"
+
+          safe_kill() {
+            for pid in "$@"; do
+              if [ -n "${pid:-}" ] && [ "$pid" -gt 1 ] 2>/dev/null && kill -0 "$pid" 2>/dev/null; then
+                kill "$pid" 2>/dev/null || true
+              fi
+            done
+          }
+
+          Xvfb :98 -screen 0 1920x1080x24 -ac > /tmp/nf01-firefox-xvfb.log 2>&1 &
+          XVFB_PID=$!
+          trap 'safe_kill "${XVFB_PID:-}"' EXIT
+          sleep 2
+
+          dbus-run-session -- bash <<'INNER'
+          set -euo pipefail
+          export DISPLAY=:98
+          export XDG_RUNTIME_DIR=/tmp/nf01-firefox-runtime
+          export GTK_MODULES=gail:atk-bridge
+          export NO_AT_BRIDGE=0
+          export MOZ_ACCESSIBILITY_ATSPI=1
+          export EVIDENCE="$GITHUB_WORKSPACE/docs/nf-01/evidence/phase-n/firefox-orca-run"
+
+          safe_kill() {
+            for pid in "$@"; do
+              if [ -n "${pid:-}" ] && [ "$pid" -gt 1 ] 2>/dev/null && kill -0 "$pid" 2>/dev/null; then
+                kill "$pid" 2>/dev/null || true
+              fi
+            done
+          }
+
+          openbox > /tmp/nf01-firefox-openbox.log 2>&1 &
+          WM_PID=$!
+          python3 -m http.server 4173 --directory "$GITHUB_WORKSPACE/docs/nf-01/prototype" > /tmp/nf01-firefox-http.log 2>&1 &
+          SERVER_PID=$!
+          ORCA_PID=""
+          trap 'safe_kill "${ORCA_PID:-}" "${SERVER_PID:-}" "${WM_PID:-}"' EXIT
+          sleep 2
+
+          gsettings set org.gnome.desktop.a11y.applications screen-reader-enabled true || true
+          orca --replace --enable=speech --debug-file "$EVIDENCE/orca-debug.log" > /tmp/nf01-firefox-orca-stdout.log 2>&1 &
+          ORCA_PID=$!
+          sleep 4
+
+          cd "$GITHUB_WORKSPACE/docs/nf-01/validation/phase-n"
+          set +e
+          node "$GITHUB_WORKSPACE/.github/scripts/nf01-orca-firefox.mjs"
+          NODE_RC=$?
+          set -e
+          sleep 2
+
+          safe_kill "$ORCA_PID"
+          ORCA_PID=""
+          sleep 1
+
+          cp /tmp/nf01-firefox-xvfb.log "$EVIDENCE/runtime-xvfb.log" || true
+          cp /tmp/nf01-firefox-openbox.log "$EVIDENCE/runtime-openbox.log" || true
+          cp /tmp/nf01-firefox-http.log "$EVIDENCE/runtime-http.log" || true
+          cp /tmp/nf01-firefox-orca-stdout.log "$EVIDENCE/runtime-orca-stdout.log" || true
+          grep 'SPEECH OUTPUT' "$EVIDENCE/orca-debug.log" > "$EVIDENCE/orca-speech-output.log" || true
+
+          python3 - <<'PY'
+          import json, os, pathlib
+          evidence = pathlib.Path(os.environ['EVIDENCE'])
+          speech_file = evidence / 'orca-speech-output.log'
+          speech = speech_file.read_text(errors='ignore') if speech_file.exists() else ''
+          expected = [
+              '2 biometrias pendentes',
+              'Novo funcionário',
+              'Ver etapas',
+              'Fechar resumo',
+              'Revise as informações desta etapa',
+          ]
+          result = {item: (item.lower() in speech.lower()) for item in expected}
+          payload = {
+              'execution': 'CLOUD_FIREFOX_ORCA_ASSISTED_EVIDENCE',
+              'assertion_policy': 'TASK_SPECIFIC_SPEECH_ONLY',
+              'all_expected_announcements_found': all(result.values()),
+              'assertions': result,
+              'manual_acceptance_claimed': False,
+          }
+          (evidence / 'orca-speech-assertions.json').write_text(
+              json.dumps(payload, indent=2, ensure_ascii=False)
+          )
+          PY
+
+          exit "$NODE_RC"
+          INNER
+
+      - name: Show Firefox Orca summary
+        if: always()
+        run: |
+          cat docs/nf-01/evidence/phase-n/firefox-orca-run/firefox-orca-summary.json || true
+          cat docs/nf-01/evidence/phase-n/firefox-orca-run/orca-speech-assertions.json || true
+          echo "=== FIREFOX ORCA SPEECH OUTPUT (TAIL) ==="
+          tail -n 200 docs/nf-01/evidence/phase-n/firefox-orca-run/orca-speech-output.log || true
+
+      - name: Upload Firefox Orca evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nf01-phase-n-firefox-orca-evidence
+          path: docs/nf-01/evidence/phase-n/firefox-orca-run/
+          if-no-files-found: warn
+          retention-days: 30

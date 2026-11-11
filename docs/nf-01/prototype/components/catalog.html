@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Catálogo vivo — NF-01 Design Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/design-tokens.css">
+  <link rel="stylesheet" href="../assets/components.css">
+</head>
+<body>
+  <main class="catalog">
+    <header class="catalog__header">
+      <p class="eyebrow">00 · Fundação visual</p>
+      <h1>Catálogo vivo</h1>
+      <p>Use mouse e teclado para auditar hover, focus-visible, pressed, contraste e profundidade sem depender do Figma.</p>
+      <p><a class="text-action" href="../index.html">← Voltar ao Design Lab</a></p>
+    </header>
+
+    <div class="catalog-grid">
+      <section class="catalog-card">
+        <h2>Botões</h2>
+        <div class="catalog-row">
+          <button class="button button--primary" data-demo-action="Salvar">Salvar</button>
+          <button class="button button--secondary" data-demo-action="Cancelar">Cancelar</button>
+          <button class="button button--secondary" disabled>Indisponível</button>
+        </div>
+      </section>
+
+      <section class="catalog-card">
+        <h2>Status</h2>
+        <div class="catalog-row">
+          <span class="status-pill status-pill--success"><span class="status-pill__dot"></span>Confirmado</span>
+          <span class="status-pill status-pill--warning">Requer ação</span>
+          <span class="status-pill status-pill--info">Atualizado</span>
+          <span class="status-pill status-pill--brand">Contexto</span>
+        </div>
+      </section>
+
+      <section class="catalog-card">
+        <h2>Profundidade</h2>
+        <div class="catalog-surface">
+          <strong>Superfície elevada</strong>
+          <p style="margin:8px 0 0;color:var(--text-secondary);font-size:14px;line-height:1.5">Borda suave + sombra difusa + realce interno. O objetivo é separar planos sem efeito 3D exagerado.</p>
+        </div>
+      </section>
+
+      <section class="catalog-card">
+        <h2>Ação frequente</h2>
+        <button class="quick-action" data-demo-action="Cadastrar funcionário">
+          <span class="quick-action__icon" aria-hidden="true">+</span>
+          <span class="quick-action__label">Cadastrar funcionário</span>
+          <span class="quick-action__chevron" aria-hidden="true">›</span>
+        </button>
+      </section>
+    </div>
+  </main>
+
+  <div class="toast" role="status" aria-live="polite" data-toast></div>
+  <script src="../assets/interactions.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+schema_version: 1
+project_id: controle-ponto
+
+purpose: >-
+  Sistema de controle de ponto com reconhecimento facial. O escopo operacional
+  desta capsule é o front-end governado pela NF-01 Produto + Design System.
+
+lifecycle: ACTIVE
+
+snapshot:
+  active_scope: FRONTEND
+  current_mission: CPP-NF-01-PRODUTO-DESIGN-SYSTEM
+  current_phase: N_DESIGN_LAB_VALIDATION
+  current_status: AWAITING_H1_MANUAL_BROWSER_ZOOM_200
+  next_action: >-
+    Execute the final H1 human visual acceptance at real browser zoom 200%.
+    If PASS, reconcile N4 and Phase N while preserving all merge and NF-02 gates.
+  blockers:
+    - H1_MANUAL_BROWSER_ZOOM_200_AWAITING_HUMAN_ACCEPTANCE
+
+governance:
+  framework: MCF
+  human_authority: LEANDRO
+  false_green_allowed: false
+  automatic_merge: false
+  phase_o_start_allowed: false
+  nf02_start_allowed: false
+
+communications:
+  channel: VoiceHub
+  speaker_identity: "Mestre — missão Controle de Ponto"
+  report_on_significant_advance: true
+
+sources:
+  mission: docs/nf-01/runtime/mission.yaml
+  current_state: docs/nf-01/runtime/current.yaml
+  runbook: docs/nf-01/runtime/README.md
+  n1_contract: docs/nf-01/68_NF01_PHASE_N_N1_DESIGN_LAB_VALIDATION_DEFINITION_2026-08-18.md
+  h1_evidence: docs/nf-01/evidence/phase-n/2026-09-18_H1_ZOOM200_TECHNICAL_EVIDENCE.md
+  n3_evidence: docs/nf-01/evidence/phase-n/2026-09-18_N3_REAL_ORCA_HUMAN_DIRECTED_EVIDENCE.md
+
+observed_at: '2026-09-18'
