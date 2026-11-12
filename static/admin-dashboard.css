@@ -15,3 +15,5 @@
 .pagination{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
 @media(max-width:780px){.metrics-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:420px){.metrics-grid{grid-template-columns:1fr}.history-filters .field{width:100%}}
+
+.report-totals{display:flex;gap:20px;flex-wrap:wrap;margin:12px 0 20px;padding:14px;background:#edf3ef;border-radius:12px}.report-totals p{margin:0;font-size:13px;color:#3f6551}.report-totals strong{font-size:18px;color:#175b43}.report-warnings{color:#98342f;font-size:12px;margin-top:5px;max-width:230px}

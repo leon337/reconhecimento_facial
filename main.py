@@ -10,6 +10,7 @@ from flask_wtf.csrf import CSRFProtect
 
 from app.admin.routes import bp as admin_bp
 from app.admin import dashboard as _dashboard_routes  # noqa: F401; register read-only reports
+from app.admin import reporting as _report_routes  # noqa: F401
 from app.models import db
 from app.observability import init_observability
 
