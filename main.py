@@ -11,6 +11,7 @@ from flask_wtf.csrf import CSRFProtect
 from app.admin.routes import bp as admin_bp
 from app.admin import dashboard as _dashboard_routes  # noqa: F401; register read-only reports
 from app.admin import reporting as _report_routes  # noqa: F401
+from app.admin import onboarding as _onboarding_routes  # noqa: F401
 from app.models import db
 from app.observability import init_observability
 
@@ -81,6 +82,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     db.init_app(app)
     from app.audit_models import AuditEvent  # noqa: F401
     from app.biometric_models import BiometricProfile  # noqa: F401
+    from app.onboarding_models import OnboardingDraft, EmployeeOnboarding  # noqa: F401
     from app.attendance_models import (  # noqa: F401
         AttendanceAdjustment,
         AttendanceClosure,

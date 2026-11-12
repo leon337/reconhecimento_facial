@@ -123,7 +123,7 @@ def list_users():
 @bp.route("/users/new", methods=["GET"])
 @permission_required(Permission.USERS_CREATE)
 def new_user():
-    return render_template("admin/users_new.html")
+    return redirect(url_for("admin.onboarding_new"))
 
 
 @bp.route("/users", methods=["POST"])

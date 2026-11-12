@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#175b43">
+  <title>Novo funcionário — Potiguar</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='admin-mobile.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='admin-onboarding-v2.css') }}">
+</head>
+<body>
+<div class="container" id="onboarding-v2" data-save="{{ url_for('admin.onboarding_save', draft_id=draft.id) }}" data-complete="{{ url_for('admin.onboarding_complete', draft_id=draft.id) }}" data-discard="{{ url_for('admin.onboarding_discard', draft_id=draft.id) }}" data-version="{{ draft.version }}">
+  <header class="header">
+    <a class="brand" href="{{ url_for('admin.list_users') }}"><span class="brand-mark">P</span><span><strong>POTIGUAR</strong><small>Gestão de ponto</small></span></a>
+    <nav class="top-actions" aria-label="Navegação principal">
+      <a href="{{ url_for('admin.dashboard') }}">Dashboard</a>
+      <a href="{{ url_for('admin.list_users') }}">Funcionários</a>
+      <a href="{{ url_for('admin.history') }}">Histórico</a>
+    </nav>
+  </header>
+  <main>
+    <div class="page-heading">
+      <span class="eyebrow">FUNCIONÁRIOS / CADASTRO V2</span>
+      <h1>Novo funcionário</h1>
+      <p class="subtitle">Cadastro completo em oito etapas, com rascunho protegido, revisão final e integração com a biometria facial.</p>
+      <div class="draft-line"><span class="status-pill">RASCUNHO</span><span id="save-status" role="status" aria-live="polite">Pronto para preencher</span></div>
+    </div>
+    <section class="step-card" aria-label="Progresso do cadastro">
+      <div class="step-progress" id="step-navigation">
+        {% for title, description, fields in steps %}
+          <button class="step-circle" data-step-target="{{ loop.index0 }}" type="button" {% if not loop.first %}disabled{% endif %} aria-label="Etapa {{ loop.index }}: {{ title }}" {% if loop.first %}aria-current="step"{% endif %}>{{ loop.index }}<small>{{ title }}</small></button>
+        {% endfor %}
+      </div>
+      <div class="step-progress-mobile" aria-live="polite"><strong id="current-step-label">Etapa 1 de 8</strong> <span id="current-step-name">Tipo de relação</span></div>
+      <div class="progress-track" aria-hidden="true"><div id="progress-fill"></div></div>
+    </section>
+    <form id="onboarding-form" novalidate>
+      <input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}">
+      {% for title, description, fields in steps %}
+      <section class="step-panel" data-step="{{ loop.index0 }}" {% if not loop.first %}hidden{% endif %} aria-label="{{ title }}">
+        <div class="step-heading"><div class="step-kicker">ETAPA {{ loop.index }} DE {{ steps|length }}</div><h2>{{ title }}</h2><p>{{ description }}</p></div>
+        {% if loop.index == 2 %}
+        <div class="info-banner">Apenas dados necessários para uma finalidade legítima devem ser registrados. Campos de raça/cor, deficiência, reabilitação e dependentes são opcionais e exigem cuidados especiais de privacidade.</div>
+        {% elif loop.index == 5 %}
+        <div class="info-banner">Dados financeiros não aparecem no histórico de ponto e são criptografados antes de serem persistidos. Não utilize dados reais para testes de homologação.</div>
+        {% elif loop.index == 6 %}
+        <div class="info-banner">Funcionário cadastrado não recebe login administrativo automaticamente. Solicitações de acesso ficam pendentes de ativação por um administrador autorizado.</div>
+        {% elif loop.index == 7 %}
+        <div class="info-banner">Nenhuma imagem ou template facial é armazenado pelo formulário. Após concluir, a opção "Agora" abre a captura segura de biometria do sistema, sujeita a permissão e transparência.</div>
+        {% elif loop.index == 8 %}
+        <div class="review-panel"><h3>Conferência antes de concluir</h3><div id="review-details"></div><p>Salvar o rascunho não cria funcionários. O cadastro é criado apenas ao pressionar <strong>Concluir cadastro</strong>.</p></div>
+        {% endif %}
+        <div class="fields-grid">
+        {% for field in fields %}
+          <div class="field-item{% if field.kind == 'textarea' %} field-wide{% endif %}">
+            {% if field.kind == 'checkbox' %}
+            <label class="checkbox-label"><input type="checkbox" name="{{ field.name }}" {% if saved.get(field.name) %}checked{% endif %}><span>{{ field.label }}</span></label>
+            {% else %}
+            <label for="field-{{ field.name }}">{{ field.label }}{% if field.required %} <span class="required-marker">*</span>{% endif %}</label>
+              {% if field.kind == 'select' %}
+              <select id="field-{{ field.name }}" name="{{ field.name }}" {% if field.required %}required{% endif %}>
+                <option value="">Selecione...</option>
+                {% for value in field.options %}<option value="{{ value }}" {% if saved.get(field.name) == value %}selected{% endif %}>{{ value }}</option>{% endfor %}
+              </select>
+              {% elif field.kind == 'textarea' %}
+              <textarea id="field-{{ field.name }}" name="{{ field.name }}" maxlength="500" rows="3">{{ saved.get(field.name, '') }}</textarea>
+              {% else %}
+              <input id="field-{{ field.name }}" type="{{ field.kind }}" name="{{ field.name }}" value="{{ saved.get(field.name, '') }}" maxlength="500" {% if field.required %}required{% endif %} {% if field.kind == 'email' %}autocomplete="email"{% endif %}>
+              {% endif %}
+            {% endif %}
+          </div>
+        {% endfor %}
+        </div>
+      </section>
+      {% endfor %}
+      <div id="form-errors" class="error-banner" role="alert" hidden></div>
+      <footer class="wizard-actions">
+        <div class="wizard-actions-left"><button type="button" class="action" id="discard-button">Descartar</button><button type="button" class="action" id="save-button">Salvar e sair</button></div>
+        <div class="wizard-actions-right"><button type="button" class="action" id="back-button" hidden>Voltar</button><button type="button" class="action primary" id="next-button">Continuar</button><button type="button" class="action primary" id="complete-button" hidden>Concluir cadastro</button></div>
+      </footer>
+    </form>
+    <p class="help">Fluxo de homologação. Acesso condicionado ao perfil administrativo e ao escopo de empresa/obra. Cadastros anteriores não são alterados.</p>
+  </main>
+</div>
+<script src="{{ url_for('static', filename='admin-onboarding-v2.js') }}" defer></script>
+</body></html>
