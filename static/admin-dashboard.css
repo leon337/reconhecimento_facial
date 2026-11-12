@@ -1,0 +1,17 @@
+.metrics-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:0 0 24px}
+.metric{padding:21px;background:#fff;border:1px solid #dbe8de;border-radius:16px;box-shadow:0 6px 25px #123e240b;min-width:0}
+.metric span{display:block;color:#496c58;font-size:13px;font-weight:750}
+.metric strong{display:block;color:#175b43;font-size:clamp(30px,4vw,46px);line-height:1.15;margin:10px 0;font-variant-numeric:tabular-nums}
+.metric small{font-size:12px;color:#617d6a}
+.section-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.section-bar h2{font-size:20px;margin:0}
+.point-tag{display:inline-block;padding:4px 8px;border-radius:8px;background:#e7f4eb;color:#146044;font-size:12px;font-weight:800}
+.dashboard-footnote{margin-top:20px}
+.history-filters{display:flex;align-items:end;flex-wrap:wrap;gap:12px;margin-bottom:20px}
+.history-filters .field{min-width:160px}
+.history-filters input,.history-filters select{border:1px solid #b8d0c1;border-radius:10px;padding:10px;min-height:44px;background:#fff}
+.history-filters .action{min-height:44px}
+.history-total{font-size:13px;font-weight:700;color:#496c58}
+.pagination{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
+@media(max-width:780px){.metrics-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:420px){.metrics-grid{grid-template-columns:1fr}.history-filters .field{width:100%}}

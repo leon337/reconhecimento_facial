@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Histórico de pontos — Potiguar</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='admin-mobile.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='admin-dashboard.css') }}">
+</head>
+<body><div class="container">
+  <header class="header">
+    <a class="brand" href="{{ url_for('admin.dashboard') }}"><span class="brand-mark">P</span><span><strong>POTIGUAR</strong><small>Gestão de ponto</small></span></a>
+    <nav class="top-actions" aria-label="Navegação principal">
+      <a href="{{ url_for('admin.dashboard') }}">Dashboard</a>
+      <a class="primary" href="{{ url_for('admin.history') }}" aria-current="page">Histórico</a>
+      <a href="{{ url_for('admin.list_users') }}">Funcionários</a>
+    </nav>
+  </header>
+  <main><div class="page-heading"><span class="eyebrow">Auditoria operacional</span><h1>Histórico de pontos</h1>
+    <p class="subtitle">Consulte entradas e saídas efetivamente registradas. Horários em Recife (UTC−03:00).</p></div>
+    <section class="panel">
+      <form class="history-filters" method="get" action="{{ url_for('admin.history') }}">
+        <div class="field"><label for="data">Data (Recife)</label><input id="data" name="data" type="date" value="{{ day_text }}"></div>
+        <div class="field"><label for="tipo">Tipo de ponto</label><select id="tipo" name="tipo"><option value="">Todos</option><option value="ENTRADA" {% if punch_type == 'ENTRADA' %}selected{% endif %}>Entrada</option><option value="SAIDA" {% if punch_type == 'SAIDA' %}selected{% endif %}>Saída</option></select></div>
+        <button class="action primary" type="submit">Filtrar</button><a class="action" href="{{ url_for('admin.history') }}">Limpar filtros</a>
+      </form>
+      <p class="history-total">{{ total }} registro(s) encontrado(s) • página {{ page }}</p>
+      <div class="table-scroll"><table class="users-table"><thead><tr><th>Data e hora (Recife)</th><th>Funcionário</th><th>Tipo</th><th>ID do registro</th></tr></thead>
+        <tbody>{% for point in points %}
+          <tr><td data-label="Data e hora">{{ local_time(point.timestamp) }}</td><td data-label="Funcionário">{{ point.user.name or point.user.username }}</td><td data-label="Tipo"><span class="point-tag">{{ point.tipo }}</span></td><td data-label="ID">#{{ point.id }}</td></tr>
+        {% else %}<tr><td colspan="4"><p class="empty-state">Nenhum ponto encontrado para os filtros selecionados.</p></td></tr>{% endfor %}</tbody>
+      </table></div>
+      <nav class="pagination" aria-label="Paginação do histórico">
+        {% if page > 1 %}<a class="action" href="{{ url_for('admin.history', data=day_text, tipo=punch_type, pagina=page-1) }}">Anterior</a>{% endif %}
+        {% if has_next %}<a class="action" href="{{ url_for('admin.history', data=day_text, tipo=punch_type, pagina=page+1) }}">Próxima</a>{% endif %}
+      </nav>
+    </section>
+    <p class="help dashboard-footnote">Somente registros persistidos aparecem aqui; tentativas rejeitadas não representam novos pontos.</p>
+  </main>
+</div></body></html>

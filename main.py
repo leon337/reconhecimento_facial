@@ -9,6 +9,7 @@ from flask_migrate import Migrate
 from flask_wtf.csrf import CSRFProtect
 
 from app.admin.routes import bp as admin_bp
+from app.admin import dashboard as _dashboard_routes  # noqa: F401; register read-only reports
 from app.models import db
 from app.observability import init_observability
 

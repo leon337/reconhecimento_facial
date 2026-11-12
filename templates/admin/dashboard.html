@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Dashboard — Potiguar</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='admin-mobile.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='admin-dashboard.css') }}">
+</head>
+<body>
+<div class="container">
+  <header class="header">
+    <a class="brand" href="{{ url_for('admin.dashboard') }}"><span class="brand-mark">P</span><span><strong>POTIGUAR</strong><small>Gestão de ponto</small></span></a>
+    <nav class="top-actions" aria-label="Navegação principal">
+      <a class="primary" href="{{ url_for('admin.dashboard') }}" aria-current="page">Dashboard</a>
+      <a href="{{ url_for('admin.history') }}">Histórico</a>
+      <a href="{{ url_for('admin.list_users') }}">Funcionários</a>
+      <a href="{{ url_for('copilot.workspace') }}">Copiloto</a>
+    </nav>
+  </header>
+  <main>
+    <div class="page-heading"><span class="eyebrow">Visão administrativa</span><h1>Dashboard de ponto</h1>
+      <p class="subtitle">Indicadores do escopo administrativo atual. Registros exibidos no horário de Recife (UTC−03:00).</p>
+    </div>
+    <section class="metrics-grid" aria-label="Indicadores">
+      <div class="metric"><span>Funcionários</span><strong>{{ employees }}</strong><small>Cadastros vinculados a funcionários</small></div>
+      <div class="metric"><span>Biometrias ativas</span><strong>{{ biometrics }}</strong><small>Perfis faciais cadastrados</small></div>
+      <div class="metric"><span>Pontos hoje</span><strong>{{ punches_today }}</strong><small>{{ today }} • Recife</small></div>
+      <div class="metric"><span>Pontos registrados</span><strong>{{ punches_total }}</strong><small>Histórico completo do escopo</small></div>
+    </section>
+    <section class="panel">
+      <div class="section-bar"><h2>Últimos registros de ponto</h2><a class="action secondary" href="{{ url_for('admin.history') }}">Ver histórico completo</a></div>
+      <div class="table-scroll"><table class="users-table"><thead><tr><th>Data e hora (Recife)</th><th>Funcionário</th><th>Tipo</th><th>ID</th></tr></thead>
+        <tbody>{% for point in latest %}
+          <tr><td data-label="Data e hora">{{ local_time(point.timestamp) }}</td><td data-label="Funcionário">{{ point.user.name or point.user.username }}</td><td data-label="Tipo"><span class="point-tag">{{ point.tipo }}</span></td><td data-label="ID">#{{ point.id }}</td></tr>
+        {% else %}<tr><td colspan="4"><p class="empty-state">Nenhum ponto registrado neste escopo.</p></td></tr>{% endfor %}</tbody>
+      </table></div>
+    </section>
+    <p class="help dashboard-footnote">Tentativas bloqueadas contra duplicidade não criam registros de ponto. A captura facial continua na área de Funcionários.</p>
+  </main>
+</div>
+</body></html>
