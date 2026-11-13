@@ -149,6 +149,7 @@ def onboarding_form(draft_id):
     from flask import make_response
     response = make_response(response)
     response.headers['Cache-Control'] = 'no-store, private'
+    response.headers['Permissions-Policy'] = 'microphone=(self), camera=()'
     return response
 
 

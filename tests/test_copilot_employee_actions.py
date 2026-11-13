@@ -1,136 +1,100 @@
-"""O Gemini prepara dados, mas só o administrador pode confirmar e gravar."""
+"""Regressão pytest: Copiloto só prepara rascunhos e não contorna onboarding V2."""
 from uuid import uuid4
-
+from cryptography.fernet import Fernet
 from app.models import Employee, User, db
+from app.onboarding_models import OnboardingDraft
 from app.rbac import AccessRole
 
 
-def login(app, client, role):
-    username = "copilot-create-" + role
+def login(app,client,role):
+    app.config['ONBOARDING_FERNET_KEY']=Fernet.generate_key()
+    username='copilot-draft-'+role
     with app.app_context():
-        user = User(username=username, access_role=role)
-        user.set_password("senha-sintetica")
+        user=User(username=username,access_role=role)
+        user.set_password('synthetic-test-password')
         db.session.add(user)
         db.session.commit()
-    assert client.post("/admin/login", data={
-        "username": username, "password": "senha-sintetica"
-    }).status_code == 302
+    assert client.post('/admin/login',data={
+        'username':username,'password':'synthetic-test-password'
+    }).status_code==302
 
 
-def body(**values):
-    return dict(
-        request_id=str(uuid4()),
-        name="Maria de Teste",
-        username="maria.teste",
-        registration="SYN-101",
-        job_title="Atendente",
-        schedule="08:00-17:00",
-        **values,
-    )
+def body(**changes):
+    data=dict(request_id=str(uuid4()),name='Maria de Teste',username='maria.teste',
+              registration='TEST-101',job_title='Analista de Teste',schedule='08:00-17:00')
+    data.update(changes)
+    return data
 
 
-def test_feature_disabled_prevents_writes(app, client):
-    login(app, client, AccessRole.ADMIN.value)
-    assert client.post("/admin/copilot/employee-create", json=body()).status_code == 503
+def test_disabled_feature_prevents_draft(app,client):
+    login(app,client,AccessRole.ADMIN.value)
+    assert client.post('/admin/copilot/employee-draft',json=body()).status_code==503
+    with app.app_context(): assert OnboardingDraft.query.count()==0
+
+
+def test_legacy_create_is_retired_without_side_effects(app,client):
+    login(app,client,AccessRole.ADMIN.value)
+    app.config.update(COPILOT_ENABLED=True,COPILOT_ACTIONS_ENABLED=True)
+    res=client.post('/admin/copilot/employee-create',json=body())
+    assert res.status_code==410
+    assert '/admin/users/new' in res.json['redirect']
     with app.app_context():
-        assert User.query.filter_by(username="maria.teste").count() == 0
+        assert Employee.query.count()==0
+        assert OnboardingDraft.query.count()==0
 
 
-def test_operator_cannot_create_and_auditor_forbidden(app, client):
-    login(app, client, AccessRole.AUDITOR.value)
-    app.config.update(COPILOT_ENABLED=True, COPILOT_ACTIONS_ENABLED=True)
-    assert client.post("/admin/copilot/employee-create", json=body()).status_code == 403
+def test_auditor_cannot_create_or_embed(app,client):
+    login(app,client,AccessRole.AUDITOR.value)
+    app.config.update(COPILOT_ENABLED=True,COPILOT_ACTIONS_ENABLED=True)
+    assert client.post('/admin/copilot/employee-draft',json=body()).status_code==403
+    assert client.get('/admin/copilot/embed/onboarding').status_code==403
+
+
+def test_confirmed_copilot_action_creates_only_encrypted_v2_draft(app,client):
+    login(app,client,AccessRole.ADMIN.value)
+    app.config.update(COPILOT_ENABLED=True,COPILOT_ACTIONS_ENABLED=True)
+    res=client.post('/admin/copilot/employee-draft',json=body())
+    assert res.status_code==201,res.json
+    assert res.json['created'] is False
+    assert res.json['draft_created'] is True
+    assert 'temporary_password' not in res.json
+    assert '/admin/onboarding/' in res.json['redirect']
     with app.app_context():
-        assert User.query.filter_by(username="maria.teste").count() == 0
+        assert Employee.query.count()==0
+        draft=OnboardingDraft.query.one()
+        assert draft.status=='draft'
+        assert 'Maria de Teste' not in draft.encrypted_payload
+        assert User.query.filter_by(username='maria.teste').count()==0
+    assert client.get(res.json['redirect']).status_code==200
 
 
-def test_confirmed_creation_audits_and_generates_password_once(app, client):
-    login(app, client, AccessRole.ADMIN.value)
-    app.config.update(COPILOT_ENABLED=True, COPILOT_ACTIONS_ENABLED=True)
-    draft = body()
-    response = client.post("/admin/copilot/employee-create", json=draft)
-    assert response.status_code == 201
-    result = response.get_json()
-    assert result["username"] == draft["username"]
-    assert len(result["temporary_password"]) >= 20
-    assert response.headers["Cache-Control"].startswith("no-store")
-    with app.app_context():
-        user = User.query.filter_by(username=draft["username"]).one()
-        assert user.access_role == AccessRole.OPERATOR.value
-        assert user.check_password(result["temporary_password"])
-        assert user.employee.name == draft["name"]
-        assert user.employee.registration == draft["registration"]
-        from app.audit_models import AuditEvent
-        assert AuditEvent.query.filter_by(action="copilot.employee.create").count() == 1
-    replay = client.post("/admin/copilot/employee-create", json=draft)
-    assert replay.status_code == 409
-    assert "temporary_password" not in replay.get_data(as_text=True)
-    with app.app_context():
-        assert User.query.filter_by(username=draft["username"]).count() == 1
+def test_unapproved_fields_rejected(app,client):
+    login(app,client,AccessRole.ADMIN.value)
+    app.config.update(COPILOT_ENABLED=True,COPILOT_ACTIONS_ENABLED=True)
+    for data in (body(access_role='admin'),body(company_id=999),body(username='Invalid User'),
+                 body(name='X'),body(request_id='invalid-uuid')):
+        assert client.post('/admin/copilot/employee-draft',json=data).status_code==422
+    with app.app_context(): assert Employee.query.count()==0
 
 
-def test_no_unapproved_fields_or_invalid_payload(app, client):
-    login(app, client, AccessRole.ADMIN.value)
-    app.config.update(COPILOT_ENABLED=True, COPILOT_ACTIONS_ENABLED=True)
-    for item in (
-        {"request_id":str(uuid4()), "name":"Maria", "username":"maria.teste","access_role":"admin"},
-        {"request_id":str(uuid4()), "name":"Maria", "username":"maria.teste","company_id":999},
-        {"request_id":str(uuid4()), "name":"Maria", "username":"Maria Teste"},
-        {"request_id":str(uuid4()), "name":"M", "username":"maria.teste"},
-        {"request_id":"not-uuid", "name":"Maria de Teste", "username":"maria.teste"},
-    ):
-        assert client.post("/admin/copilot/employee-create", json=item).status_code == 400
-    with app.app_context():
-        assert Employee.query.count() == 0
+def test_guests_redirected(client):
+    assert client.post('/admin/copilot/employee-draft',json=body()).status_code==302
 
 
-def test_guests_cannot_create(client):
-    assert client.post("/admin/copilot/employee-create", json=body()).status_code == 302
+def test_demo_rejects_real_pii(app,client,monkeypatch):
+    login(app,client,AccessRole.ADMIN.value)
+    app.config.update(COPILOT_ENABLED=True,COPILOT_ACTIONS_ENABLED=True)
+    monkeypatch.setenv('POTIGUAR_COPILOT_DEMO_DAILY_LIMIT','12')
+    assert client.post('/admin/copilot/employee-draft',json=body(name='Nome Real',username='nome.real')).status_code==422
+    with app.app_context(): assert Employee.query.count()==0
 
 
-def test_demo_only_allows_synthetic_records(app, client, monkeypatch):
-    login(app, client, AccessRole.ADMIN.value)
-    app.config.update(COPILOT_ENABLED=True, COPILOT_ACTIONS_ENABLED=True)
-    monkeypatch.setenv("POTIGUAR_COPILOT_DEMO_DAILY_LIMIT", "12")
-    from uuid import uuid4
-    real_data = {
-        "request_id": str(uuid4()),
-        "name": "Maria da Silva", "username": "maria.silva",
-        "registration": "CPF123",
-    }
-    result = client.post("/admin/copilot/employee-create", json=real_data)
-    assert result.status_code == 400
-    with app.app_context():
-        assert User.query.filter_by(username="maria.silva").count() == 0
-
-def test_copilot_respects_organizational_scope(app, client):
-    from app.models import Company, Worksite
-    with app.app_context():
-        company = Company(name="Companhia Sintética", slug="synthetic-actions-001")
-        worksite = Worksite(name="Obra Sintética", company=company)
-        manager = User(
-            username="manager-scoped",
-            access_role=AccessRole.MANAGER.value,
-            company=company,
-            worksite=worksite,
-        )
-        manager.set_password("senha-sintetica")
-        db.session.add_all([company, worksite, manager])
-        db.session.commit()
-        company_id, worksite_id = company.id, worksite.id
-    assert client.post("/admin/login", data={
-        "username":"manager-scoped", "password":"senha-sintetica"
-    }).status_code == 302
-    app.config.update(COPILOT_ENABLED=True, COPILOT_ACTIONS_ENABLED=True)
-    response=client.post("/admin/copilot/employee-create", json={
-        "request_id":str(uuid4()), "name":"Teste de Escopo",
-        "username":"escopo.teste", "registration":"TEST-SCOPE-001",
-    })
-    assert response.status_code==201
-    with app.app_context():
-        created = User.query.filter_by(username="escopo.teste").one()
-        assert created.company_id==company_id
-        assert created.worksite_id==worksite_id
-        assert created.employee.company_id==company_id
-        assert created.employee.worksite_id==worksite_id
-        assert created.access_role==AccessRole.OPERATOR.value
+def test_embedded_copilot_same_origin_and_privacy_headers(app,client):
+    login(app,client,AccessRole.ADMIN.value)
+    app.config.update(COPILOT_ENABLED=True,COPILOT_ACTIONS_ENABLED=True)
+    r=client.get('/admin/copilot/embed/onboarding')
+    assert r.status_code==200
+    assert r.headers['X-Frame-Options']=='SAMEORIGIN'
+    assert "frame-ancestors 'self'" in r.headers['Content-Security-Policy']
+    assert 'microphone=(self)' in r.headers['Permissions-Policy']
+    assert r.headers['Referrer-Policy']=='same-origin'

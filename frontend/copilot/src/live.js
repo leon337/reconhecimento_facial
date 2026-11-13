@@ -1,5 +1,6 @@
 import { GoogleGenAI, Modality, StartSensitivity, EndSensitivity } from '@google/genai';
 import { registrationTool, REGISTRATION_FUNCTION_NAME, sanitizeRegistrationDraft } from './registration.js';
+import { onboardingSuggestionTool, ONBOARDING_FUNCTION_NAME, sanitizeOnboardingSuggestions } from './onboarding-suggestions.js';
 import { AudioPlayer, Microphone } from './audio.js';
 
 const MODEL_IDS = ['gemini-3.8-live', 'gemini-3.8-live-extended-thinking'];
@@ -22,14 +23,19 @@ export class PotiguarLive {
     this.player = new AudioPlayer();
     this.audioEnabled = false;
     this.allowEmployeeActions = false;
+    this.onboardingMode = false;
+    this.allowOnboardingSuggestions = false;
+    this.onboardingStep = 0;
   }
 
-  async connect(model, csrf, { allowEmployeeActions = false } = {}) {
+  async connect(model, csrf, { allowEmployeeActions = false, allowOnboardingSuggestions = false } = {}) {
     if (!MODEL_IDS.includes(model)) throw new Error('Modelo não autorizado.');
     if (this.session) return;
     // Extended Thinking não emitiu toolCall no teste real 11/11/2026.
     // Cadastro por voz exige o modelo Live padrão; Extended mantém orientação.
-    this.allowEmployeeActions = Boolean(allowEmployeeActions) && model === 'gemini-3.8-live';
+    this.onboardingMode = Boolean(allowOnboardingSuggestions);
+    this.allowOnboardingSuggestions = this.onboardingMode && model === 'gemini-3.8-live';
+    this.allowEmployeeActions = !this.onboardingMode && Boolean(allowEmployeeActions) && model === 'gemini-3.8-live';
     const response = await fetch('/admin/copilot/session-token', {
       method: 'POST',
       credentials: 'same-origin',
@@ -50,12 +56,23 @@ export class PotiguarLive {
           responseModalities: [Modality.AUDIO],
           inputAudioTranscription: {},
           outputAudioTranscription: {},
-          systemInstruction: this.allowEmployeeActions
-            ? SYSTEM_INSTRUCTIONS
-            : SYSTEM_INSTRUCTIONS.replace(
-                'use prepare_employee_registration somente para preparar o rascunho na interface.',
-                'oriente a abrir o cartão de cadastro assistido, sem afirmar que cadastrou.',
-              ),
+          systemInstruction: this.onboardingMode
+            ? [
+                'Você é o Copiloto de Cadastro Potiguar, orientador das oito etapas do onboarding V2.',
+                'Responda exclusivamente em português brasileiro. Não invente dados nem preencha sem pedido explícito.',
+                'Os valores já digitados no formulário não são enviados à IA.',
+                'Não peça CPF, RG, documentos, dados financeiros, senhas, raça/cor, saúde, PCD ou biometria.',
+                'Quando forem informados campos seguros da etapa atual, use suggest_onboarding_fields.',
+                'O modelo NUNCA salva, ativa credenciais ou conclui cadastros. A revisão humana é obrigatória.',
+                'Etapas: 0 Relação, 1 Dados pessoais, 2 Endereço, 3 Vínculo, 4 Pagamento, 5 Acesso, 6 Biometria, 7 Revisão.',
+                'Etapas 4 a 7: só oriente; não sugira preenchimento.',
+              ].join('\n')
+            : this.allowEmployeeActions
+              ? SYSTEM_INSTRUCTIONS
+              : SYSTEM_INSTRUCTIONS.replace(
+                  'use prepare_employee_registration somente para preparar o rascunho na interface.',
+                  'oriente a abrir o cartão de cadastro assistido, sem afirmar que cadastrou.',
+                ),
           realtimeInputConfig: {
             automaticActivityDetection: {
               disabled: false,
@@ -65,7 +82,7 @@ export class PotiguarLive {
               silenceDurationMs: 750,
             },
           },
-          ...(this.allowEmployeeActions ? { tools: [registrationTool] } : {}),
+          ...(this.allowOnboardingSuggestions ? { tools: [onboardingSuggestionTool] } : this.allowEmployeeActions ? { tools: [registrationTool] } : {}),
           ...(model.endsWith('extended-thinking') ? { thinkingConfig: { thinkingLevel: 'medium' } } : {}),
         },
         callbacks: {
@@ -115,6 +132,17 @@ export class PotiguarLive {
     const functionResponses = [];
     for (const call of calls) {
       if (!call?.id || !call?.name) continue;
+      if (call.name === ONBOARDING_FUNCTION_NAME && this.allowOnboardingSuggestions) {
+        try {
+          const raw = typeof call.args === 'string' ? JSON.parse(call.args) : call.args;
+          const suggestions = sanitizeOnboardingSuggestions(raw, this.onboardingStep);
+          if (suggestions.length) this.handlers.onOnboardingSuggestions?.(this.onboardingStep, suggestions);
+          functionResponses.push({id:call.id, name:call.name, response:{status:suggestions.length?'awaiting_human_review':'no_eligible_suggestions', created:false}});
+        } catch {
+          functionResponses.push({id:call.id, name:call.name, response:{status:'invalid_suggestions',created:false}});
+        }
+        continue;
+      }
       if (call.name !== REGISTRATION_FUNCTION_NAME || !this.allowEmployeeActions) {
         functionResponses.push({
           id: call.id, name: call.name,
@@ -145,6 +173,8 @@ export class PotiguarLive {
       }
     }
   }
+
+  setOnboardingStep(step) { if (Number.isInteger(step) && step>=0 && step<=7) this.onboardingStep=step; }
 
   sendText(text) {
     if (!this.session) throw new Error('Conecte-se antes de enviar uma mensagem.');

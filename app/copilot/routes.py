@@ -79,65 +79,96 @@ def metadata():
             "users": url_for("admin.list_users"),
             "new_user": url_for("admin.new_user") if user.can(Permission.USERS_CREATE) else None,
         },
-        "mode": "guidance_only",
+        "mode": "guided_drafts_v2",
     }))
 
 
-@bp.post("/employee-create")
+@bp.get('/embed/onboarding')
+@permission_required(Permission.USERS_CREATE)
+def onboarding_embed():
+    """Copiloto Gemini Live em iframe mesma origem, sem permissões de persistência."""
+    if not _available() or not current_app.config.get('COPILOT_ACTIONS_ENABLED'):
+        return _no_cache(jsonify(error='Copiloto não habilitado.')), 503
+    response = make_response(render_template('admin/copilot_onboarding_embed.html', csrf_value=generate_csrf()))
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    response.headers['Permissions-Policy'] = 'microphone=(self), camera=()'
+    response.headers['Content-Security-Policy'] = (
+        "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
+        "connect-src 'self' https://generativelanguage.googleapis.com "
+        "wss://generativelanguage.googleapis.com; "
+        "img-src 'self' data:; media-src 'self' blob:; worker-src 'self'; "
+        "object-src 'none'; base-uri 'self'; frame-ancestors 'self'"
+    )
+    response = _no_cache(response)
+    response.headers['Referrer-Policy'] = 'same-origin'
+    return response
+
+
+@bp.post('/employee-create')
 @permission_required(Permission.USERS_CREATE)
 def employee_create():
-    """Somente confirmação humana autenticada, nunca chamada direta do modelo."""
-    if not _available() or not current_app.config.get("COPILOT_ACTIONS_ENABLED"):
-        return _no_cache(jsonify(error="Cadastro assistido não habilitado.")), 503
+    """Endpoint legado encerrado: cadastro só pode ser concluído no V2."""
+    return _no_cache(jsonify(
+        error='A criação direta foi desativada. Continue pelo cadastro V2 de oito etapas.',
+        redirect=url_for('admin.new_user'),
+    )), 410
+
+
+@bp.post('/employee-draft')
+@permission_required(Permission.USERS_CREATE)
+def employee_draft():
+    """Converte a proposta básica do Copiloto em rascunho V2; NÃO cria funcionário."""
+    if not _available() or not current_app.config.get('COPILOT_ACTIONS_ENABLED'):
+        return _no_cache(jsonify(error='Cadastro assistido não habilitado.')), 503
     if not request.is_json:
-        return _no_cache(jsonify(error="Envie JSON.")), 415
+        return _no_cache(jsonify(error='Envie JSON.')), 415
     if request.content_length is not None and request.content_length > 4096:
-        return _no_cache(jsonify(error="Cadastro excede o tamanho permitido.")), 413
-    from app.copilot.actions import (
-        InvalidDraft, DuplicateEmployee, create_employee, validate_draft,
-    )
+        return _no_cache(jsonify(error='Cadastro excede o tamanho permitido.')), 413
+    from app.copilot.actions import InvalidDraft, validate_draft
+    from app.onboarding_models import OnboardingDraft
+    from app.admin.onboarding import _seal, MAX_ACTIVE_DRAFTS
+    from app.models import db
+    from app.observability import audit
+    from uuid import uuid4
     try:
         draft = validate_draft(request.get_json(silent=True))
     except InvalidDraft as exc:
-        return _no_cache(jsonify(error=str(exc))), 400
-
-    # HML exposta por túnel tem credenciais de teste compartilhadas:
-    # exigir identificadores sintéticos para evitar dados reais no SQLite.
-    if os.environ.get("POTIGUAR_COPILOT_DEMO_DAILY_LIMIT"):
+        return _no_cache(jsonify(error=str(exc))), 422
+    if os.environ.get('POTIGUAR_COPILOT_DEMO_DAILY_LIMIT'):
         if not (
-            (draft.name.lower().endswith(" de teste") or draft.name.lower().startswith("teste "))
-            and (draft.username.endswith(".teste") or draft.username.startswith("teste."))
-            and (draft.registration or "").upper().startswith("TEST-")
+            (draft.name.lower().endswith(' de teste') or draft.name.lower().startswith('teste '))
+            and (draft.username.endswith('.teste') or draft.username.startswith('teste.'))
+            and (draft.registration or '').upper().startswith('TEST-')
         ):
             return _no_cache(jsonify(
-                error="Nesta homologação, use somente dados fictícios: nome terminando em 'de Teste', usuário terminado em '.teste' e matrícula 'TEST-...'."
-            )), 400
-        from app.copilot.demo_quota import (
-            DemoQuotaReached, DemoQuotaUnavailable, reserve_session,
-        )
-        try:
-            reserve_session(current_app.instance_path, 5, category="employee")
-        except DemoQuotaReached:
-            return _no_cache(jsonify(error="Limite diário de cadastros de teste atingido.")), 429
-        except DemoQuotaUnavailable:
-            return _no_cache(jsonify(error="Controle de cadastros indisponível.")), 503
-
-    try:
-        user, temporary_password = create_employee(
-            draft, actor=g.admin_user,
-            company_id=session.get("admin_company_id"),
-            worksite_id=session.get("admin_worksite_id"),
-        )
-    except DuplicateEmployee as exc:
-        return _no_cache(jsonify(error=str(exc))), 409
-    return _no_cache(jsonify({
-        "id": user.id,
-        "username": user.username,
-        "name": user.name,
-        "temporary_password": temporary_password,
-        "requires_biometric_enrollment": True,
-        "message": "Cadastro criado após sua confirmação. A biometria permanece pendente.",
-    })), 201
+                error='Homologação: use apenas nome de Teste, usuário .teste e matrícula TEST-...'
+            )), 422
+    if OnboardingDraft.query.filter_by(owner_user_id=g.admin_user.id, status='draft').count() >= MAX_ACTIVE_DRAFTS:
+        return _no_cache(jsonify(error='Limite de rascunhos atingido.')), 429
+    row=OnboardingDraft(
+        id=uuid4().hex,
+        owner_user_id=g.admin_user.id,
+        company_id=session.get('admin_company_id'),
+        worksite_id=session.get('admin_worksite_id'),
+        encrypted_payload=_seal({
+            'full_name': draft.name,
+            'job_role': draft.job_title or '',
+            'schedule': draft.schedule or '',
+            'access_login': draft.username,  # Solicitação de acesso permanece DESMARCADA.
+            'has_system_access': False,
+        }),
+        version=0,
+        status='draft',
+    )
+    db.session.add(row)
+    audit('copilot.onboarding.draft_prepared','success',actor=g.admin_user,
+          target_type='onboarding_draft',target_id=row.id,
+          metadata={'source':'human_confirmed_v2'})
+    db.session.commit()
+    return _no_cache(jsonify(
+        created=False, draft_created=True,
+        redirect=url_for('admin.onboarding_form',draft_id=row.id),
+    )), 201
 
 
 @bp.post("/session-token")

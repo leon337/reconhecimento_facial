@@ -90,7 +90,9 @@ def init_observability(app):
         request_id = _request_id()
         response.headers["X-Request-ID"] = request_id
         response.headers["X-Content-Type-Options"] = "nosniff"
-        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-Frame-Options"] = (
+            "SAMEORIGIN" if request.endpoint == "copilot.onboarding_embed" else "DENY"
+        )
         # Padrões rígidos para as rotas existentes; um endpoint específico
         # pode definir cabeçalhos ainda restritos ao seu próprio propósito
         # (ex.: microfone apenas na página autenticada do copiloto).

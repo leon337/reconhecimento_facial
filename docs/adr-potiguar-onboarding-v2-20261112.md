@@ -30,3 +30,15 @@
 ## Reversão
 - Manter a imagem e o contêiner de relatórios anteriores parados, criar cópia consistente do SQLite e preservar a chave de criptografia da versão nova.
 - Caso o health check falhe, restaurar o contêiner anterior; nunca apagar o banco sem aprovação explícita.
+
+## Integração do Copiloto no cadastro V2 — 12/11/2026
+
+- Foi criado um painel persistente (drawer) acionável em qualquer etapa do cadastro V2, com **Gemini 3.8 Live** e opção **Extended Thinking** para conversa por voz/texto.
+- A sessão Gemini usa o fluxo existente de token efêmero; a chave permanente não fica no HTML. Iframe restrito à **mesma origem**, com `frame-ancestors 'self'`, `X-Frame-Options: SAMEORIGIN`, política de microfone e consentimento explícito para envio de voz/texto.
+- O formulário **não envia automaticamente valores já preenchidos** ao provedor de IA. Somente a mensagem dita ou digitada pelo administrador é transmitida.
+- Sugestões estruturadas são limitadas a campos previamente autorizados nas etapas 1–4 (classificação, alguns dados civis não sensíveis, localização geral e dados funcionais). A validação é duplicada no iframe e no formulário, incluindo whitelist por etapa, tipo e opções permitidas. Valores são apresentados para **confirmação humana** antes de aplicar; nenhuma ferramenta IA executa `save` ou `complete`.
+- CPF, RG, documentos, contatos, endereço residencial completo, dados financeiros, PIX, dados sensíveis, perfis administrativos, credenciais, aceite de transparência e biometria permanecem **exclusivamente manuais**, por princípio de minimização.
+- O endpoint antigo `POST /admin/copilot/employee-create` foi desativado (`410`). A ação confirmada no Copiloto independente agora chama `POST /admin/copilot/employee-draft`, produz um rascunho criptografado V2 e encaminha o administrador para revisão nas oito etapas. Não cria `Employee`, `User` ou senha.
+- O modo Extended Thinking fornece orientação textual/por voz; sugestões estruturadas dependem do modo Live padrão, pois o contrato de tool-calling em Extended Thinking não foi comprovado.
+- Testes confirmam o isolamento de empresas, status do iframe, CSRF, ausência de escrita direta, cifragem do rascunho, bloqueio de sugestões sensíveis e regressões do cadastro. O teste **real de permissão e qualidade do microfone no celular** permanece para aceite humano.
+- A publicação usa imagem imutável e continer anterior retido para rollback; banco recebeu cópia SQLite consistente, sem migração adicional para esta integração.

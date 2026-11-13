@@ -163,5 +163,98 @@
   window.addEventListener('beforeunload',e=>{
     if (generation!==savedGeneration && !blocked) {e.preventDefault();e.returnValue='';}
   });
+  // Copiloto: comunicação mínima, somente mesma origem; nunca envia valores existentes.
+  const openCopilot=document.getElementById('copilot-open');
+  const closeCopilot=document.getElementById('copilot-close');
+  const copilotDrawer=document.getElementById('onboarding-copilot-drawer');
+  const copilotBackdrop=document.getElementById('onboarding-copilot-backdrop');
+  const copilotFrame=document.getElementById('onboarding-copilot-frame');
+  const proposalPanel=document.getElementById('copilot-proposal');
+  const proposalDetails=document.getElementById('copilot-proposal-details');
+  const applyProposal=document.getElementById('copilot-apply');
+  const rejectProposal=document.getElementById('copilot-reject');
+  const safeFields={
+    0:['relation_type','other_relation'],
+    1:['full_name','social_name','nationality','education'],
+    2:['country','address_type','city','state'],
+    3:['department','job_role','manager','schedule','contract_type','transport_benefit','benefit_policy'],
+    4:[],5:[],6:[],7:[],
+  };
+  let pendingProposal=null;
+  function sendStepContext(){
+    if(!copilotFrame.contentWindow || !copilotFrame.getAttribute('src'))return;
+    copilotFrame.contentWindow.postMessage({type:'potiguar:onboarding:context',step:current},window.location.origin);
+  }
+  const originalShowStep=showStep;
+  showStep=function(index){
+    originalShowStep(index);
+    pendingProposal=null;
+    proposalPanel.hidden=true;
+    sendStepContext();
+  };
+  function openDrawer(){
+    copilotDrawer.hidden=false;copilotBackdrop.hidden=false;
+    copilotDrawer.setAttribute('aria-hidden','false');
+    openCopilot.setAttribute('aria-expanded','true');
+    if(!copilotFrame.getAttribute('src'))copilotFrame.setAttribute('src',copilotFrame.dataset.src);
+    else sendStepContext();
+    closeCopilot.focus();
+  }
+  function closeDrawer(){
+    copilotFrame.contentWindow?.postMessage({type:'potiguar:onboarding:pause'},window.location.origin);
+    copilotDrawer.hidden=true;copilotBackdrop.hidden=true;
+    copilotDrawer.setAttribute('aria-hidden','true');openCopilot.setAttribute('aria-expanded','false');
+    pendingProposal=null;proposalPanel.hidden=true;openCopilot.focus();
+  }
+  openCopilot.addEventListener('click',openDrawer);
+  closeCopilot.addEventListener('click',closeDrawer);
+  copilotBackdrop.addEventListener('click',closeDrawer);
+  copilotFrame.addEventListener('load',sendStepContext);
+  window.addEventListener('keydown',event=>{if(event.key==='Escape' && !copilotDrawer.hidden)closeDrawer();});
+  function validSuggestion(item){
+    if(!item || typeof item!=='object' || typeof item.field!=='string' || typeof item.value!=='string')return false;
+    if(!safeFields[current].includes(item.field) || item.value.length>120 || !item.value.trim() || /[<>\x00-\x1f]/.test(item.value))return false;
+    const panel=panels[current];
+    const control=Array.from(panel.querySelectorAll('[name]')).find(el=>el.name===item.field);
+    if(!control || control.type==='checkbox' || control.disabled)return false;
+    if(control.tagName==='SELECT' && !Array.from(control.options).some(option=>option.value===item.value))return false;
+    return true;
+  }
+  window.addEventListener('message',event=>{
+    if(event.origin!==window.location.origin || event.source!==copilotFrame.contentWindow)return;
+    const message=event.data;
+    if(!message || typeof message!=='object')return;
+    if(message.type==='potiguar:onboarding:ready'){sendStepContext();return;}
+    if(message.type!=='potiguar:onboarding:proposal' || message.step!==current || copilotDrawer.hidden)return;
+    if(!Array.isArray(message.suggestions) || message.suggestions.length>5)return;
+    const unique=new Set();
+    const suggestions=message.suggestions.filter(item=>{
+      if(!validSuggestion(item)||unique.has(item.field))return false;
+      unique.add(item.field);return true;
+    });
+    if(!suggestions.length)return;
+    pendingProposal={step:current,suggestions};
+    proposalDetails.replaceChildren();
+    for(const item of suggestions){
+      const label=Array.from(panels[current].querySelectorAll('.field-item')).find(el=>el.querySelector(`[name="${item.field}"]`))?.querySelector('label')?.textContent?.trim() || item.field;
+      const line=document.createElement('p');
+      const b=document.createElement('strong');b.textContent=label+': ';
+      const value=document.createElement('span');value.textContent=item.value;
+      line.append(b,value);proposalDetails.append(line);
+    }
+    proposalPanel.hidden=false;
+    proposalPanel.scrollIntoView({block:'nearest'});
+  });
+  rejectProposal.addEventListener('click',()=>{pendingProposal=null;proposalPanel.hidden=true;});
+  applyProposal.addEventListener('click',()=>{
+    if(!pendingProposal || pendingProposal.step!==current)return;
+    for(const item of pendingProposal.suggestions){
+      if(!validSuggestion(item))continue;
+      const control=Array.from(panels[current].querySelectorAll('[name]')).find(el=>el.name===item.field);
+      if(control){control.value=item.value;control.dispatchEvent(new Event('input',{bubbles:true}));}
+    }
+    pendingProposal=null;proposalPanel.hidden=true;
+    status.textContent='Sugestões aplicadas localmente; salvando rascunho...';
+  });
   showStep(0);
 })();

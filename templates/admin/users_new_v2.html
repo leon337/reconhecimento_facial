@@ -23,7 +23,7 @@
       <span class="eyebrow">FUNCIONÁRIOS / CADASTRO V2</span>
       <h1>Novo funcionário</h1>
       <p class="subtitle">Cadastro completo em oito etapas, com rascunho protegido, revisão final e integração com a biometria facial.</p>
-      <div class="draft-line"><span class="status-pill">RASCUNHO</span><span id="save-status" role="status" aria-live="polite">Pronto para preencher</span></div>
+      <div class="draft-line"><span class="status-pill">RASCUNHO</span><span id="save-status" role="status" aria-live="polite">Pronto para preencher</span><button id="copilot-open" class="action copilot-open-button" type="button" aria-controls="onboarding-copilot-drawer" aria-expanded="false">✦ Abrir Copiloto</button></div>
     </div>
     <section class="step-card" aria-label="Progresso do cadastro">
       <div class="step-progress" id="step-navigation">
@@ -80,6 +80,16 @@
       </footer>
     </form>
     <p class="help">Fluxo de homologação. Acesso condicionado ao perfil administrativo e ao escopo de empresa/obra. Cadastros anteriores não são alterados.</p>
+    <div id="onboarding-copilot-backdrop" class="copilot-backdrop" hidden></div>
+    <aside id="onboarding-copilot-drawer" class="copilot-drawer" aria-label="Copiloto de preenchimento" aria-hidden="true" hidden>
+      <div class="copilot-drawer-header"><strong>✦ Copiloto integrado ao cadastro V2</strong><button id="copilot-close" type="button" class="action" aria-label="Fechar Copiloto">Fechar</button></div>
+      <iframe id="onboarding-copilot-frame" title="Copiloto Potiguar por voz e texto" data-src="{{ url_for('copilot.onboarding_embed') }}" allow="microphone" referrerpolicy="same-origin"></iframe>
+      <section id="copilot-proposal" class="copilot-proposal" role="region" aria-label="Sugestões para revisão" hidden>
+        <strong>Proposta de preenchimento — confirme antes de aplicar</strong>
+        <div id="copilot-proposal-details"></div>
+        <div class="copilot-proposal-actions"><button id="copilot-apply" type="button" class="action primary">Aplicar sugestões</button><button id="copilot-reject" type="button" class="action">Descartar proposta</button></div>
+      </section>
+    </aside>
   </main>
 </div>
 <script src="{{ url_for('static', filename='admin-onboarding-v2.js') }}" defer></script>

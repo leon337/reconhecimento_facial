@@ -89,7 +89,7 @@ const live = new PotiguarLive({
     if (!canRegister.value) return;
     registeredEmployee.value = null;
     employeeDraft.value = { ...draft, request_id: crypto.randomUUID() };
-    pushMessage('guide', 'Preparei um rascunho. Revise os campos no cartão e clique em Confirmar e cadastrar quando estiver correto.');
+    pushMessage('guide', 'Preparei um rascunho. Revise os campos no cartão e clique em Continuar no cadastro V2 quando estiver correto.');
     nextTick(() => draftCard.value?.scrollIntoView({ block: 'center', behavior: 'smooth' }));
   },
   onSpeechState(state) { speechState.value = state; },
@@ -125,16 +125,17 @@ async function confirmEmployee() {
   error.value = '';
   registrationBusy.value = true;
   try {
-    const response = await fetch('/admin/copilot/employee-create', {
+    const response = await fetch('/admin/copilot/employee-draft', {
       method: 'POST', credentials: 'same-origin', cache: 'no-store',
       headers: { 'Content-Type': 'application/json', 'X-CSRFToken': props.csrf },
       body: JSON.stringify(employeeDraft.value),
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.error || 'Cadastro não autorizado.');
-    registeredEmployee.value = data;
     employeeDraft.value = null;
-    pushMessage('guide', 'O servidor confirmou o cadastro. A senha inicial está no cartão seguro; a biometria ainda precisa do fluxo oficial.');
+    pushMessage('guide', 'Rascunho protegido criado. Continue nas oito etapas para revisão e confirmação humana.');
+    await live.disconnect();
+    window.location.assign(data.redirect);
   } catch (e) {
     error.value = e.message;
   } finally {
@@ -355,11 +356,11 @@ onUnmounted(() => { live.disconnect(); });
               <label for="emp-schedule">Horário</label>
               <input id="emp-schedule" v-model="employeeDraft.schedule" maxlength="120">
               <p v-if="registrationErrors.length" class="error" role="status">{{ registrationErrors[0] }}</p>
-              <p class="registration-note">A senha inicial será gerada somente após confirmar. Nenhuma biometria ou marcação de ponto será criada.</p>
+              <p class="registration-note">Esta etapa cria somente um rascunho protegido, sem senha nem biometria. Conclua o cadastro no formulário V2.</p>
               <div class="registration-actions">
                 <button type="button" @click="cancelEmployeeDraft" :disabled="registrationBusy">Cancelar</button>
                 <button type="submit" class="connect-button" :disabled="registrationBusy || registrationErrors.length > 0">
-                  {{ registrationBusy ? 'Salvando…' : 'Confirmar e cadastrar' }}
+                  {{ registrationBusy ? 'Salvando…' : 'Continuar no cadastro V2' }}
                 </button>
               </div>
             </form>
