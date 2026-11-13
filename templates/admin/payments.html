@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Conferência semanal — Potiguar</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='admin-mobile.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='admin-dashboard.css') }}">
+<style>.finance-note{background:#fff7dd;color:#493d21;padding:1rem;border-radius:.75rem;margin:1rem 0}.finance-form{display:flex;flex-wrap:wrap;gap:1rem;align-items:end}.finance-form label{display:flex;flex-direction:column;gap:.4rem}.finance-form input,.finance-form select{min-height:42px;padding:.5rem;border:1px solid #aaa;border-radius:.4rem}.finance-table{width:100%;border-collapse:collapse}.finance-table th,.finance-table td{padding:.75rem;text-align:left;border-bottom:1px solid #dedede}.finance-table td{overflow-wrap:anywhere}@media(max-width:650px){.finance-table{font-size:.85rem}.finance-form{display:grid}}</style></head>
+<body><div class="container">
+<header class="header"><a class="brand" href="{{ url_for('admin.dashboard') }}"><span class="brand-mark">P</span><span><strong>POTIGUAR</strong><small>Conferência de jornadas</small></span></a>
+<nav class="top-actions"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a><a href="{{ url_for('admin.list_users') }}">Funcionários</a><a class="primary" aria-current="page" href="{{ url_for('admin.payments_home') }}">Pagamentos</a></nav></header>
+<main><h1>Períodos de conferência</h1>
+<p class="finance-note" role="status"><strong>Fase de homologação.</strong> Registros de jornada não representam folha aprovada, valor devido ou ordem bancária. Nenhum PIX é executado.</p>
+{% if can_edit %}<section><h2>Abrir período semanal</h2>
+<form class="finance-form" method="post" action="{{ url_for('admin.payments_create_period') }}">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<label>Início <input type="date" name="inicio" required></label>
+<label>Fim (7 dias) <input type="date" name="fim" required></label>
+<label>Obra <select name="obra">
+{% if not restricted_to_worksite %}<option value="">Todas as obras da empresa</option>{% endif %}
+{% for site in worksites %}<option value="{{ site.id }}">{{ site.name }}</option>{% endfor %}
+</select></label>
+<button class="action primary" type="submit">Criar rascunho</button>
+</form></section>{% endif %}
+<section><h2>Últimos períodos</h2>
+<div style="overflow-x:auto"><table class="finance-table"><thead><tr><th>Período</th><th>Escopo</th><th>Situação</th><th>Ação</th></tr></thead><tbody>
+{% for period in periods %}<tr><td>{{ period.start_date.strftime('%d/%m/%Y') }} a {{ period.end_date.strftime('%d/%m/%Y') }}</td><td>{{ period.worksite.name if period.worksite else 'Empresa inteira' }}</td><td>Rascunho</td><td><a href="{{ url_for('admin.payments_period', period_id=period.id) }}">Conferir jornadas</a></td></tr>{% else %}
+<tr><td colspan="4">Nenhum período criado neste escopo.</td></tr>{% endfor %}
+</tbody></table></div></section>
+</main></div></body></html>

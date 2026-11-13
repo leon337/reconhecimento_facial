@@ -1,0 +1,2 @@
+VALIDATION=PASS; 27 selected tests; real bank operations: none
+ENV: temporary virtualenv; face_recognition stubbed for unrelated imports.

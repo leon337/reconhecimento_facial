@@ -1,0 +1,14 @@
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 20260718_01, Schema inicial de usuários e registros de ponto.
+INFO  [alembic.runtime.migration] Running upgrade 20260718_01 -> 20260718_02, Adiciona empresas, obras e isolamento organizacional.
+INFO  [alembic.runtime.migration] Running upgrade 20260718_02 -> 20260718_03, Separa cadastro funcional da conta e adiciona RBAC.
+INFO  [alembic.runtime.migration] Running upgrade 20260718_03 -> 20260719_04, Segrega e protege os dados biométricos.
+INFO  [alembic.runtime.migration] Running upgrade 20260719_04 -> 20260719_05, ponto imutavel jornada fechamento
+INFO  [alembic.runtime.migration] Running upgrade 20260719_05 -> 20260719_06, auditoria observabilidade hardening
+INFO  [alembic.runtime.migration] Running upgrade 20260719_06 -> 20260720_07, amplia password_hash para hashes modernos
+INFO  [alembic.runtime.migration] Running upgrade 20260720_07 -> 20260721_08, desafios de prova de vida persistidos e atomicos
+INFO  [alembic.runtime.migration] Running upgrade 20260721_08 -> 20261112_09, Novo Funcionário V2: rascunhos e dados complementares criptografados.
+INFO  [alembic.runtime.migration] Running upgrade 20261112_09 -> 20261113_10, Conferência de jornadas para preparação futura da folha, sem dados monetários.
+SMOKE=PASS; revision=20261113_10
+TABLES=audit_events;payment_periods;payment_work_entries

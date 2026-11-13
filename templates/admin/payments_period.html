@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jornadas do período — Potiguar</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='admin-mobile.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='admin-dashboard.css') }}">
+<style>.finance-note{background:#fff7dd;color:#493d21;padding:1rem;border-radius:.75rem;margin:1rem 0}.finance-form{display:flex;flex-wrap:wrap;gap:1rem;align-items:end}.finance-form label{display:flex;flex-direction:column;gap:.4rem}.finance-form input,.finance-form select{min-height:42px;padding:.5rem;border:1px solid #aaa;border-radius:.4rem}.finance-table{width:100%;border-collapse:collapse}.finance-table th,.finance-table td{padding:.75rem;text-align:left;border-bottom:1px solid #dedede}@media(max-width:650px){.finance-table{font-size:.85rem}.finance-form{display:grid}}</style></head>
+<body><div class="container">
+<header class="header"><a class="brand" href="{{ url_for('admin.payments_home') }}"><span class="brand-mark">P</span><span><strong>POTIGUAR</strong><small>Conferência de jornadas</small></span></a><nav class="top-actions"><a href="{{ url_for('admin.payments_home') }}">Voltar aos períodos</a><a href="{{ url_for('admin.list_users') }}">Funcionários</a></nav></header>
+<main><h1>Jornadas de {{ period.start_date.strftime('%d/%m/%Y') }} a {{ period.end_date.strftime('%d/%m/%Y') }}</h1>
+<p>Obra: <strong>{{ period.worksite.name if period.worksite else 'Todas as obras da empresa' }}</strong> · Situação: <strong>Rascunho</strong></p>
+<p class="finance-note" role="status"><strong>Conferência apenas temporal.</strong> Total de horas não equivale a remuneração. Tarifas, adicionais, descontos, aprovação e PIX estão desabilitados nesta fase.</p>
+<section><h2>Resumo da jornada</h2><p><strong>{{ total_count }}</strong> lançamento(s) · <strong>{{ worked }}</strong> horas registradas</p>{% if is_truncated %}<p>Exibindo as 500 jornadas mais recentes. A soma acima considera todos os lançamentos.</p>{% endif %}</section>
+{% if can_edit and period.status == 'draft' %}<section><h2>Adicionar jornada</h2>
+<form class="finance-form" method="post" action="{{ url_for('admin.payments_add_entry', period_id=period.id) }}">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<label>Funcionário <select name="funcionario" required><option value="">Selecione</option>{% for employee in employees %}<option value="{{ employee.id }}">{{ employee.name }}</option>{% endfor %}</select></label>
+<label>Data <input name="data" type="date" min="{{ period.start_date.isoformat() }}" max="{{ period.end_date.isoformat() }}" required></label>
+<label>Entrada <input name="entrada" type="time" required></label>
+<label>Início intervalo <input name="intervalo_inicio" type="time" required></label>
+<label>Fim intervalo <input name="intervalo_fim" type="time" required></label>
+<label>Saída <input name="saida" type="time" required></label>
+<button class="action primary" type="submit">Salvar jornada</button></form>
+<p>Jornadas que atravessam a meia-noite ou têm múltiplos intervalos serão tratadas em uma fase posterior.</p>
+</section>{% endif %}
+<section><h2>Histórico de apontamentos</h2><div style="overflow-x:auto"><table class="finance-table"><thead><tr><th>Data</th><th>Funcionário</th><th>Entrada</th><th>Intervalo</th><th>Saída</th><th>Trabalhado</th></tr></thead><tbody>
+{% for entry in entries %}<tr><td>{{ entry.work_date.strftime('%d/%m/%Y') }}</td><td>{{ entry.employee.name }}</td><td>{{ entry.entry_time.strftime('%H:%M') }}</td><td>{{ entry.break_start.strftime('%H:%M') }}–{{ entry.break_end.strftime('%H:%M') }}</td><td>{{ entry.exit_time.strftime('%H:%M') }}</td><td>{{ duration_label(entry.worked_minutes) }}</td></tr>{% else %}
+<tr><td colspan="6">Nenhuma jornada cadastrada.</td></tr>{% endfor %}
+</tbody></table></div></section></main></div></body></html>

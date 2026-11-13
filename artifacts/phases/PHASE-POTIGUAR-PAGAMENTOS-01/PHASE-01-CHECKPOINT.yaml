@@ -1,0 +1,27 @@
+mission_id: MCF-POTIGUAR-PAGAMENTOS-20261113
+phase_id: PHASE-POTIGUAR-PAGAMENTOS-01
+risk_class: C
+objective: "Módulo de conferência de jornadas e períodos, não monetário"
+issue: "https://github.com/leon337/multiagent-collaboration-framework/issues/522"
+repository: "leon337/reconhecimento_facial"
+branch: "feat/potiguar-pagamentos-fase01-20261113"
+base_commit: "5d7d4fdd220ccb46c42e507794db2ec6d00a4dd4"
+state: DEV_IMPLEMENTED_REVIEW_PENDING
+cycle: 1
+acceptance:
+  selected_tests: "27 passed"
+  migration: "20261113_10 smoke PASS on disposable SQLite"
+  financial_calculation: "PROHIBITED_NOT_IMPLEMENTED"
+  real_payments: "NOT_EXECUTED"
+  production_deploy: "NOT_EXECUTED"
+source_files:
+  - "docs/payments/EXCEL_DISCOVERY.md"
+  - "docs/payments/ARCHITECTURE.md"
+open_risks:
+  - "Regra tarifária do Excel indefinida"
+  - "Referências Excel quebradas e externas"
+  - "Importação de todas as cinco fontes pendente"
+  - "Testes em navegador e celular pendentes"
+  - "Branch base de onboarding precisa de integração controlada"
+next_action: "Revisar alterações e validar as tarifas/casos contábeis antes do motor monetário"
+human_gate: "LEANDRO para eventual produção e qualquer operação bancária"
