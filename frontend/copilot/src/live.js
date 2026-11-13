@@ -48,7 +48,8 @@ export class PotiguarLive {
     if (!response.ok) throw new Error(payload.error || 'Conexão não disponível.');
     const ai = new GoogleGenAI({
       apiKey: payload.token,
-      httpOptions: { apiVersion: 'v1beta' },
+      // A emissão de tokens efêmeros da Live API utiliza v1alpha (testado em 13/11/2026).
+      httpOptions: { apiVersion: 'v1alpha' },
     });
     try {
       this.session = await ai.live.connect({

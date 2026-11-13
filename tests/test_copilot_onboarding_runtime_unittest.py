@@ -73,6 +73,7 @@ class CopilotOnboardingTests(unittest.TestCase):
   self.assertEqual(r.status_code,200)
   self.assertEqual(r.headers.get('X-Frame-Options'),'SAMEORIGIN')
   self.assertIn("frame-ancestors 'self'",r.headers.get('Content-Security-Policy',''))
+  self.assertNotIn("'unsafe-inline'",r.headers.get('Content-Security-Policy',''))
   self.assertEqual(r.headers.get('Referrer-Policy'),'same-origin')
   self.assertIn('microphone=(self)',r.headers.get('Permissions-Policy',''))
   self.assertIn('data-embed="onboarding"',r.get_data(as_text=True))

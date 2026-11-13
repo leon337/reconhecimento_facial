@@ -93,7 +93,7 @@ def onboarding_embed():
     response.headers['X-Frame-Options'] = 'SAMEORIGIN'
     response.headers['Permissions-Policy'] = 'microphone=(self), camera=()'
     response.headers['Content-Security-Policy'] = (
-        "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
+        "default-src 'self'; script-src 'self'; style-src 'self'; "
         "connect-src 'self' https://generativelanguage.googleapis.com "
         "wss://generativelanguage.googleapis.com; "
         "img-src 'self' data:; media-src 'self' blob:; worker-src 'self'; "

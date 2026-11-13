@@ -1,6 +1,7 @@
 <script setup>
 import { ref, nextTick, onMounted, onUnmounted } from 'vue';
 import { PotiguarLive } from './live.js';
+import { isProtectedInput } from './protected-input.js';
 const props=defineProps({csrf:{type:String,required:true}});
 const meta=ref({enabled:false,configured:false,can_create_with_ai:false});
 const model=ref('gemini-3.8-live'),consent=ref(false),connected=ref(false),busy=ref(false),micOn=ref(false);
@@ -84,8 +85,8 @@ function send(){
     add('user',value);text.value='';return;
   }
   if(!question.value?.safe){error.value='Para este campo, use o formulário protegido. Não envie o valor ao Gemini.';return;}
-  if(/\b\d{3}[. -]?\d{3}[. -]?\d{3}[- ]?\d{2}\b|\b[\w.+-]+@[\w.-]+\.[a-z]{2,}\b/i.test(value)){
-    error.value='Possível documento ou contato identificado. Preencha diretamente no formulário protegido.';return;
+  if(isProtectedInput(value)){
+    error.value='Possível dado protegido identificado. Preencha diretamente no formulário, sem enviá-lo ao Gemini.';return;
   }
   try{
     live.sendText(`Resposta para o campo ${question.value.field}, etapa ${currentStep.value+1}: ${value}. Se for válido, invoque suggest_onboarding_fields somente para ${question.value.field}; não repita dados protegidos.`);
