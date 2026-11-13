@@ -1,0 +1,17 @@
+Sandbox: ambiente temporário; stub exclusivamente para import do módulo biométrico não exercitado
+....................................                                     [100%]
+=============================== warnings summary ===============================
+tests/test_payment_import_preview.py: 7 warnings
+tests/test_payments_mvp.py: 34 warnings
+tests/test_admin_dashboard_unittest.py: 12 warnings
+tests/test_reporting_unittest.py: 7 warnings
+  /home/leo/mcf-worktrees/potiguar-pagamentos-fase01-20261113/app/admin/auth.py:25: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    return User.query.get(user_id) if user_id is not None else None
+
+tests/test_payments_mvp.py: 16 warnings
+tests/test_admin_dashboard_unittest.py: 10 warnings
+  /tmp/potiguar-payments-test-20261113/lib/python3.12/site-packages/sqlalchemy/sql/schema.py:4362: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    return util.wrap_callable(lambda ctx: fn(), fn)  # type: ignore[call-arg, no-any-return, no-untyped-call]  # noqa: E501
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+36 passed, 86 warnings in 13.87s

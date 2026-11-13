@@ -13,6 +13,7 @@ from app.admin import dashboard as _dashboard_routes  # noqa: F401; register rea
 from app.admin import reporting as _report_routes  # noqa: F401
 from app.admin import onboarding as _onboarding_routes  # noqa: F401
 from app.admin import payments as _payment_routes  # noqa: F401
+from app.admin import payments_import as _payments_import_routes  # noqa: F401
 from app.models import db
 from app.observability import init_observability
 
@@ -93,6 +94,14 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     )
 
     migrate.init_app(app, db)
+    # O Excel de Ajudantes tem 5.8 MB; manter a exceção de upload isolada
+    # nesta rota, antes do CSRF consumir request.form.
+    @app.before_request
+    def _limit_xlsx_preview():
+        from flask import request
+        if request.endpoint == "admin.payments_import_preview":
+            request.max_content_length = 13 * 1024 * 1024
+
     csrf.init_app(app)
     init_observability(app)
     app.register_blueprint(admin_bp, url_prefix="/admin")

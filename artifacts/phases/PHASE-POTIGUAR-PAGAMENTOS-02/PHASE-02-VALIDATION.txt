@@ -1,0 +1,1 @@
+36 testes selecionados aprovados; 86 avisos de depreciação; apenas dados sintéticos; nenhum PIX ou banco real.

@@ -1,0 +1,9 @@
+..                                                                       [100%]
+=============================== warnings summary ===============================
+tests/test_payment_import_preview.py::WorkbookPreflightHttpTests::test_large_but_permitted_xlsx_exceeds_default_upload_limit
+tests/test_payment_import_preview.py::WorkbookPreflightHttpTests::test_preview_returns_only_summary
+  /home/leo/mcf-worktrees/potiguar-pagamentos-fase01-20261113/app/admin/auth.py:25: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    return User.query.get(user_id) if user_id is not None else None
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+2 passed, 2 warnings in 1.10s

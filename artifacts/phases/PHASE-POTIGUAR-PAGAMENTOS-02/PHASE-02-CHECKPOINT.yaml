@@ -1,0 +1,24 @@
+mission_id: MCF-POTIGUAR-PAGAMENTOS-20261113
+issue: https://github.com/leon337/multiagent-collaboration-framework/issues/522
+phase_id: PHASE-POTIGUAR-PAGAMENTOS-02
+risk_class: C
+coordinator: MESTRE
+human_authority: LEANDRO
+repository: leon337/reconhecimento_facial
+branch: feat/potiguar-pagamentos-preflight-gpu-20261113
+base_commit: 3fb9a0bd79d0c097826300f05886829e5b1306ea
+state: DEV_IMPLEMENTED_REVIEW_PENDING
+scope: XLSX_STRUCTURAL_PREFLIGHT_ONLY
+gpu: AMD Radeon RX 580 2048SP / EGL OpenGL synthetic QA only
+payments: NOT_EXECUTED
+personal_data_import: NOT_EXECUTED
+deploy: NOT_EXECUTED
+human_gate: LEANDRO para contabilizacao real, integracao e deploy
+next_action: Mapear e validar campos contabeis antes de qualquer ingestao de linhas financeiras
+source_structure:
+  sheets: 133
+  cells: 1808412
+  formulas: 19376
+  broken_reference_cells: 139
+  external_links: 1
+  verified_original_read_only: true
