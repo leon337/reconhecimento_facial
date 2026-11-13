@@ -206,7 +206,7 @@
     // O campo protegido só recebe foco quando o usuário abre o formulário.
   }
   async function guideNext() {
-    if (!guided || !guide || guideBusy || blocked || copilotDrawer.hidden) return;
+    if (!guided || !guide || guideBusy || blocked) return;
     guideBusy=true;
     try {
       const data=serialize();
