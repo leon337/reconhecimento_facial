@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Análise de planilhas — Potiguar</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='admin-mobile.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='admin-dashboard.css') }}">
+<style>
+.prelight{background:#fff6dc;padding:1rem;border-radius:.65rem;color:#3a321d}
+.preform{padding:1rem 0;display:flex;flex-wrap:wrap;gap:1rem;align-items:end}
+.preform label{display:flex;flex-direction:column;gap:.4rem}
+.preform input{max-width:100%;min-height:42px}
+.statlist{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:1rem;margin:1rem 0}
+.statlist div{border:1px solid #ccc;border-radius:.75rem;padding:1rem}
+.statlist strong{display:block;font-size:1.5rem}
+</style>
+</head>
+<body><div class="container">
+<header class="header"><a class="brand" href="{{ url_for('admin.payments_home') }}"><span class="brand-mark">P</span><span><strong>POTIGUAR</strong><small>Pré-análise do Excel</small></span></a>
+<nav class="top-actions"><a href="{{ url_for('admin.payments_home') }}">Voltar aos períodos</a></nav></header>
+<main><h1>Conferir planilha antes de importar</h1>
+<p class="prelight" role="status">Esta etapa analisa somente a estrutura do arquivo, sem salvar dados pessoais, jornadas ou valores bancários. Nenhum cálculo de pagamento é realizado.</p>
+<form method="post" enctype="multipart/form-data" action="{{ url_for('admin.payments_import_preview') }}" class="preform">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<label>Arquivo Excel (.xlsx, até 12 MiB)<input type="file" name="arquivo" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required></label>
+<button class="action primary" type="submit">Analisar estrutura</button></form>
+{% if preview %}
+<section aria-label="Resultado da conferência"><h2>Resultado estrutural</h2>
+<p>Identificador SHA-256 (prefixo): <code>{{ preview.sha256_prefix }}</code></p>
+<div class="statlist">
+<div><strong>{{ preview.sheets }}</strong><span>Abas</span></div>
+<div><strong>{{ preview.visible }}</strong><span>Visíveis</span></div>
+<div><strong>{{ preview.hidden }}</strong><span>Ocultas</span></div>
+<div><strong>{{ preview.formulas }}</strong><span>Fórmulas</span></div>
+<div><strong>{{ preview.broken_references }}</strong><span>Referências quebradas</span></div>
+<div><strong>{{ preview.formula_errors }}</strong><span>Células com erros</span></div>
+<div><strong>{{ preview.external_links }}</strong><span>Links externos</span></div>
+</div>
+{% if preview.requires_manual_review %}<h3>Revisão contábil obrigatória</h3>{% endif %}
+<ul>{% for warning in preview.warnings %}<li>{{ warning }}</li>{% endfor %}</ul>
+<p>Não há prévia de nomes, CPF, PIX ou salários nesta fase. Para converter dados reais, será necessário aprovar o mapeamento de campos.</p>
+</section>
+{% endif %}
+</main></div></body></html>

@@ -1,0 +1,1 @@
+{'gpu': 'AMD Radeon RX 580 2048SP (radeonsi, polaris10, ACO, DRM 3.61, 6.14.0-37-generic)', 'scenarios': 524288, 'mismatches': 0, 'cpu_numpy_ms': 16.15, 'cpu_scalar_python_ms': 337.52, 'gpu_dispatch_read_ms': 4.75}

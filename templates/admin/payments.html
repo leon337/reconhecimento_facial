@@ -8,6 +8,7 @@
 <header class="header"><a class="brand" href="{{ url_for('admin.dashboard') }}"><span class="brand-mark">P</span><span><strong>POTIGUAR</strong><small>Conferência de jornadas</small></span></a>
 <nav class="top-actions"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a><a href="{{ url_for('admin.list_users') }}">Funcionários</a><a class="primary" aria-current="page" href="{{ url_for('admin.payments_home') }}">Pagamentos</a></nav></header>
 <main><h1>Períodos de conferência</h1>
+{% if can_edit %}<p><a class="action secondary" href="{{ url_for('admin.payments_import_preview') }}">Analisar planilha Excel</a></p>{% endif %}
 <p class="finance-note" role="status"><strong>Fase de homologação.</strong> Registros de jornada não representam folha aprovada, valor devido ou ordem bancária. Nenhum PIX é executado.</p>
 {% if can_edit %}<section><h2>Abrir período semanal</h2>
 <form class="finance-form" method="post" action="{{ url_for('admin.payments_create_period') }}">
