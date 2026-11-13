@@ -1,0 +1,14 @@
+ORIGINAL_XLSX_STRUCTURE_CHECK=PASS
+source_bytes=5765949
+zip_members=545
+uncompressed_bytes=43552382
+sheets_total=133
+sheets_visible=21
+sheets_hidden=112
+formula_cells=19376
+error_cells=147
+broken_ref_cells=139
+cells_examined=1808412
+external_link_parts=1
+sha256_prefix=dd7db28840c75988
+MODE=local read-only equivalent XML verification; NOT HTTP upload; NO personal data stored

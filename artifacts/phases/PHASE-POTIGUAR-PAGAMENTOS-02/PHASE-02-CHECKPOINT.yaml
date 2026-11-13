@@ -15,3 +15,10 @@ personal_data_import: NOT_EXECUTED
 deploy: NOT_EXECUTED
 human_gate: LEANDRO para contabilizacao real, integracao e deploy
 next_action: Mapear e validar campos contabeis antes de qualquer ingestao de linhas financeiras
+source_structure:
+  sheets: 133
+  cells: 1808412
+  formulas: 19376
+  broken_reference_cells: 139
+  external_links: 1
+  verified_original_read_only: true

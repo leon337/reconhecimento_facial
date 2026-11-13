@@ -9,3 +9,5 @@
 - Evidência de teste e desempenho, PRF e checkpoint registrados no diretório da fase.
 
 Limitações: sem importação real de dados, banco financeiro, cálculos monetários, transferência, CI de PR, validação visual de celular ou deploy. Revisão independente LÉO/Emily não foi reivindicada.
+## Verificação independente da amostra original (sem PII)
+No ambiente de leitura da planilha original, foram inspecionados 133 worksheets / 1.808.412 células / 19.376 fórmulas, com 139 células de referência quebrada, 147 células com erro e 1 parte de vínculo externo. O XLSX passou as restrições estruturais especificadas para o analisador. Nenhuma célula ou nome foi exportado. Esta foi análise estrutural em leitura local, não upload via sistema nem importação persistente.
