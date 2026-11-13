@@ -1,5 +1,6 @@
 /** Propostas por IA, sem permissão de escrita ou leitura de dados confidenciais. */
 export const ONBOARDING_FUNCTION_NAME = 'suggest_onboarding_fields';
+export const ONBOARDING_NAVIGATION_NAME = 'navigate_onboarding';
 export const ALLOWED_ONBOARDING_FIELDS = Object.freeze({
   0: ['relation_type', 'other_relation'],
   1: ['full_name', 'social_name', 'nationality', 'education'],
@@ -11,8 +12,8 @@ export const onboardingSuggestionTool = {
   functionDeclarations: [{
     name: ONBOARDING_FUNCTION_NAME,
     description: [
-      'Somente quando o administrador solicitar sugerir o preenchimento de campos da etapa ATUAL',
-      'retorne valores explicitamente informados pela pessoa; nunca grave nada.',
+      'Quando a pessoa responder à pergunta do CAMPO ATUAL, envie uma sugestão somente desse campo e etapa;',
+      'retorne apenas o valor explicitamente informado; nunca grave nada nem antecipe outros campos.',
       'Não invente nenhum dado. Nunca inclua CPF, RG, documentos, raça/cor, PCD, dependentes,',
       'telefones, e-mails, logradouro completo, dados bancários, PIX, credenciais, perfis,',
       'permissões, consentimento ou biometria.',
@@ -28,8 +29,25 @@ export const onboardingSuggestionTool = {
       },
       required: ['step', 'suggestions'],
     },
+  }, {
+    name: ONBOARDING_NAVIGATION_NAME,
+    description: 'Somente navegue ou solicite correção de um campo do cadastro; não retorne valores. O formulário decide se a etapa/campo pode ser acessado.',
+    parametersJsonSchema: {
+      type: 'object', properties: {
+        kind: {type:'string',enum:['correct_field','open_step']},
+        step: {type:'integer',minimum:0,maximum:7},
+        field: {type:'string'},
+      },
+      required: ['kind','step'],
+    },
   }],
 };
+export function sanitizeOnboardingNavigation(raw) {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+  if (!['correct_field','open_step'].includes(raw.kind) || !Number.isInteger(raw.step) || raw.step<0 || raw.step>7) return null;
+  if (raw.kind==='correct_field' && (typeof raw.field !== 'string' || !/^[a-z_]{2,40}$/.test(raw.field))) return null;
+  return {kind:raw.kind,step:raw.step,field:raw.kind==='correct_field'?raw.field:null};
+}
 export function sanitizeOnboardingSuggestions(raw, step) {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return [];
   if (!Number.isInteger(step) || step < 0 || step > 7) return [];

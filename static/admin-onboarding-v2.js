@@ -166,6 +166,7 @@
   // Copiloto: comunicação mínima, somente mesma origem; nunca envia valores existentes.
   const openCopilot=document.getElementById('copilot-open');
   const closeCopilot=document.getElementById('copilot-close');
+  const minimizeCopilot=document.getElementById('copilot-minimize');
   const copilotDrawer=document.getElementById('onboarding-copilot-drawer');
   const copilotBackdrop=document.getElementById('onboarding-copilot-backdrop');
   const copilotFrame=document.getElementById('onboarding-copilot-frame');
@@ -181,6 +182,89 @@
     4:[],5:[],6:[],7:[],
   };
   let pendingProposal=null;
+  const guide = window.PotiguarOnboardingController;
+  const guidedFieldLabel = document.getElementById('guided-field');
+  let guided=false, activeField=null, forcedField=null, guideBusy=false, guidedApplying=false;
+  let reviewAnnounced=false, advanceTimer=null;
+  const visitedFields=new Set();
+  function sendToCopilot(payload) {
+    if (copilotDrawer.hidden || !copilotFrame.contentWindow) return;
+    copilotFrame.contentWindow.postMessage(payload, window.location.origin);
+  }
+  function fieldLabel(control) {
+    return control.closest('.field-item')?.querySelector('label')?.textContent?.replace('*','').trim() || control.name;
+  }
+  function announceField(control) {
+    activeField=control;
+    const safe=guide.isSafe(current,control.name);
+    const options=control.tagName==='SELECT'
+      ? Array.from(control.options).map(option=>option.value).filter(Boolean) : [];
+    guidedFieldLabel.hidden=false;
+    guidedFieldLabel.textContent=`Campo atual: ${fieldLabel(control)}`;
+    sendToCopilot({type:'potiguar:onboarding:question',step:current,field:control.name,
+      label:fieldLabel(control),safe,required:control.required,options});
+    // O campo protegido só recebe foco quando o usuário abre o formulário.
+  }
+  async function guideNext() {
+    if (!guided || !guide || guideBusy || blocked || copilotDrawer.hidden) return;
+    guideBusy=true;
+    try {
+      const data=serialize();
+      const eligible=new Set(Array.from(visitedFields).filter(k=>k.startsWith(`${current}:`)).map(k=>k.split(':')[1]));
+      const fields=Array.from(panels[current].querySelectorAll('[name]'));
+      const chosen=forcedField && fields.includes(forcedField) && guide.applicable(forcedField.name,data)
+        ? forcedField : guide.nextField(fields,data,eligible);
+      forcedField=null;
+      if (chosen) { announceField(chosen); return; }
+      activeField=null;
+      guidedFieldLabel.hidden=true;
+      if (current===7) {
+        if (!reviewAnnounced) { reviewAnnounced=true; sendToCopilot({type:'potiguar:onboarding:review'}); }
+        return;
+      }
+      if (!validateCurrent()) return;
+      await saveDraft();
+      maxVisited=Math.max(maxVisited,current+1);
+      showStep(current+1);
+    } catch(e) { alertError(e.message); sendToCopilot({type:'potiguar:onboarding:error'}); }
+    finally { guideBusy=false; }
+  }
+  async function fieldCompleted(control) {
+    if (!guided || blocked || !control || activeField!==control || guidedApplying) return;
+    if (!guide.hasValue(control) || !control.checkValidity()) return;
+    if (guide.isSafe(current,control.name) && !guide.validSafeValue(control,control.value)) return;
+    try {
+      await saveDraft();
+      if (activeField!==control) return;
+      visitedFields.add(`${current}:${control.name}`);
+      activeField=null;
+      sendToCopilot({type:'potiguar:onboarding:filled',step:current,field:control.name});
+      await guideNext();
+    } catch(e) { alertError(e.message); }
+  }
+  async function applyGuidedSuggestion(item) {
+    if (guidedApplying || !activeField || !guide.isSafe(current,activeField.name)) return;
+    const control=activeField;
+    if (item.field!==control.name || !validSuggestion(item) || !guide.validSafeValue(control,item.value)) return;
+    const previous=control.value;
+    guidedApplying=true;
+    try {
+      control.value=item.value.trim();
+      control.dispatchEvent(new Event('input',{bubbles:true}));
+      if (!control.checkValidity()) throw Error('Valor inválido para o campo.');
+      await saveDraft();
+      visitedFields.add(`${current}:${control.name}`);
+      activeField=null;
+      sendToCopilot({type:'potiguar:onboarding:filled',step:current,field:control.name});
+    } catch(e) {
+      control.value=previous;
+      control.dispatchEvent(new Event('input',{bubbles:true}));
+      alertError(e.message);
+      sendToCopilot({type:'potiguar:onboarding:error'});
+      return;
+    } finally { guidedApplying=false; }
+    await guideNext();
+  }
   function sendStepContext(){
     if(!copilotFrame.contentWindow || !copilotFrame.getAttribute('src'))return;
     copilotFrame.contentWindow.postMessage({type:'potiguar:onboarding:context',step:current},window.location.origin);
@@ -190,7 +274,9 @@
     originalShowStep(index);
     pendingProposal=null;
     proposalPanel.hidden=true;
+    reviewAnnounced=false;
     sendStepContext();
+    if (guided) setTimeout(()=>guideNext(),0);
   };
   function openDrawer(){
     copilotDrawer.hidden=false;copilotBackdrop.hidden=false;
@@ -198,16 +284,29 @@
     openCopilot.setAttribute('aria-expanded','true');
     if(!copilotFrame.getAttribute('src'))copilotFrame.setAttribute('src',copilotFrame.dataset.src);
     else sendStepContext();
+    if(guided)setTimeout(()=>{if(activeField)announceField(activeField);else guideNext();},0);
     closeCopilot.focus();
+  }
+  function minimizeDrawer(){
+    sendToCopilot({type:'potiguar:onboarding:mute'});
+    copilotDrawer.hidden=true;copilotBackdrop.hidden=true;
+    copilotDrawer.setAttribute('aria-hidden','true');
+    openCopilot.setAttribute('aria-expanded','false');
+    if(activeField)activeField.focus({preventScroll:false});
+    else openCopilot.focus();
   }
   function closeDrawer(){
     copilotFrame.contentWindow?.postMessage({type:'potiguar:onboarding:pause'},window.location.origin);
     copilotDrawer.hidden=true;copilotBackdrop.hidden=true;
     copilotDrawer.setAttribute('aria-hidden','true');openCopilot.setAttribute('aria-expanded','false');
+    guided=false;activeField=null;forcedField=null;
+    guidedFieldLabel.hidden=true;
+    clearTimeout(advanceTimer);
     pendingProposal=null;proposalPanel.hidden=true;openCopilot.focus();
   }
   openCopilot.addEventListener('click',openDrawer);
   closeCopilot.addEventListener('click',closeDrawer);
+  minimizeCopilot.addEventListener('click',minimizeDrawer);
   copilotBackdrop.addEventListener('click',closeDrawer);
   copilotFrame.addEventListener('load',sendStepContext);
   window.addEventListener('keydown',event=>{if(event.key==='Escape' && !copilotDrawer.hidden)closeDrawer();});
@@ -225,8 +324,46 @@
     const message=event.data;
     if(!message || typeof message!=='object')return;
     if(message.type==='potiguar:onboarding:ready'){sendStepContext();return;}
+    if(message.type==='potiguar:onboarding:stop'){
+      guided=false;activeField=null;forcedField=null;clearTimeout(advanceTimer);guidedFieldLabel.hidden=true;return;
+    }
+    if(message.type==='potiguar:onboarding:begin'){
+      if(!guide || blocked || copilotDrawer.hidden)return;
+      guided=true;reviewAnnounced=false;
+      guideNext().catch(e=>alertError(e.message));
+      return;
+    }
+    if(message.type==='potiguar:onboarding:skip'){
+      if(!guided || !activeField || activeField.required || message.field!==activeField.name || message.step!==current)return;
+      visitedFields.add(`${current}:${activeField.name}`);
+      activeField=null;guideNext().catch(e=>alertError(e.message));return;
+    }
+    if(message.type==='potiguar:onboarding:navigate'){
+      if(!guided || !Number.isInteger(message.step) || message.step<0 || message.step>maxVisited || blocked)return;
+      if(!['open_step','correct_field'].includes(message.kind))return;
+      const index=message.step;
+      const fields=Array.from(panels[index].querySelectorAll('[name]'));
+      let control=null;
+      if(message.kind==='correct_field'){
+        if(typeof message.field!=='string' || !/^[a-z_]{2,40}$/.test(message.field))return;
+        control=fields.find(el=>el.name===message.field);
+      }else{
+        control=fields.find(el=>guide.applicable(el.name,serialize())) || null;
+      }
+      if(!control || !guide.applicable(control.name,serialize()))return;
+      clearTimeout(advanceTimer);forcedField=control;
+      visitedFields.delete(`${index}:${control.name}`);
+      showStep(index);return;
+    }
     if(message.type!=='potiguar:onboarding:proposal' || message.step!==current || copilotDrawer.hidden)return;
     if(!Array.isArray(message.suggestions) || message.suggestions.length>5)return;
+    if(guided){
+      if(activeField){
+        const eligible=message.suggestions.find(item=>item?.field===activeField.name);
+        if(eligible)applyGuidedSuggestion(eligible).catch(e=>alertError(e.message));
+      }
+      return;
+    }
     const unique=new Set();
     const suggestions=message.suggestions.filter(item=>{
       if(!validSuggestion(item)||unique.has(item.field))return false;
@@ -255,6 +392,21 @@
     }
     pendingProposal=null;proposalPanel.hidden=true;
     status.textContent='Sugestões aplicadas localmente; salvando rascunho...';
+  });
+  // Campos protegidos são preenchidos somente no formulário local. Nunca enviamos valores à IA.
+  form.addEventListener('input',event=>{
+    if(!guided || guidedApplying || !activeField || event.target!==activeField
+        || !guide.isSafe(current,activeField.name))return;
+    clearTimeout(advanceTimer);
+    const control=activeField;
+    advanceTimer=setTimeout(()=>fieldCompleted(control),1200);
+  });
+  form.addEventListener('change',event=>{
+    if(!guided || guidedApplying || !activeField || event.target!==activeField
+        || guide.isSafe(current,activeField.name))return;
+    clearTimeout(advanceTimer);
+    const control=activeField;
+    advanceTimer=setTimeout(()=>fieldCompleted(control),100);
   });
   showStep(0);
 })();

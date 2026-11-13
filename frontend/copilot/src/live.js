@@ -1,6 +1,6 @@
 import { GoogleGenAI, Modality, StartSensitivity, EndSensitivity } from '@google/genai';
 import { registrationTool, REGISTRATION_FUNCTION_NAME, sanitizeRegistrationDraft } from './registration.js';
-import { onboardingSuggestionTool, ONBOARDING_FUNCTION_NAME, sanitizeOnboardingSuggestions } from './onboarding-suggestions.js';
+import { onboardingSuggestionTool, ONBOARDING_FUNCTION_NAME, ONBOARDING_NAVIGATION_NAME, sanitizeOnboardingSuggestions, sanitizeOnboardingNavigation } from './onboarding-suggestions.js';
 import { AudioPlayer, Microphone } from './audio.js';
 
 const MODEL_IDS = ['gemini-3.8-live', 'gemini-3.8-live-extended-thinking'];
@@ -26,6 +26,7 @@ export class PotiguarLive {
     this.onboardingMode = false;
     this.allowOnboardingSuggestions = false;
     this.onboardingStep = 0;
+    this.onboardingField = null;
   }
 
   async connect(model, csrf, { allowEmployeeActions = false, allowOnboardingSuggestions = false } = {}) {
@@ -62,7 +63,8 @@ export class PotiguarLive {
                 'Responda exclusivamente em português brasileiro. Não invente dados nem preencha sem pedido explícito.',
                 'Os valores já digitados no formulário não são enviados à IA.',
                 'Não peça CPF, RG, documentos, dados financeiros, senhas, raça/cor, saúde, PCD ou biometria.',
-                'Quando forem informados campos seguros da etapa atual, use suggest_onboarding_fields.',
+                'Aguarde o controlador informar o campo atual. Faça uma pergunta por vez. Para resposta sobre campo seguro, invoque suggest_onboarding_fields SOMENTE com o campo atual e o valor que o usuário informou. Nunca invente ou infira valores.',
+                'Se o usuário disser corrige, altere ou volte a uma etapa, use navigate_onboarding sem enviar qualquer dado existente.',
                 'O modelo NUNCA salva, ativa credenciais ou conclui cadastros. A revisão humana é obrigatória.',
                 'Etapas: 0 Relação, 1 Dados pessoais, 2 Endereço, 3 Vínculo, 4 Pagamento, 5 Acesso, 6 Biometria, 7 Revisão.',
                 'Etapas 4 a 7: só oriente; não sugira preenchimento.',
@@ -132,12 +134,20 @@ export class PotiguarLive {
     const functionResponses = [];
     for (const call of calls) {
       if (!call?.id || !call?.name) continue;
+      if (call.name === ONBOARDING_NAVIGATION_NAME && this.onboardingMode && this.allowOnboardingSuggestions) {
+        const raw = typeof call.args === 'string' ? (()=>{try{return JSON.parse(call.args);}catch{return null;}})() : call.args;
+        const navigation = sanitizeOnboardingNavigation(raw);
+        if (navigation) this.handlers.onOnboardingNavigation?.(navigation);
+        functionResponses.push({id:call.id,name:call.name,response:{status:navigation?'requested':'denied',created:false}});
+        continue;
+      }
       if (call.name === ONBOARDING_FUNCTION_NAME && this.allowOnboardingSuggestions) {
         try {
           const raw = typeof call.args === 'string' ? JSON.parse(call.args) : call.args;
-          const suggestions = sanitizeOnboardingSuggestions(raw, this.onboardingStep);
+          const suggestions = sanitizeOnboardingSuggestions(raw, this.onboardingStep)
+            .filter(suggestion => suggestion.field === this.onboardingField);
           if (suggestions.length) this.handlers.onOnboardingSuggestions?.(this.onboardingStep, suggestions);
-          functionResponses.push({id:call.id, name:call.name, response:{status:suggestions.length?'awaiting_human_review':'no_eligible_suggestions', created:false}});
+          functionResponses.push({id:call.id, name:call.name, response:{status:suggestions.length?'pending_form_validation':'no_eligible_suggestions', created:false}});
         } catch {
           functionResponses.push({id:call.id, name:call.name, response:{status:'invalid_suggestions',created:false}});
         }
@@ -175,6 +185,7 @@ export class PotiguarLive {
   }
 
   setOnboardingStep(step) { if (Number.isInteger(step) && step>=0 && step<=7) this.onboardingStep=step; }
+  setOnboardingField(field) { this.onboardingField=typeof field==='string' && /^[a-z_]{2,40}$/.test(field) ? field : null; }
 
   sendText(text) {
     if (!this.session) throw new Error('Conecte-se antes de enviar uma mensagem.');
