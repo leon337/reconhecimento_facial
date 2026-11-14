@@ -20,11 +20,17 @@
 <nav class="top-actions"><a href="{{ url_for('admin.payments_home') }}">Voltar aos períodos</a></nav></header>
 <main><h1>Conferir planilha antes de importar</h1>
 <p class="prelight" role="status">Esta etapa analisa somente a estrutura do arquivo, sem salvar dados pessoais, jornadas ou valores bancários. Nenhum cálculo de pagamento é realizado.</p>
+<p>Integração com o cadastro V2: compara somente nomes normalizados, em memória, com funcionários da empresa e obra autorizadas. Não acessa CPF ou dados bancários criptografados.</p>
 <form method="post" enctype="multipart/form-data" action="{{ url_for('admin.payments_import_preview') }}" class="preform">
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 <label>Arquivo Excel (.xlsx, até 12 MiB)<input type="file" name="arquivo" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required></label>
 <button class="action" type="submit" name="mapear" value="0">Analisar estrutura</button>
-<button class="action primary" type="submit" name="mapear" value="1">Mapear colunas</button></form>
+<button class="action" type="submit" name="mapear" value="1">Mapear colunas</button>
+<label>Obra da V2 <select name="obra" aria-label="Obra para conferência V2">
+{% if not restricted_to_worksite %}<option value="">Empresa inteira</option>{% endif %}
+{% for site in worksites %}<option value="{{ site.id }}" {% if selected_worksite == site.id %}selected{% endif %}>{{ site.name }}</option>{% endfor %}
+</select></label>
+<button class="action primary" type="submit" name="mapear" value="2">Conferir com cadastro V2</button></form>
 {% if preview %}
 <section aria-label="Resultado da conferência"><h2>Resultado estrutural</h2>
 <p>Identificador SHA-256 (prefixo): <code>{{ preview.sha256_prefix }}</code></p>
@@ -61,6 +67,24 @@
 <p>Avaliação limitada a {{ mapping.inspected_sheet_parts }} abas internas. {% if mapping.limited %}Alguns resultados ficaram de fora do limite da prévia.{% endif %}</p>
 <ul>{% for warning in mapping.warnings %}<li>{{ warning }}</li>{% endfor %}</ul>
 <p><strong>Importação desativada:</strong> estas associações são hipóteses de cabeçalho, não uma validação financeira.</p>
+</section>
+{% endif %}
+{% if v2_link %}
+<section aria-label="Prévia de vínculo com cadastro V2">
+<h2>Conferência de funcionários com a Potiguar V2</h2>
+<p class="prelight"><strong>Simulação apenas.</strong> Nenhum cadastro foi alterado, nenhuma jornada importada e nenhum vínculo foi salvo.</p>
+<p>Coluna de dados identificada: <code>{{ v2_link.data_column }}</code>. Identificações examinadas: <strong>{{ v2_link.examined }}</strong>. Correspondências únicas com cadastro V2: <strong>{{ v2_link.matched }}</strong>.</p>
+<div class="statlist">{% for status, count in v2_link.counts %}
+<div><strong>{{ count }}</strong><span>{{ v2_status_labels[status] }}</span></div>{% endfor %}</div>
+{% if v2_link.limited %}<p>Prévia limitada; a planilha requer conferência adicional antes de qualquer importação.</p>{% endif %}
+<div style="overflow-x:auto"><table class="finance-table" aria-label="Prévia anonimizada da conciliação V2">
+<thead><tr><th>Linha do Excel</th><th>Resultado de conferência</th></tr></thead>
+<tbody>
+{% for item in v2_link.sample %}
+<tr><td>{{ item.row_number }}</td><td>{{ v2_status_labels[item.status] }}</td></tr>
+{% else %}<tr><td colspan="2">Não foram encontrados identificadores textuais confiáveis nas linhas de resumo. Confira a estrutura original manualmente.</td></tr>{% endfor %}
+</tbody></table></div>
+<p><strong>Importação bloqueada:</strong> correspondência por nome não comprova identidade e exige verificação adicional com cadastro V2 e responsáveis antes de qualquer lançamento.</p>
 </section>
 {% endif %}
 </main></div></body></html>

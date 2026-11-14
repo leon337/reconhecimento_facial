@@ -1,0 +1,19 @@
+mission_id: MCF-POTIGUAR-PAGAMENTOS-20261113
+phase_id: PHASE-POTIGUAR-PAGAMENTOS-04
+risk_class: C
+repository: leon337/reconhecimento_facial
+branch: feat/potiguar-pagamentos-v2-conciliacao-fase04-20261114
+base_sha: ee093b90bbd647f0b0d6e0b08b94db377a6bb58a
+objective: "Associação simulada ao cadastro de funcionários da plataforma V2"
+state: DEV_IMPLEMENTED_REVIEW_PENDING
+v2_employee_read: "Employee name, status, scope + existence of EmployeeOnboarding"
+v2_encrypted_payload_access: NEVER
+excel_real_worker_rows_persisted: NEVER
+match_persisted: NEVER
+pix_or_financial_calculation: NONE
+production_deploy: NO
+independent_gate: PENDING
+data_source_validation: "Ajudantes original, names in column B under merged A3:B3"
+selected_tests: "65 passed (previous run); full validation artifact below"
+next_action: "Revisão PR e homologação com V2 de teste sob governança; contrato de identificação para importação real"
+human_gate: "LEANDRO para deploy, importação real e operações financeiras"

@@ -1,0 +1,2 @@
+VALIDATION=PASS
+Onboarding V2 + pagamentos + mapeamento + integração V2. Nenhuma operação financeira.
