@@ -1,0 +1,3 @@
+SOURCE_SMOKE=PASS; 15 headers, sheet4.xml, row3, no personal values output
+SOURCE_SHA256_PREFIX=dd7db28840c75988
+CONTRACT: any real import blocked

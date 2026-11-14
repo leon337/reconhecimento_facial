@@ -1,0 +1,18 @@
+mission_id: MCF-POTIGUAR-PAGAMENTOS-20261113
+phase_id: PHASE-POTIGUAR-PAGAMENTOS-03
+risk_class: C
+objective: "Mapa de cabeçalhos e variantes das cinco planilhas de pagamentos"
+repository: leon337/reconhecimento_facial
+branch: feat/potiguar-pagamentos-mapeamento-fase03-20261114
+base_sha: c723445c3ecc96ea00d151b805c465108ad2a344
+issue: https://github.com/leon337/multiagent-collaboration-framework/issues/522
+status: DEV_IMPLEMENTED_REVIEW_PENDING
+import_real_rows: PROHIBITED_NOT_IMPLEMENTED
+money_calculation: PROHIBITED_NOT_IMPLEMENTED
+pix_transfer: PROHIBITED_NOT_IMPLEMENTED
+production_deploy: NOT_EXECUTED
+independent_gate: PENDING
+sources_reviewed: 5
+mapping_variants: 2
+next_action: "Revisar PR e acordar regras contábeis antes de desenhar importação real"
+human_gate: "LEANDRO para mudanças financeiras/deploy ou nova autorização sensível"
