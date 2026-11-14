@@ -14,6 +14,7 @@ test('recibo só volta ao Gemini após execução assíncrona no formulário',as
   const waiting=new Promise(resolve=>{release=resolve});
   const {live,packets}=harness({onOnboardingAction:()=>waiting});
   live.allowOnboardingSuggestions=true;
+  live.setOnboardingMode(true);
   const pending=live.handleToolCalls([{id:'abc',name:'operate_onboarding',args:{action:'save_draft'}}]);
   assert.equal(packets.length,0,'model must not receive optimistic success');
   release({status:'saved',step:2,cpf:'52998224725',created:true});
@@ -42,6 +43,7 @@ test('valores confidenciais e ações destrutivas são negados e não entram nos
     onOnboardingSuggestions:()=>{called=true;return {status:'saved'}},
   });
   live.allowOnboardingSuggestions=true;
+  live.setOnboardingMode(true);
   live.onboardingStep=1;
   live.onboardingField='full_name';
   await live.handleToolCalls([

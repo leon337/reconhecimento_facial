@@ -2,6 +2,9 @@
   'use strict';
   const app = document.getElementById('onboarding-v2');
   if (!app) return;
+  let shellHosted=false;
+  try { shellHosted=window.parent!==window && window.parent.location.pathname==='/admin/copilot'; }
+  catch { shellHosted=false; }
   const form = document.getElementById('onboarding-form');
   const panels = Array.from(document.querySelectorAll('.step-panel'));
   const steps = Array.from(document.querySelectorAll('[data-step-target]'));
@@ -188,6 +191,7 @@
   let reviewAnnounced=false, advanceTimer=null;
   const visitedFields=new Set();
   function sendToCopilot(payload) {
+    if (shellHosted) { window.parent.postMessage(payload,window.location.origin); return; }
     if (copilotDrawer.hidden || !copilotFrame.contentWindow) return;
     copilotFrame.contentWindow.postMessage(payload, window.location.origin);
   }
@@ -267,6 +271,7 @@
     return true;
   }
   function sendStepContext(){
+    if(shellHosted){sendToCopilot({type:'potiguar:onboarding:context',step:current});return;}
     if(!copilotFrame.contentWindow || !copilotFrame.getAttribute('src'))return;
     copilotFrame.contentWindow.postMessage({type:'potiguar:onboarding:context',step:current},window.location.origin);
   }
@@ -324,7 +329,7 @@
   // Nunca envia valores preenchidos ao iframe; dados protegidos só trafegam no salvamento autenticado.
   let agentCommandBusy=false;
   async function executeAgentCommand(message) {
-    if(!guided || blocked || !guide || copilotDrawer.hidden || agentCommandBusy)
+    if(!guided || blocked || !guide || (!shellHosted && copilotDrawer.hidden) || agentCommandBusy)
       return {status:'denied'};
     agentCommandBusy=true;
     try {
@@ -336,7 +341,10 @@
         }
         if(message.action==='focus_current_field') {
           if(!activeField)return {status:'invalid_state'};
-          minimizeDrawer();
+          if(shellHosted){
+            activeField.focus({preventScroll:false});
+            window.parent.postMessage({type:'potiguar:shell:show-form'},location.origin);
+          }else minimizeDrawer();
           return {status:'focused',step:current};
         }
         if(message.action==='skip_optional') {
@@ -381,15 +389,16 @@
     } finally {agentCommandBusy=false;}
   }
   function replyAgentCommand(message,result) {
-    if(!copilotFrame.contentWindow)return;
+    if(!shellHosted && !copilotFrame.contentWindow)return;
     const payload={type:'potiguar:onboarding:result',requestId:message.requestId,
       status:result?.status||'execution_failed',step:current};
     // Somente o nome do campo, nunca seu valor, é informado ao agente.
     if(result?.status==='state' && /^[a-z_]{2,40}$/.test(result.field||''))payload.field=result.field;
-    copilotFrame.contentWindow.postMessage(payload,window.location.origin);
+    (shellHosted?window.parent:copilotFrame.contentWindow).postMessage(payload,window.location.origin);
   }
   window.addEventListener('message',event=>{
-    if(event.origin!==window.location.origin || event.source!==copilotFrame.contentWindow)return;
+    if(event.origin!==window.location.origin ||
+       event.source!==(shellHosted?window.parent:copilotFrame.contentWindow))return;
     const message=event.data;
     if(!message || typeof message!=='object')return;
     // Comandos originados pelo modelo exigem identificador; o recibo é enviado após a execução.
@@ -404,7 +413,7 @@
       guided=false;activeField=null;forcedField=null;clearTimeout(advanceTimer);guidedFieldLabel.hidden=true;return;
     }
     if(message.type==='potiguar:onboarding:begin'){
-      if(!guide || blocked || copilotDrawer.hidden)return;
+      if(!guide || blocked || (!shellHosted && copilotDrawer.hidden))return;
       guided=true;reviewAnnounced=false;
       guideNext().catch(e=>alertError(e.message));
       return;
@@ -484,5 +493,11 @@
     const control=activeField;
     advanceTimer=setTimeout(()=>fieldCompleted(control),100);
   });
+  if(shellHosted){
+    // O shell externo é o único proprietário do Gemini Live e do microfone.
+    // Não monta o segundo Copiloto nem entrega quaisquer valores do formulário.
+    openCopilot.hidden=true;
+    window.parent.postMessage({type:'potiguar:shell:onboarding-ready',step:current},location.origin);
+  }
   showStep(0);
 })();

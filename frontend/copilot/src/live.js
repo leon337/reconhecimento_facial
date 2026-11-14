@@ -12,7 +12,7 @@ const SYSTEM_INSTRUCTIONS = [
   'Ajude o usuário a entender onde consultar funcionários, iniciar um cadastro ou buscar informações.',
   'Nunca diga que registrou ponto, aprovou ajuste, cadastrou funcionário, reconheceu rosto ou executou qualquer operação real. O resultado da ferramenta de rascunho não é criação.',
   'Não peça senhas, chaves, documentos oficiais ou imagem facial. Se a pessoa pedir o cadastro, obtenha nome, usuário e dados funcionais mínimos, com consentimento para processamento externo.',
-  'Para abrir a lista de funcionários ou começar o formulário V2, use navigate_potiguar quando o usuário solicitar. A navegação só inicia uma nova tela autorizada; ao trocar de página a sessão de voz atual termina.',
+  'Use navigate_potiguar para abrir telas permitidas. No shell persistente, a navegação não encerra a sessão Live; continue acompanhando o usuário após a nova tela carregar.',
   'Nunca afirme que uma ferramenta funcionou antes de receber o recibo da interface.',
   'Quando necessário, recomende o uso dos controles oficiais da interface e de seus mecanismos de validação.',
   'Se o usuário pedir cadastro de funcionário, use prepare_employee_registration somente para preparar o rascunho na interface. A confirmação e persistência ocorrem exclusivamente fora do modelo.',
@@ -33,20 +33,29 @@ export class PotiguarLive {
     this.onboardingField = null;
   }
 
-  async connect(model, csrf, { allowEmployeeActions = false, allowOnboardingSuggestions = false } = {}) {
+  async connect(model, csrf, { allowEmployeeActions = false, allowOnboardingSuggestions = false, persistentShell = false } = {}) {
     if (!MODEL_IDS.includes(model)) throw new Error('Modelo não autorizado.');
     if (this.session) return;
     // Extended Thinking não emitiu toolCall no teste real 11/11/2026.
     // Cadastro por voz exige o modelo Live padrão; Extended mantém orientação.
-    this.onboardingMode = Boolean(allowOnboardingSuggestions);
-    this.allowOnboardingSuggestions = this.onboardingMode && model === 'gemini-3.8-live';
-    this.allowEmployeeActions = !this.onboardingMode && Boolean(allowEmployeeActions) && model === 'gemini-3.8-live';
-    this.allowAppNavigation = !this.onboardingMode && model === 'gemini-3.8-live';
+    this.onboardingMode = Boolean(allowOnboardingSuggestions) && !persistentShell;
+    this.allowOnboardingSuggestions = Boolean(allowOnboardingSuggestions) && model === 'gemini-3.8-live';
+    this.allowEmployeeActions = (!this.onboardingMode || persistentShell) && Boolean(allowEmployeeActions) && model === 'gemini-3.8-live';
+    this.allowAppNavigation = (!this.onboardingMode || persistentShell) && model === 'gemini-3.8-live';
+    // Navegações concorrentes do iframe podem atualizar o cookie da sessão.
+    // Emitir um CSRF imediatamente antes do POST evita usar um token antigo do HTML.
+    const csrfResponse = await fetch('/admin/copilot/csrf-token', {
+      credentials: 'same-origin', cache: 'no-store',
+      headers: { Accept: 'application/json' },
+    });
+    if (!csrfResponse.ok) throw new Error('Sessão expirada. Faça login novamente.');
+    const freshCsrf = await csrfResponse.json().catch(() => ({}));
+    if (!freshCsrf.csrf_token) throw new Error('Não foi possível validar a sessão.');
     const response = await fetch('/admin/copilot/session-token', {
       method: 'POST',
       credentials: 'same-origin',
       cache: 'no-store',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': freshCsrf.csrf_token },
       body: JSON.stringify({ model }),
     });
     const payload = await response.json().catch(() => ({}));
@@ -63,9 +72,10 @@ export class PotiguarLive {
           responseModalities: [Modality.AUDIO],
           inputAudioTranscription: {},
           outputAudioTranscription: {},
-          systemInstruction: this.onboardingMode
+          systemInstruction: (this.onboardingMode || persistentShell)
             ? [
-                'Você é o Copiloto de Cadastro Potiguar, orientador das oito etapas do onboarding V2.',
+                'Você é o Copiloto persistente da Potiguar, presente em todas as telas administrativas autorizadas. Use navigate_potiguar para abrir páginas sem encerrar a sessão Live.',
+                'No cadastro V2 atue como guia das oito etapas, somente após receber contexto do formulário.',
                 'Responda exclusivamente em português brasileiro. Não invente dados nem preencha sem pedido explícito.',
                 'Os valores já digitados no formulário não são enviados à IA.',
                 'Não peça CPF, RG, documentos, dados financeiros, senhas, raça/cor, saúde, PCD ou biometria.',
@@ -75,6 +85,7 @@ export class PotiguarLive {
                 'Apenas valores explicitamente informados podem entrar nos campos seguros. Campos protegidos permanecem locais. Nenhuma ferramenta pode criar o funcionário, ativar credenciais ou finalizar cadastros.',
                 'Etapas: 0 Relação, 1 Dados pessoais, 2 Endereço, 3 Vínculo, 4 Pagamento, 5 Acesso, 6 Biometria, 7 Revisão.',
                 'Etapas 4 a 7: só oriente; não sugira preenchimento.',
+                'Fora do cadastro V2, não use ferramentas do formulário. Não afirme ter executado operações antes de receber o recibo verificado.',
               ].join('\n')
             : this.allowEmployeeActions
               ? SYSTEM_INSTRUCTIONS
@@ -91,15 +102,19 @@ export class PotiguarLive {
               silenceDurationMs: 750,
             },
           },
-          ...(this.allowOnboardingSuggestions ? { tools: [onboardingSuggestionTool] }
-            : this.allowAppNavigation ? { tools: [{functionDeclarations:[
-                ...appNavigationTool.functionDeclarations,
-                ...(this.allowEmployeeActions ? registrationTool.functionDeclarations : []),
-              ]}] } : {}),
+          ...((this.allowOnboardingSuggestions || this.allowAppNavigation || this.allowEmployeeActions) ? {
+            tools: [{functionDeclarations:[
+              ...(this.allowAppNavigation ? appNavigationTool.functionDeclarations : []),
+              ...(this.allowOnboardingSuggestions ? onboardingSuggestionTool.functionDeclarations : []),
+              ...(this.allowEmployeeActions ? registrationTool.functionDeclarations : []),
+            ]}],
+          } : {}),
           ...(model.endsWith('extended-thinking') ? { thinkingConfig: { thinkingLevel: 'medium' } } : {}),
         },
         callbacks: {
-          onopen: () => this.handlers.onStatus?.('connected'),
+          // WebSocket aberto não significa que o SDK já entregou uma sessão utilizável.
+          // Sinalize conectado apenas após await ai.live.connect() concluir.
+          onopen: () => this.handlers.onStatusDetail?.('negociando_sessao_live'),
           onmessage: (message) => this.handleMessage(message),
           onerror: () => this.handlers.onError?.('A conexão de voz apresentou uma falha.'),
           onclose: () => {
@@ -152,15 +167,15 @@ export class PotiguarLive {
       let receipt = {status:'denied',created:false};
       try {
         const raw = typeof call.args === 'string' ? JSON.parse(call.args) : call.args;
-        if (call.name === ONBOARDING_NAVIGATION_NAME && this.allowOnboardingSuggestions) {
+        if (call.name === ONBOARDING_NAVIGATION_NAME && this.allowOnboardingSuggestions && this.onboardingMode) {
           const navigation = sanitizeOnboardingNavigation(raw);
           receipt = navigation && this.handlers.onOnboardingNavigation
             ? await this.handlers.onOnboardingNavigation(navigation) : receipt;
-        } else if (call.name === ONBOARDING_OPERATION_NAME && this.allowOnboardingSuggestions) {
+        } else if (call.name === ONBOARDING_OPERATION_NAME && this.allowOnboardingSuggestions && this.onboardingMode) {
           const operation = sanitizeOnboardingOperation(raw);
           receipt = operation && this.handlers.onOnboardingAction
             ? await this.handlers.onOnboardingAction(operation) : receipt;
-        } else if (call.name === ONBOARDING_FUNCTION_NAME && this.allowOnboardingSuggestions) {
+        } else if (call.name === ONBOARDING_FUNCTION_NAME && this.allowOnboardingSuggestions && this.onboardingMode) {
           const suggestions = sanitizeOnboardingSuggestions(raw,this.onboardingStep)
             .filter(item => item.field === this.onboardingField);
           receipt = suggestions.length && this.handlers.onOnboardingSuggestions
@@ -170,7 +185,7 @@ export class PotiguarLive {
           const navigation = sanitizeAppNavigation(raw,this.allowEmployeeActions);
           receipt = navigation && this.handlers.onAppNavigation
             ? await this.handlers.onAppNavigation(navigation) : receipt;
-        } else if (call.name === REGISTRATION_FUNCTION_NAME && this.allowEmployeeActions) {
+        } else if (call.name === REGISTRATION_FUNCTION_NAME && this.allowEmployeeActions && !this.onboardingMode) {
           const draft = sanitizeRegistrationDraft(raw);
           if (this.handlers.onEmployeeDraft) {
             this.handlers.onEmployeeDraft(draft);
@@ -198,6 +213,10 @@ export class PotiguarLive {
     }
   }
 
+  setOnboardingMode(enabled) {
+    this.onboardingMode = Boolean(enabled) && this.allowOnboardingSuggestions;
+    if (!this.onboardingMode) this.onboardingField = null;
+  }
   setOnboardingStep(step) { if (Number.isInteger(step) && step>=0 && step<=7) this.onboardingStep=step; }
   setOnboardingField(field) { this.onboardingField=typeof field==='string' && /^[a-z_]{2,40}$/.test(field) ? field : null; }
 

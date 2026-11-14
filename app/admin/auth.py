@@ -16,8 +16,12 @@ def is_safe_redirect_target(target: str) -> bool:
 
 def sync_admin_scope(user: User) -> None:
     """Mantém o escopo organizacional da sessão alinhado ao usuário autenticado."""
-    session["admin_company_id"] = user.company_id
-    session["admin_worksite_id"] = user.worksite_id
+    # Não regrave o cookie de sessão a cada GET em páginas/iframes concorrentes.
+    # Atualizar cookies redundantes pode sobrescrever o CSRF emitido pelo shell.
+    if session.get("admin_company_id") != user.company_id:
+        session["admin_company_id"] = user.company_id
+    if session.get("admin_worksite_id") != user.worksite_id:
+        session["admin_worksite_id"] = user.worksite_id
 
 
 def current_admin_user() -> User | None:

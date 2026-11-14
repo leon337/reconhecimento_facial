@@ -1,0 +1,87 @@
+/* Shell persistente: uma sessão Live; as telas internas podem navegar sem desmontá-la. */
+.persistent-shell{height:100dvh;min-height:0;overflow:hidden}
+.persistent-shell .sidebar{height:100%;overflow-y:auto}
+.persistent-shell .sidebar .side-item[type="button"]{
+  border:0;width:100%;background:#214e41;text-align:left;font:inherit;cursor:pointer
+}
+.persistent-workspace{
+  display:flex;flex-direction:column;height:100dvh;min-height:0;
+  padding:16px clamp(12px,2vw,28px);max-width:none;overflow:hidden
+}
+.persistent-workspace .topbar{flex:0 0 auto;margin:0 0 14px}
+.persistent-workspace .topbar h1{font-size:clamp(23px,2vw,29px)}
+.persistent-columns{
+  flex:1;display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,380px);
+  gap:14px;min-height:0
+}
+.app-stage{
+  display:flex;flex-direction:column;min-width:0;min-height:0;overflow:hidden;
+  border:1px solid #d6e5dd;border-radius:16px;background:#fff
+}
+.app-stage-toolbar{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:10px 14px;flex:0 0 auto;border-bottom:1px solid #e6eee9
+}
+.app-stage-toolbar strong{display:block;font-size:13px;color:#1c4738}
+.app-stage-toolbar span{display:block;font-size:11px;color:#758a80;margin-top:3px}
+.app-stage-controls{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.app-stage-controls button,.persistent-voice-dock button{
+  border:1px solid #b8d3c3;background:#f7fbf8;color:#17563e;
+  padding:7px 10px;border-radius:9px;font-weight:700;font-size:12px
+}
+.app-stage-controls button:hover,.persistent-voice-dock button:hover{background:#e9f6ed}
+.app-frame{flex:1;min-height:0;height:100%;width:100%;border:0;background:white}
+.frame-loading{padding:30px 20px;color:#617468;font-size:13px}
+.persistent-copilot-grid{
+  display:flex;flex-direction:column;min-height:0;overflow-y:auto;
+  gap:12px;scrollbar-gutter:stable
+}
+.persistent-copilot-grid .conversation{
+  flex:0 0 auto;min-height:350px;height:max(400px,calc(100dvh - 166px))
+}
+.persistent-copilot-grid .chat-log{min-height:80px}
+.persistent-copilot-grid .assist-panel{
+  display:flex;flex-direction:column;gap:12px
+}
+.persistent-copilot-grid .panel-card{padding:16px}
+.persistent-voice-dock{
+  position:fixed;right:19px;bottom:14px;z-index:80;
+  display:flex;align-items:center;gap:9px;flex-wrap:wrap;
+  padding:7px 10px;border-radius:12px;background:#ffffffed;
+  box-shadow:0 6px 26px #002c1d26;border:1px solid #d2e2da
+}
+.voice-dock-status{font-size:11px;color:#667c70;font-weight:700}
+.voice-dock-status.online{color:#087044}
+@media(max-width:1120px) {
+  .persistent-columns{grid-template-columns:minmax(0,1fr) minmax(290px,340px)}
+  .persistent-shell .sidebar{width:195px;flex-basis:195px}
+}
+@media(max-width:850px) {
+  .persistent-shell .sidebar{display:none}
+  .persistent-workspace{height:100dvh;padding:8px 9px}
+  .persistent-workspace .topbar{flex-direction:row;align-items:center;gap:7px;margin-bottom:8px}
+  .persistent-workspace .topbar h1{font-size:20px}
+  .persistent-workspace .topbar .subtitle{font-size:11px}
+  .persistent-workspace .topbar .status{font-size:10px;padding:7px}
+  .persistent-columns{display:flex;flex-direction:column;gap:8px}
+  .app-stage{flex:1;min-height:190px}
+  .app-stage-toolbar{padding:8px 10px}
+  .app-stage-controls button{padding:7px 8px;font-size:11px}
+  .persistent-copilot-grid{flex:0 0 40dvh;min-height:190px}
+  .persistent-copilot-grid .conversation{height:35dvh;min-height:220px}
+  .persistent-copilot-grid .assist-panel{display:flex}
+  .persistent-voice-dock{right:9px;left:9px;bottom:8px;justify-content:center}
+  .persistent-voice-dock button{flex:0 0 auto}
+  .persistent-copilot-grid .chat-log{padding:8px}
+  .persistent-copilot-grid .composer{padding:9px}
+}
+@media(max-width:480px) {
+  .persistent-workspace .topbar .subtitle{display:none}
+  .persistent-workspace .topbar .status{max-width:147px;white-space:normal}
+  .app-stage-toolbar strong{font-size:12px}
+  .app-stage-toolbar span{font-size:10px}
+  .persistent-copilot-grid{flex-basis:38dvh}
+  .persistent-copilot-grid .conversation{min-height:185px}
+  .persistent-voice-dock{gap:5px;padding:6px}
+  .persistent-voice-dock button{font-size:11px;padding:8px}
+}

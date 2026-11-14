@@ -43,14 +43,14 @@ def _no_cache(response):
 @permission_required(Permission.USERS_VIEW)
 def workspace():
     response = make_response(render_template("admin/copilot.html", csrf_value=generate_csrf()))
-    response.headers["Permissions-Policy"] = "microphone=(self), camera=()"
+    response.headers["Permissions-Policy"] = "microphone=(self), camera=(self)"
     # Restrito ao shell; áudio e tokens permanecem em memória do navegador.
     response.headers["Content-Security-Policy"] = (
         "default-src 'self'; script-src 'self'; style-src 'self'; "
         "connect-src 'self' https://generativelanguage.googleapis.com "
         "wss://generativelanguage.googleapis.com; "
         "img-src 'self' data:; media-src 'self' blob:; worker-src 'self'; "
-        "object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+        "frame-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
     )
     # Flask-WTF exige Referer de mesma origem em HTTPS para aceitar CSRF.
     # no-referrer bloquearia o POST do cliente Vue antes da chamada Gemini.
@@ -58,6 +58,13 @@ def workspace():
     response = _no_cache(response)
     response.headers["Referrer-Policy"] = "same-origin"
     return response
+
+
+@bp.get("/csrf-token")
+@permission_required(Permission.USERS_VIEW)
+def session_csrf_token():
+    """Emite CSRF para o cookie de sessão atual, sem cache ou acesso externo."""
+    return _no_cache(jsonify(csrf_token=generate_csrf()))
 
 
 @bp.get("/meta")
