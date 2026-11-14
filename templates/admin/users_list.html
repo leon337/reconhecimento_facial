@@ -40,6 +40,7 @@
         <div class="actions">
           <a class="action primary" href="{{ url_for('admin.new_user') }}">+ Novo funcionário</a>
           <a class="action secondary" href="{{ url_for('copilot.workspace') }}">✦ Conversar com o Copiloto</a>
+          {% if can_link_v2 %}<a class="action secondary" href="{{ url_for('admin.payments_import_preview') }}">Conferir planilha com cadastro V2</a>{% endif %}
         </div>
         <div class="table-scroll">
           <table class="users-table">

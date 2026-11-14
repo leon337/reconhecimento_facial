@@ -1,0 +1,6 @@
+SOURCE_SMOKE=PASS
+DATA_COLUMN=B (header merged A3:B3)
+CANDIDATE_ROWS=156; repeated_source_occurrences=45; invalid_source=8
+V2_DATABASE=NOT_ACCESSED; no meaningful live matching in this smoke
+NAME_PIX_SALARY_BYTES=NOT_PRINTED_OR_PERSISTED
+FINANCIAL_TRANSFERS=NONE

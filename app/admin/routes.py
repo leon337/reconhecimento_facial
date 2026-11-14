@@ -3,7 +3,7 @@
 import json
 from uuid import uuid4
 
-from flask import current_app, flash, jsonify, redirect, render_template, request, session, url_for
+from flask import current_app, flash, g, jsonify, redirect, render_template, request, session, url_for
 from PIL import Image, UnidentifiedImageError
 
 from app.admin import bp
@@ -117,7 +117,11 @@ def logout():
 @bp.route("/users")
 @permission_required(Permission.USERS_VIEW)
 def list_users():
-    return render_template("admin/users_list.html", users=_scoped_user_query().all())
+    return render_template(
+        "admin/users_list.html", users=_scoped_user_query().all(),
+        can_link_v2=bool(g.admin_user.company_id is not None and
+                         g.admin_user.can(Permission.PAYMENTS_EDIT)),
+    )
 
 
 @bp.route("/users/new", methods=["GET"])
