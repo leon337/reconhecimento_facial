@@ -1,0 +1,5 @@
+VALIDATION=PASS
+43 testes selecionados aprovados, com dados fictícios.
+Inclui parsing XLSX, mapeamento horário/diária, RBAC, CSRF, regressão de períodos/jornadas e dashboard/relatórios.
+Nenhuma operação financeira, nenhuma gravação de workbook original.
+A biometria não foi exercitada; módulo importado por stub transitório no test runner.

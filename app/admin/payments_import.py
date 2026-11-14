@@ -3,6 +3,7 @@ from flask import abort, g, make_response, render_template, request
 from app.admin import bp
 from app.admin.auth import permission_required
 from app.payment_import import MAX_XLSX_BYTES, WorkbookPreviewError, inspect_xlsx
+from app.payment_mapping import inspect_payment_mapping
 from app.rbac import Permission
 
 
@@ -12,6 +13,7 @@ def payments_import_preview():
     if g.admin_user.company_id is None:
         abort(403, "Vincule a conta a uma empresa.")
     result = None
+    mapping = None
     if request.method == "POST":
         file = request.files.get("arquivo")
         if file is None or not (file.filename or "").lower().endswith(".xlsx"):
@@ -21,11 +23,13 @@ def payments_import_preview():
             abort(413, "Arquivo acima do limite permitido.")
         try:
             result = inspect_xlsx(source)
+            if request.form.get("mapear") == "1":
+                mapping = inspect_payment_mapping(source, preflight=result)
         except WorkbookPreviewError as error:
             abort(400, str(error))
         finally:
             del source
-    response = make_response(render_template("admin/payments_import.html", preview=result))
+    response = make_response(render_template("admin/payments_import.html", preview=result, mapping=mapping))
     response.headers["Cache-Control"] = "no-store, private"
     response.headers["X-Content-Type-Options"] = "nosniff"
     return response

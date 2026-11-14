@@ -23,7 +23,8 @@
 <form method="post" enctype="multipart/form-data" action="{{ url_for('admin.payments_import_preview') }}" class="preform">
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 <label>Arquivo Excel (.xlsx, até 12 MiB)<input type="file" name="arquivo" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required></label>
-<button class="action primary" type="submit">Analisar estrutura</button></form>
+<button class="action" type="submit" name="mapear" value="0">Analisar estrutura</button>
+<button class="action primary" type="submit" name="mapear" value="1">Mapear colunas</button></form>
 {% if preview %}
 <section aria-label="Resultado da conferência"><h2>Resultado estrutural</h2>
 <p>Identificador SHA-256 (prefixo): <code>{{ preview.sha256_prefix }}</code></p>
@@ -39,6 +40,27 @@
 {% if preview.requires_manual_review %}<h3>Revisão contábil obrigatória</h3>{% endif %}
 <ul>{% for warning in preview.warnings %}<li>{{ warning }}</li>{% endfor %}</ul>
 <p>Não há prévia de nomes, CPF, PIX ou salários nesta fase. Para converter dados reais, será necessário aprovar o mapeamento de campos.</p>
+</section>
+{% endif %}
+{% if mapping %}
+<section aria-label="Mapeamento de colunas">
+<h2>Mapeamento de colunas — sem dados pessoais</h2>
+<p>Os identificadores das abas são técnicos e não exibem os nomes originais. Campos financeiros não foram interpretados nem importados.</p>
+{% for sheet in mapping.candidates %}
+<h3>Aba técnica nº {{ sheet.technical_id }} — cabeçalho na linha {{ sheet.header_row }}</h3>
+<div style="overflow-x:auto"><table class="finance-table">
+<thead><tr><th>Campo identificado</th><th>Coluna da origem</th><th>Tratamento</th></tr></thead>
+<tbody>{% for column in sheet.fields %}
+<tr><td>{{ column.label }}</td><td><code>{{ column.column }}</code></td>
+<td>{% if column.sensitive %}Revisão obrigatória{% else %}Rótulo estrutural{% endif %}</td></tr>
+{% endfor %}</tbody></table></div>
+{% if sheet.ambiguous %}<p><strong>Atenção:</strong> foram encontrados rótulos repetidos. Verifique a finalidade das colunas antes de qualquer migração.</p>{% endif %}
+{% else %}
+<p>Nenhum cabeçalho compatível foi encontrado. Não é possível importar automaticamente.</p>
+{% endfor %}
+<p>Avaliação limitada a {{ mapping.inspected_sheet_parts }} abas internas. {% if mapping.limited %}Alguns resultados ficaram de fora do limite da prévia.{% endif %}</p>
+<ul>{% for warning in mapping.warnings %}<li>{{ warning }}</li>{% endfor %}</ul>
+<p><strong>Importação desativada:</strong> estas associações são hipóteses de cabeçalho, não uma validação financeira.</p>
 </section>
 {% endif %}
 </main></div></body></html>
