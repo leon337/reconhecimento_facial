@@ -1,4 +1,6 @@
 /* Shell persistente: uma sessão Live; as telas internas podem navegar sem desmontá-la. */
+.public-demo-banner{flex:0 0 auto;background:#fff6e5;color:#704a00;border:1px solid #ead49f;border-radius:10px;padding:9px 12px;font-size:12px;line-height:1.35;margin-bottom:8px}
+.public-demo-banner strong{font-size:11px;letter-spacing:.03em}
 .persistent-shell{height:100dvh;min-height:0;overflow:hidden}
 .persistent-shell .sidebar{height:100%;overflow-y:auto}
 .persistent-shell .sidebar .side-item[type="button"]{

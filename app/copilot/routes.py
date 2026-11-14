@@ -82,6 +82,7 @@ def metadata():
             and user.can(Permission.USERS_CREATE)
         ),
         "demo_synthetic_only": bool(os.environ.get("POTIGUAR_COPILOT_DEMO_DAILY_LIMIT")),
+        "public_demo_no_login": bool(current_app.config.get('PUBLIC_DEMO_MODE', False)),
         "links": {
             # Catálogo canônico de telas; o navegador não aceita URLs propostas pelo modelo.
             "dashboard": url_for("admin.dashboard"),

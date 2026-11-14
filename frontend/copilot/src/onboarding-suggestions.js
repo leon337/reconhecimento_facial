@@ -1,4 +1,5 @@
 /** Propostas por IA, sem permissão de escrita ou leitura de dados confidenciais. */
+import {canonicalizeOnboardingValue} from './onboarding-natural-language.js';
 export const ONBOARDING_FUNCTION_NAME = 'suggest_onboarding_fields';
 export const ONBOARDING_NAVIGATION_NAME = 'navigate_onboarding';
 export const ONBOARDING_OPERATION_NAME = 'operate_onboarding';
@@ -70,7 +71,7 @@ export function sanitizeOnboardingSuggestions(raw, step) {
   for (const item of raw.suggestions) {
     if (!item || typeof item.field !== 'string' || typeof item.value !== 'string') continue;
     if (!ALLOWED_ONBOARDING_FIELDS[step].includes(item.field) || seen.has(item.field)) continue;
-    const value = item.value.trim();
+    const value = canonicalizeOnboardingValue(item.field,item.value.trim());
     if (!value || value.length > 120 || /[<>\x00-\x1f]/.test(value)) continue;
     seen.add(item.field);
     result.push({field: item.field, value});

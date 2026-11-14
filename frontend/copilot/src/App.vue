@@ -4,6 +4,7 @@ import { PotiguarLive } from './live.js';
 import { validRegistrationDraft } from './registration.js';
 import { safeAppPath } from './app-navigation.js';
 import { isProtectedInput } from './protected-input.js';
+import {resolveNaturalSelect} from './onboarding-natural-language.js';
 import { isOnboardingFormRoute,isAppFrameRoute,routeReached,isTrustedAppMessage } from './persistent-shell.js';
 
 const props = defineProps({ csrf: { type: String, required: true } });
@@ -175,7 +176,8 @@ function onAppFrameMessage(event) {
     live.setOnboardingField(data.safe?data.field:null);
     onboardingReview.value=false;
     onboardingQuestion.value={step:data.step,field:data.field,label:data.label,
-      safe:!!data.safe,required:!!data.required};
+      safe:!!data.safe,required:!!data.required,
+      options:Array.isArray(data.options)?data.options.filter(option=>typeof option==='string'&&option.length<90):[]};
     if(!data.safe) {
       clearTimeout(guideTimer);
       live.stopMic().catch(()=>{});
@@ -396,6 +398,22 @@ function send() {
   const message = textInput.value.trim();
   if (!message || !connected.value || message.length > 1200) return;
   error.value = '';
+  // Seletores seguros de vocabulário fechado podem ser resolvidos localmente.
+  // Isso reduz latência e falhas de interpretação sem revelar dados ao provedor.
+  const question=onboardingQuestion.value;
+  if(formActive.value && question?.safe && !isProtectedInput(message)) {
+    const selected=resolveNaturalSelect(question.field,message,question.options);
+    if(selected){
+      clearTimeout(guideTimer);
+      textInput.value='';pushMessage('user',message);
+      postToForm('potiguar:onboarding:proposal',{
+        step:question.step,suggestions:[{field:question.field,value:selected}],
+      }).then(receipt=>{
+        if(receipt.status!=='saved')error.value='O valor não foi gravado. Revise a opção no formulário.';
+      }).catch(()=>{error.value='Falha ao preencher o campo no formulário.';});
+      return;
+    }
+  }
   if(formActive.value && isProtectedInput(message)) {
     error.value='Dado possivelmente protegido: preencha diretamente no formulário.';return;
   }
@@ -501,6 +519,9 @@ onUnmounted(()=>{
     </aside>
 
     <main class="workspace persistent-workspace">
+      <div v-if="meta.public_demo_no_login" class="public-demo-banner" role="note">
+        <strong>DEMONSTRAÇÃO SEM LOGIN</strong> · Use somente dados fictícios. Navegação e rascunhos V2 estão habilitados; operações reais e conclusão de cadastros estão bloqueadas.
+      </div>
       <header class="topbar">
         <div>
           <div class="eyebrow">INTELIGÊNCIA ASSISTIVA <span class="dot" aria-hidden="true"></span> MVP</div>
