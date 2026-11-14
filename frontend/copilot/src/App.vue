@@ -2,6 +2,7 @@
 import { computed, onMounted, onUnmounted, ref, nextTick } from 'vue';
 import { PotiguarLive } from './live.js';
 import { validRegistrationDraft } from './registration.js';
+import { safeAppPath } from './app-navigation.js';
 
 const props = defineProps({ csrf: { type: String, required: true } });
 const meta = ref({ enabled: false, configured: false, can_create_user: false, links: {}, models: [] });
@@ -91,6 +92,19 @@ const live = new PotiguarLive({
     employeeDraft.value = { ...draft, request_id: crypto.randomUUID() };
     pushMessage('guide', 'Preparei um rascunho. Revise os campos no cartão e clique em Continuar no cadastro V2 quando estiver correto.');
     nextTick(() => draftCard.value?.scrollIntoView({ block: 'center', behavior: 'smooth' }));
+  },
+  onAppNavigation({destination}) {
+    // A IA escolhe somente uma tela permitida; o link real vem do backend autenticado.
+    const canCreate = meta.value.can_create_user && meta.value.can_create_with_ai;
+    const targets={dashboard:meta.value.links?.dashboard,attendance:meta.value.links?.attendance,
+      reports:meta.value.links?.reports,employees:meta.value.links?.users,
+      drafts:canCreate?meta.value.links?.drafts:null,
+      new_employee:canCreate?meta.value.links?.new_user:null};
+    const route=Object.hasOwn(targets,destination)?targets[destination]:null;
+    if (!safeAppPath(route)) return {status:'denied',created:false};
+    pushMessage('guide','Abrindo uma tela autorizada do sistema. A conversa atual será encerrada.');
+    setTimeout(()=>window.location.assign(route),650);
+    return {status:'navigation_started',created:false};
   },
   onSpeechState(state) { speechState.value = state; },
   onError(message) { error.value = message; },
@@ -235,16 +249,20 @@ onUnmounted(() => { live.disconnect(); });
 
       <div class="sidebar-label">ESPAÇO DE TRABALHO</div>
       <div class="side-item active"><span aria-hidden="true">✦</span> Copiloto de IA</div>
+      <a v-if="meta.links.dashboard" class="side-item" :href="meta.links.dashboard"><span aria-hidden="true">▣</span> Painel</a>
+      <a v-if="meta.links.attendance" class="side-item" :href="meta.links.attendance"><span aria-hidden="true">◷</span> Histórico de ponto</a>
+      <a v-if="meta.links.reports" class="side-item" :href="meta.links.reports"><span aria-hidden="true">▥</span> Relatórios</a>
       <a class="side-item" :href="meta.links.users || '/admin/users'">
         <span aria-hidden="true">▤</span> Funcionários <span aria-hidden="true" class="side-arrow">↗</span>
       </a>
+      <a v-if="meta.can_create_user && meta.links.drafts" class="side-item" :href="meta.links.drafts"><span aria-hidden="true">▤</span> Rascunhos</a>
       <a v-if="meta.can_create_user && meta.links.new_user" class="side-item" :href="meta.links.new_user">
         <span aria-hidden="true">＋</span> Novo funcionário <span aria-hidden="true" class="side-arrow">↗</span>
       </a>
       <div class="sidebar-spacer"></div>
       <div class="notice">
         <strong>Ambiente de avaliação</strong>
-        <p>O copiloto apenas orienta. Não altera ponto, funcionários ou biometria.</p>
+        <p>O copiloto pode abrir telas autorizadas e preparar rascunhos. Cadastro final, ponto e biometria exigem os fluxos oficiais.</p>
       </div>
       <a class="return-link" :href="meta.links.users || '/admin/users'">← Voltar ao sistema</a>
     </aside>

@@ -82,6 +82,19 @@ class CopilotOnboardingTests(unittest.TestCase):
   self.assertEqual(page.status_code,200)
   self.assertIn('microphone=(self)',page.headers.get('Permissions-Policy',''))
   self.assertIn('onboarding-copilot-drawer',page.get_data(as_text=True))
+ def test_navigation_catalog_scoped_to_role(self):
+  meta=self.client.get('/admin/copilot/meta')
+  self.assertEqual(meta.status_code,200)
+  links=meta.json['links']
+  for name in ('dashboard','attendance','reports','users','drafts','new_user'):
+   self.assertTrue(links.get(name, '').startswith('/admin/'),name)
+  self.login(self.auditor)
+  limited=self.client.get('/admin/copilot/meta')
+  self.assertEqual(limited.status_code,200)
+  self.assertTrue(limited.json['links']['reports'].startswith('/admin/'))
+  self.assertIsNone(limited.json['links']['drafts'])
+  self.assertIsNone(limited.json['links']['new_user'])
+  self.assertFalse(limited.json['can_create_with_ai'])
  def test_disabled_and_csrf(self):
   self.app.config['COPILOT_ACTIONS_ENABLED']=False
   self.assertEqual(self.client.post('/admin/copilot/employee-draft',json=self.payload()).status_code,503)

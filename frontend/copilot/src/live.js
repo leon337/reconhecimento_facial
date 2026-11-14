@@ -1,6 +1,7 @@
 import { GoogleGenAI, Modality, StartSensitivity, EndSensitivity } from '@google/genai';
 import { registrationTool, REGISTRATION_FUNCTION_NAME, sanitizeRegistrationDraft } from './registration.js';
-import { onboardingSuggestionTool, ONBOARDING_FUNCTION_NAME, ONBOARDING_NAVIGATION_NAME, sanitizeOnboardingSuggestions, sanitizeOnboardingNavigation } from './onboarding-suggestions.js';
+import { onboardingSuggestionTool, ONBOARDING_FUNCTION_NAME, ONBOARDING_NAVIGATION_NAME, ONBOARDING_OPERATION_NAME, sanitizeOnboardingSuggestions, sanitizeOnboardingNavigation, sanitizeOnboardingOperation } from './onboarding-suggestions.js';
+import { appNavigationTool, APP_NAVIGATION_NAME, sanitizeAppNavigation } from './app-navigation.js';
 import { AudioPlayer, Microphone } from './audio.js';
 
 const MODEL_IDS = ['gemini-3.8-live', 'gemini-3.8-live-extended-thinking'];
@@ -11,6 +12,8 @@ const SYSTEM_INSTRUCTIONS = [
   'Ajude o usuário a entender onde consultar funcionários, iniciar um cadastro ou buscar informações.',
   'Nunca diga que registrou ponto, aprovou ajuste, cadastrou funcionário, reconheceu rosto ou executou qualquer operação real. O resultado da ferramenta de rascunho não é criação.',
   'Não peça senhas, chaves, documentos oficiais ou imagem facial. Se a pessoa pedir o cadastro, obtenha nome, usuário e dados funcionais mínimos, com consentimento para processamento externo.',
+  'Para abrir a lista de funcionários ou começar o formulário V2, use navigate_potiguar quando o usuário solicitar. A navegação só inicia uma nova tela autorizada; ao trocar de página a sessão de voz atual termina.',
+  'Nunca afirme que uma ferramenta funcionou antes de receber o recibo da interface.',
   'Quando necessário, recomende o uso dos controles oficiais da interface e de seus mecanismos de validação.',
   'Se o usuário pedir cadastro de funcionário, use prepare_employee_registration somente para preparar o rascunho na interface. A confirmação e persistência ocorrem exclusivamente fora do modelo.',
 ].join('\n');
@@ -23,6 +26,7 @@ export class PotiguarLive {
     this.player = new AudioPlayer();
     this.audioEnabled = false;
     this.allowEmployeeActions = false;
+    this.allowAppNavigation = false;
     this.onboardingMode = false;
     this.allowOnboardingSuggestions = false;
     this.onboardingStep = 0;
@@ -37,6 +41,7 @@ export class PotiguarLive {
     this.onboardingMode = Boolean(allowOnboardingSuggestions);
     this.allowOnboardingSuggestions = this.onboardingMode && model === 'gemini-3.8-live';
     this.allowEmployeeActions = !this.onboardingMode && Boolean(allowEmployeeActions) && model === 'gemini-3.8-live';
+    this.allowAppNavigation = !this.onboardingMode && model === 'gemini-3.8-live';
     const response = await fetch('/admin/copilot/session-token', {
       method: 'POST',
       credentials: 'same-origin',
@@ -66,7 +71,8 @@ export class PotiguarLive {
                 'Não peça CPF, RG, documentos, dados financeiros, senhas, raça/cor, saúde, PCD ou biometria.',
                 'Aguarde o controlador informar o campo atual. Faça uma pergunta por vez. Para resposta sobre campo seguro, invoque suggest_onboarding_fields SOMENTE com o campo atual e o valor que o usuário informou. Nunca invente ou infira valores.',
                 'Se o usuário disser corrige, altere ou volte a uma etapa, use navigate_onboarding sem enviar qualquer dado existente.',
-                'O modelo NUNCA salva, ativa credenciais ou conclui cadastros. A revisão humana é obrigatória.',
+                'Use operate_onboarding para consultar estado, salvar o rascunho, mostrar o campo no formulário ou pular um campo opcional. Espere o resultado da ferramenta antes de dizer se funcionou.',
+                'Apenas valores explicitamente informados podem entrar nos campos seguros. Campos protegidos permanecem locais. Nenhuma ferramenta pode criar o funcionário, ativar credenciais ou finalizar cadastros.',
                 'Etapas: 0 Relação, 1 Dados pessoais, 2 Endereço, 3 Vínculo, 4 Pagamento, 5 Acesso, 6 Biometria, 7 Revisão.',
                 'Etapas 4 a 7: só oriente; não sugira preenchimento.',
               ].join('\n')
@@ -85,7 +91,11 @@ export class PotiguarLive {
               silenceDurationMs: 750,
             },
           },
-          ...(this.allowOnboardingSuggestions ? { tools: [onboardingSuggestionTool] } : this.allowEmployeeActions ? { tools: [registrationTool] } : {}),
+          ...(this.allowOnboardingSuggestions ? { tools: [onboardingSuggestionTool] }
+            : this.allowAppNavigation ? { tools: [{functionDeclarations:[
+                ...appNavigationTool.functionDeclarations,
+                ...(this.allowEmployeeActions ? registrationTool.functionDeclarations : []),
+              ]}] } : {}),
           ...(model.endsWith('extended-thinking') ? { thinkingConfig: { thinkingLevel: 'medium' } } : {}),
         },
         callbacks: {
@@ -109,7 +119,8 @@ export class PotiguarLive {
   }
 
   handleMessage(message) {
-    if (message.toolCall?.functionCalls?.length) this.handleToolCalls(message.toolCall.functionCalls);
+    if (message.toolCall?.functionCalls?.length) this.handleToolCalls(message.toolCall.functionCalls)
+      .catch(() => this.handlers.onError?.('Falha no processamento das ferramentas do Copiloto.'));
     const content = message.serverContent || {};
     if (content.interrupted) this.player.interrupt();
     if (content.inputTranscription?.text) {
@@ -131,57 +142,59 @@ export class PotiguarLive {
     if (message.interactionStatus) this.handlers.onStatusDetail?.(message.interactionStatus);
   }
 
-  handleToolCalls(calls) {
+  async handleToolCalls(calls) {
+    // A resposta ao Gemini é emitida só após a interface executar a ação e devolver o recibo.
+    // Não devolver "sucesso" enquanto o controlador estiver aguardando validação/salvamento.
+    const session = this.session;
     const functionResponses = [];
     for (const call of calls) {
       if (!call?.id || !call?.name) continue;
-      if (call.name === ONBOARDING_NAVIGATION_NAME && this.onboardingMode && this.allowOnboardingSuggestions) {
-        const raw = typeof call.args === 'string' ? (()=>{try{return JSON.parse(call.args);}catch{return null;}})() : call.args;
-        const navigation = sanitizeOnboardingNavigation(raw);
-        if (navigation) this.handlers.onOnboardingNavigation?.(navigation);
-        functionResponses.push({id:call.id,name:call.name,response:{status:navigation?'requested':'denied',created:false}});
-        continue;
-      }
-      if (call.name === ONBOARDING_FUNCTION_NAME && this.allowOnboardingSuggestions) {
-        try {
-          const raw = typeof call.args === 'string' ? JSON.parse(call.args) : call.args;
-          const suggestions = sanitizeOnboardingSuggestions(raw, this.onboardingStep)
-            .filter(suggestion => suggestion.field === this.onboardingField);
-          if (suggestions.length) this.handlers.onOnboardingSuggestions?.(this.onboardingStep, suggestions);
-          functionResponses.push({id:call.id, name:call.name, response:{status:suggestions.length?'pending_form_validation':'no_eligible_suggestions', created:false}});
-        } catch {
-          functionResponses.push({id:call.id, name:call.name, response:{status:'invalid_suggestions',created:false}});
-        }
-        continue;
-      }
-      if (call.name !== REGISTRATION_FUNCTION_NAME || !this.allowEmployeeActions) {
-        functionResponses.push({
-          id: call.id, name: call.name,
-          response: { status: 'denied', reason: 'function_not_allowed' },
-        });
-        continue;
-      }
+      let receipt = {status:'denied',created:false};
       try {
         const raw = typeof call.args === 'string' ? JSON.parse(call.args) : call.args;
-        const draft = sanitizeRegistrationDraft(raw);
-        this.handlers.onEmployeeDraft?.(draft);
-        functionResponses.push({
-          id: call.id, name: call.name,
-          response: { status: 'awaiting_human_review', created: false },
-        });
+        if (call.name === ONBOARDING_NAVIGATION_NAME && this.allowOnboardingSuggestions) {
+          const navigation = sanitizeOnboardingNavigation(raw);
+          receipt = navigation && this.handlers.onOnboardingNavigation
+            ? await this.handlers.onOnboardingNavigation(navigation) : receipt;
+        } else if (call.name === ONBOARDING_OPERATION_NAME && this.allowOnboardingSuggestions) {
+          const operation = sanitizeOnboardingOperation(raw);
+          receipt = operation && this.handlers.onOnboardingAction
+            ? await this.handlers.onOnboardingAction(operation) : receipt;
+        } else if (call.name === ONBOARDING_FUNCTION_NAME && this.allowOnboardingSuggestions) {
+          const suggestions = sanitizeOnboardingSuggestions(raw,this.onboardingStep)
+            .filter(item => item.field === this.onboardingField);
+          receipt = suggestions.length && this.handlers.onOnboardingSuggestions
+            ? await this.handlers.onOnboardingSuggestions(this.onboardingStep,suggestions)
+            : {status:'no_eligible_suggestions',created:false};
+        } else if (call.name === APP_NAVIGATION_NAME && this.allowAppNavigation) {
+          const navigation = sanitizeAppNavigation(raw,this.allowEmployeeActions);
+          receipt = navigation && this.handlers.onAppNavigation
+            ? await this.handlers.onAppNavigation(navigation) : receipt;
+        } else if (call.name === REGISTRATION_FUNCTION_NAME && this.allowEmployeeActions) {
+          const draft = sanitizeRegistrationDraft(raw);
+          if (this.handlers.onEmployeeDraft) {
+            this.handlers.onEmployeeDraft(draft);
+            receipt = {status:'awaiting_human_review',created:false};
+          }
+        }
       } catch {
-        functionResponses.push({
-          id: call.id, name: call.name,
-          response: { status: 'invalid_draft', created: false },
-        });
+        receipt = {status:'execution_failed',created:false};
       }
+      // Somente status e metadados não sensíveis atravessam a fronteira da ferramenta.
+      const allowed = ['saved','navigated','focused','skipped','state','navigation_started',
+        'awaiting_human_review','no_eligible_suggestions','denied','execution_failed',
+        'not_available','timeout','invalid_state','validation_failed','conflict'];
+      const status = receipt && allowed.includes(receipt.status) ? receipt.status : 'execution_failed';
+      const safeResponse = {status,created:false};
+      if (Number.isInteger(receipt?.step) && receipt.step>=0 && receipt.step<8) safeResponse.step=receipt.step;
+      if (status==='state' && typeof receipt?.field==='string' && /^[a-z_]{2,40}$/.test(receipt.field)) {
+        safeResponse.field=receipt.field;
+      }
+      functionResponses.push({id:call.id,name:call.name,response:safeResponse});
     }
-    if (functionResponses.length) {
-      try {
-        this.session?.sendToolResponse({ functionResponses });
-      } catch {
-        this.handlers.onError?.('O Gemini não conseguiu preparar o cadastro assistido.');
-      }
+    if (functionResponses.length && session && this.session===session) {
+      try { session.sendToolResponse({functionResponses}); }
+      catch { this.handlers.onError?.('Não foi possível devolver o resultado da ação ao Gemini.'); }
     }
   }
 

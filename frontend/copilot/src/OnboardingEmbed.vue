@@ -10,19 +10,55 @@ const names=['Tipo de relação','Dados pessoais','Endereço','Vínculo','Pagame
 const messages=ref([{role:'guide',text:'Conecte o Copiloto para iniciar o cadastro orientado. Uma pergunta por vez; campos protegidos somente no formulário.'}]);
 const logEnd=ref(null);
 let assistantIndex=-1,voiceIndex=-1;
+const pendingActions=new Map();
+let deferredGuide=null;
+function flushGuide(){
+  if(pendingActions.size||!deferredGuide||!connected.value)return;
+  const pending=deferredGuide;deferredGuide=null;
+  // A resposta da ferramenta precisa chegar ao Gemini antes da próxima instrução do campo.
+  setTimeout(()=>{
+    if(connected.value && question.value?.field===pending.field && question.value?.step===pending.step){
+      try{live.sendText(pending.text);}catch{error.value='Não foi possível solicitar a próxima pergunta.';}
+    }
+  },400);
+}
+function executeOnParent(type,params={}){
+  if(!connected.value)return Promise.resolve({status:'denied'});
+  const requestId=crypto.randomUUID();
+  return new Promise(resolve=>{
+    const timeout=setTimeout(()=>{pendingActions.delete(requestId);resolve({status:'timeout'});},10000);
+    pendingActions.set(requestId,{resolve,timeout});
+    window.parent.postMessage({type,requestId,...params},location.origin);
+  });
+}
+function clearPending(){
+  for(const entry of pendingActions.values()){
+    clearTimeout(entry.timeout);entry.resolve({status:'not_available'});
+  }
+  pendingActions.clear();
+  deferredGuide=null;
+}
 function add(role,value){messages.value.push({role,text:value});if(messages.value.length>45)messages.value.splice(1,messages.value.length-45);nextTick(()=>logEnd.value?.scrollIntoView({block:'end'}));}
 const live=new PotiguarLive({
-  onStatus(s){connected.value=s==='connected';if(!connected.value)micOn.value=false;},
+  onStatus(s){connected.value=s==='connected';if(!connected.value){micOn.value=false;clearPending();}},
   onAssistantText(s){voiceIndex=-1;if(assistantIndex<0){add('assistant',s);assistantIndex=messages.value.length-1;}else messages.value[assistantIndex].text+=s;},
   onUserSpeech(s){assistantIndex=-1;if(voiceIndex<0){add('user',s);voiceIndex=messages.value.length-1;}else messages.value[voiceIndex].text+=s;},
   onTurnComplete(){assistantIndex=-1;voiceIndex=-1;},
-  onOnboardingSuggestions(step,suggestions){window.parent.postMessage({type:'potiguar:onboarding:proposal',step,suggestions},location.origin);},
-  onOnboardingNavigation(navigation){window.parent.postMessage({type:'potiguar:onboarding:navigate',...navigation},location.origin);},
+  onOnboardingSuggestions(step,suggestions){return executeOnParent('potiguar:onboarding:proposal',{step,suggestions});},
+  onOnboardingNavigation(navigation){return executeOnParent('potiguar:onboarding:navigate',navigation);},
+  onOnboardingAction(operation){return executeOnParent('potiguar:onboarding:execute',operation);},
   onError(message){error.value=message;},
 });
 function receive(event){
   if(event.origin!==location.origin || event.source!==window.parent || !event.data)return;
   const data=event.data;
+  if(data.type==='potiguar:onboarding:result'&&typeof data.requestId==='string'){
+    const entry=pendingActions.get(data.requestId);
+    if(entry){pendingActions.delete(data.requestId);clearTimeout(entry.timeout);
+      entry.resolve({status:typeof data.status==='string'?data.status:'execution_failed',step:data.step,field:data.field});
+      flushGuide();}
+    return;
+  }
   if(data.type==='potiguar:onboarding:pause'){live.disconnect().catch(()=>{});micOn.value=false;question.value=null;return;}
   if(data.type==='potiguar:onboarding:mute'){live.stopMic().catch(()=>{});micOn.value=false;return;}
   if(data.type==='potiguar:onboarding:context'&&Number.isInteger(data.step)&&data.step>=0&&data.step<8){
@@ -41,7 +77,9 @@ function receive(event){
       return;
     }
     add('guide',`Campo atual: ${data.label}.`);
-    if(connected.value)live.sendText(`CONTROLE DO FORMULÁRIO: etapa ${data.step+1}, campo ${data.field} (${data.label}), ${data.required?'obrigatório':'opcional'}; opções válidas: ${Array.isArray(data.options)?data.options.join(', '):'texto livre'}. Faça SOMENTE uma pergunta objetiva para obter ESSE campo, em português do Brasil. Se o usuário responder, invoque suggest_onboarding_fields somente para ${data.field}. Não peça outros dados, não declare que salvou.`);
+    deferredGuide={step:data.step,field:data.field,
+      text:`CONTROLE DO FORMULÁRIO: etapa ${data.step+1}, campo ${data.field} (${data.label}), ${data.required?'obrigatório':'opcional'}; opções válidas: ${Array.isArray(data.options)?data.options.join(', '):'texto livre'}. Faça SOMENTE uma pergunta objetiva para obter ESSE campo, em português do Brasil. Se o usuário responder, invoque suggest_onboarding_fields somente para ${data.field}. Não peça outros dados, não declare que salvou.`};
+    flushGuide();
     return;
   }
   if(data.type==='potiguar:onboarding:filled'){
@@ -73,16 +111,35 @@ function send(){
   if(!value||value.length>1000||!connected.value)return;
   error.value='';
   const normalized=value.toLocaleLowerCase('pt-BR');
+  // Comandos locais de operação não enviam nenhum valor protegido ao provedor.
+  const directAction=[
+    [/^(?:salvar|salve|grave) (?:o )?rascunho[.!]?$/, 'save_draft'],
+    [/^(?:mostrar|mostre|abrir|abra|exibir) (?:o )?formul[aá]rio[.!]?$/, 'focus_current_field'],
+    [/^(?:pular|pule) (?:este |o )?campo(?: opcional)?[.!]?$/, 'skip_optional'],
+    [/^(?:onde estou|qual (?:a )?etapa atual|em que etapa estou)[?!]?$/, 'get_state'],
+  ].find(([pattern])=>pattern.test(normalized));
+  if(directAction){
+    add('user',value);text.value='';
+    executeOnParent('potiguar:onboarding:execute',{action:directAction[1]}).then(result=>{
+      const success={saved:'Rascunho salvo no servidor.',focused:'Formulário aberto no campo atual.',
+        skipped:'Campo opcional ignorado.',state:`Você está na etapa ${(result.step??currentStep.value)+1} de 8.`};
+      add('guide',success[result.status]||'Não foi possível realizar a ação solicitada.');
+    });
+    return;
+  }
   const localNavigation=[
     [/^(?:corrija|corrigir|altere|alterar) (?:o |a )?cargo\b/,3,'job_role'],
     [/^(?:corrija|corrigir|altere|alterar) (?:a )?jornada\b/,3,'schedule'],
     [/^(?:volte|voltar) (?:para (?:o |a )?)?endere[cç]o\b/,2,null],
   ].find(([pattern])=>pattern.test(normalized));
   if(localNavigation){
-    window.parent.postMessage({type:'potiguar:onboarding:navigate',
+    add('user',value);text.value='';
+    executeOnParent('potiguar:onboarding:navigate',{
       kind:localNavigation[2]?'correct_field':'open_step',
-      step:localNavigation[1],field:localNavigation[2]},location.origin);
-    add('user',value);text.value='';return;
+      step:localNavigation[1],field:localNavigation[2],
+    }).then(result=>add('guide',result.status==='navigated'
+      ?'Etapa aberta para correção no formulário.':'Ainda não é possível abrir esta etapa.'));
+    return;
   }
   if(!question.value?.safe){error.value='Para este campo, use o formulário protegido. Não envie o valor ao Gemini.';return;}
   if(isProtectedInput(value)){
@@ -96,7 +153,7 @@ function send(){
 async function mic(){error.value='';if(!question.value?.safe){error.value='Microfone desativado para campos protegidos. Use o formulário.';return;}try{if(micOn.value){await live.stopMic();micOn.value=false;}else{await live.startMic('automatic');micOn.value=true;}}catch{error.value='Não foi possível ativar o microfone. Verifique permissões do navegador.';micOn.value=false;}}
 function skip(){if(!question.value||question.value.required)return;window.parent.postMessage({type:'potiguar:onboarding:skip',step:question.value.step,field:question.value.field},location.origin);question.value=null;}
 onMounted(()=>{window.addEventListener('message',receive);load();window.parent.postMessage({type:'potiguar:onboarding:ready'},location.origin);});
-onUnmounted(()=>{window.removeEventListener('message',receive);live.disconnect().catch(()=>{});});
+onUnmounted(()=>{window.removeEventListener('message',receive);clearPending();live.disconnect().catch(()=>{});});
 </script>
 <template>
 <div class="embedded">

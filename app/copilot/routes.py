@@ -76,7 +76,12 @@ def metadata():
         ),
         "demo_synthetic_only": bool(os.environ.get("POTIGUAR_COPILOT_DEMO_DAILY_LIMIT")),
         "links": {
+            # Catálogo canônico de telas; o navegador não aceita URLs propostas pelo modelo.
+            "dashboard": url_for("admin.dashboard"),
+            "attendance": url_for("admin.history"),
+            "reports": url_for("admin.reports") if user.can(Permission.PUNCH_VIEW) else None,
             "users": url_for("admin.list_users"),
+            "drafts": url_for("admin.onboarding_drafts") if user.can(Permission.USERS_CREATE) else None,
             "new_user": url_for("admin.new_user") if user.can(Permission.USERS_CREATE) else None,
         },
         "mode": "guided_drafts_v2",

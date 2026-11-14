@@ -49,15 +49,52 @@ const sleep=(ms)=>new Promise(resolve=>setTimeout(resolve,ms));
   await frame.evaluate(()=>parent.postMessage({type:'potiguar:onboarding:begin'},location.origin));
   await page.waitForFunction(()=>document.querySelector('#guided-field')?.textContent.includes('Tipo de relação'),{timeout:7000});
   checks.push('begin_one_question');
+  // Recibos reais do orquestrador: a resposta deve vir da interface pai após executar.
+  const operation=async(type,data={})=>{
+    const requestId=await frame.evaluate(args=>{
+      const id=crypto.randomUUID();
+      parent.postMessage({...args,requestId:id},location.origin);
+      return id;
+    },{type,...data});
+    await frame.waitForFunction(id=>window.received.some(m=>
+      m.type==='potiguar:onboarding:result'&&m.requestId===id),{timeout:7000},requestId);
+    return frame.evaluate(id=>window.received.find(m=>m.type==='potiguar:onboarding:result'&&m.requestId===id),requestId);
+  };
+  let receipt=await operation('potiguar:onboarding:execute',{action:'get_state'});
+  assert.equal(receipt.status,'state');assert.equal(receipt.step,0);
+  assert.equal(receipt.field,'relation_type');
+  checks.push('agent_reads_step_without_field_values');
+  receipt=await operation('potiguar:onboarding:execute',{action:'skip_optional'});
+  assert.equal(receipt.status,'denied');
+  receipt=await operation('potiguar:onboarding:execute',{action:'complete'});
+  assert.equal(receipt.status,'denied');
+  assert.equal(completeCalls,0);
+  receipt=await operation('potiguar:onboarding:navigate',{kind:'open_step',step:5});
+  assert.equal(receipt.status,'denied','future steps require prior validation');
+  checks.push('agent_cannot_skip_required_or_complete_employee');
+  checks.push('agent_cannot_jump_unvalidated_steps');
+  receipt=await operation('potiguar:onboarding:execute',{action:'save_draft'});
+  assert.equal(receipt.status,'saved');
+  checks.push('agent_save_draft_receipt');
+  receipt=await operation('potiguar:onboarding:execute',{action:'focus_current_field'});
+  assert.equal(receipt.status,'focused');
+  assert.equal(await page.$eval('#onboarding-copilot-drawer',el=>getComputedStyle(el).display),'none');
+  await page.click('#copilot-open');
+  checks.push('agent_focuses_form_field_and_minimizes_drawer');
   await page.evaluate(()=>window.postMessage({type:'potiguar:onboarding:proposal',step:0,suggestions:[{field:'relation_type',value:'CLT comum'}]},location.origin));
   await sleep(120);
   assert.equal(await page.$eval('#field-relation_type',el=>el.value),'');
   checks.push('ignore_wrong_window_source');
-  await frame.evaluate(()=>parent.postMessage({type:'potiguar:onboarding:proposal',step:0,suggestions:[{field:'relation_type',value:'CLT comum'}]},location.origin));
+  receipt=await operation('potiguar:onboarding:proposal',{step:0,suggestions:[{field:'relation_type',value:'CLT comum'}]});
+  assert.equal(receipt.status,'saved');
   await page.waitForFunction(()=>document.querySelector('#field-relation_type')?.value==='CLT comum'&&document.querySelector('#current-step-label')?.textContent.includes('Etapa 2'),{timeout:7000});
   assert.equal(saved.length,1);
   checks.push('auto_apply_persist_move_to_step_2');
+  checks.push('agent_receives_save_confirmation_after_server_response');
   await page.waitForFunction(()=>document.querySelector('#guided-field')?.textContent.includes('Nome completo'),{timeout:7000});
+  receipt=await operation('potiguar:onboarding:proposal',{step:1,suggestions:[{field:'cpf',value:'52998224725'}]});
+  assert.equal(receipt.status,'validation_failed');
+  checks.push('agent_rejects_confidential_field_proposal');
   await frame.evaluate(()=>parent.postMessage({type:'potiguar:onboarding:proposal',step:1,suggestions:[{field:'full_name',value:'Maria Oliveira de Teste'}]},location.origin));
   await page.waitForFunction(()=>document.querySelector('#field-full_name')?.value==='Maria Oliveira de Teste'&&document.querySelector('#guided-field')?.textContent.includes('CPF'),{timeout:7000});
   checks.push('one_safe_field_then_protected_field');
@@ -75,7 +112,7 @@ const sleep=(ms)=>new Promise(resolve=>setTimeout(resolve,ms));
   assert(!JSON.stringify(messages).includes('52998224725'),'cpf_leaked_to_iframe');
   checks.push('no_secret_leak_to_iframe');
   // Percorrer todas as oito etapas, pulando somente opcionais.
-  let traversed=0;
+  let traversed=0, agentSkipped=false;
   for(;traversed<150;traversed++){
     const stage=await page.$eval('#current-step-label',el=>el.textContent);
     if(stage.includes('Etapa 8'))break;
@@ -83,7 +120,10 @@ const sleep=(ms)=>new Promise(resolve=>setTimeout(resolve,ms));
     assert(q,'missing question');
     const before=await frame.evaluate(()=>window.received.filter(x=>x.type==='potiguar:onboarding:question').length);
     if(!q.required){
-      await frame.evaluate(data=>parent.postMessage({type:'potiguar:onboarding:skip',step:data.step,field:data.field},location.origin),q);
+      if(!agentSkipped){
+        receipt=await operation('potiguar:onboarding:execute',{action:'skip_optional'});
+        assert.equal(receipt.status,'skipped');agentSkipped=true;
+      }else await frame.evaluate(data=>parent.postMessage({type:'potiguar:onboarding:skip',step:data.step,field:data.field},location.origin),q);
     }else if(q.safe){
       const values={country:'Brasil',address_type:'Urbano'};
       assert(values[q.field],'unexpected required safe field: '+q.field);
@@ -98,6 +138,8 @@ const sleep=(ms)=>new Promise(resolve=>setTimeout(resolve,ms));
       {timeout:7000},before);
   }
   assert(traversed<150,'stage traversal stuck');
+  assert(agentSkipped,'agent had to skip one optional field');
+  checks.push('agent_skips_only_optional_fields');
   assert.equal(await page.$eval('#current-step-name',el=>el.textContent),'Revisão');
   const reviewText=await page.$eval('#review-details',el=>el.textContent);
   assert(reviewText.includes('Maria Oliveira de Teste'));
@@ -110,7 +152,8 @@ const sleep=(ms)=>new Promise(resolve=>setTimeout(resolve,ms));
   checks.push('review_only_human_gate_no_employee_creation');
   await page.screenshot({path:process.env.POTIGUAR_E2E_SCREENSHOT || '/tmp/potiguar-browser-e2e-20261113/onboarding-mobile-e2e.png'});
   await page.click('#copilot-open');
-  await frame.evaluate(()=>parent.postMessage({type:'potiguar:onboarding:navigate',kind:'correct_field',step:0,field:'relation_type'},location.origin));
+  receipt=await operation('potiguar:onboarding:navigate',{kind:'correct_field',step:0,field:'relation_type'});
+  assert.equal(receipt.status,'navigated');
   await page.waitForFunction(()=>document.querySelector('#current-step-label')?.textContent.includes('Etapa 1'),{timeout:7000});
   await page.waitForFunction(()=>document.querySelector('#guided-field')?.textContent.includes('Tipo de relação'),{timeout:7000});
   checks.push('correction_navigates_previous_stage');

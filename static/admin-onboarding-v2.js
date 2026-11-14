@@ -243,9 +243,9 @@
     } catch(e) { alertError(e.message); }
   }
   async function applyGuidedSuggestion(item) {
-    if (guidedApplying || !activeField || !guide.isSafe(current,activeField.name)) return;
+    if (guidedApplying || !activeField || !guide.isSafe(current,activeField.name)) return false;
     const control=activeField;
-    if (item.field!==control.name || !validSuggestion(item) || !guide.validSafeValue(control,item.value)) return;
+    if (item.field!==control.name || !validSuggestion(item) || !guide.validSafeValue(control,item.value)) return false;
     const previous=control.value;
     guidedApplying=true;
     try {
@@ -261,9 +261,10 @@
       control.dispatchEvent(new Event('input',{bubbles:true}));
       alertError(e.message);
       sendToCopilot({type:'potiguar:onboarding:error'});
-      return;
+      return false;
     } finally { guidedApplying=false; }
     await guideNext();
+    return true;
   }
   function sendStepContext(){
     if(!copilotFrame.contentWindow || !copilotFrame.getAttribute('src'))return;
@@ -319,10 +320,85 @@
     if(control.tagName==='SELECT' && !Array.from(control.options).some(option=>option.value===item.value))return false;
     return true;
   }
+  // Executor restrito do Copiloto. Todos os resultados provêm da interface (e não do modelo).
+  // Nunca envia valores preenchidos ao iframe; dados protegidos só trafegam no salvamento autenticado.
+  let agentCommandBusy=false;
+  async function executeAgentCommand(message) {
+    if(!guided || blocked || !guide || copilotDrawer.hidden || agentCommandBusy)
+      return {status:'denied'};
+    agentCommandBusy=true;
+    try {
+      if(message.type==='potiguar:onboarding:execute') {
+        if(message.action==='get_state')return {status:'state',step:current,field:activeField?.name||null};
+        if(message.action==='save_draft') {
+          await saveDraft();
+          return {status:'saved',step:current};
+        }
+        if(message.action==='focus_current_field') {
+          if(!activeField)return {status:'invalid_state'};
+          minimizeDrawer();
+          return {status:'focused',step:current};
+        }
+        if(message.action==='skip_optional') {
+          if(!activeField || activeField.required)return {status:'denied'};
+          visitedFields.add(`${current}:${activeField.name}`);
+          activeField=null;
+          await guideNext();
+          return {status:'skipped',step:current};
+        }
+        return {status:'denied'};
+      }
+      if(message.type==='potiguar:onboarding:navigate') {
+        if(!Number.isInteger(message.step) || message.step<0 || message.step>maxVisited ||
+           !['open_step','correct_field'].includes(message.kind))return {status:'denied'};
+        const index=message.step;
+        const fields=Array.from(panels[index].querySelectorAll('[name]'));
+        const target=message.kind==='correct_field'
+          ? (typeof message.field==='string' && /^[a-z_]{2,40}$/.test(message.field)
+              ? fields.find(el=>el.name===message.field) : null)
+          : fields.find(el=>guide.applicable(el.name,serialize()));
+        if(!target || !guide.applicable(target.name,serialize()))return {status:'denied'};
+        clearTimeout(advanceTimer);
+        forcedField=target;
+        visitedFields.delete(`${index}:${target.name}`);
+        showStep(index);
+        return {status:current===index?'navigated':'execution_failed',step:current};
+      }
+      if(message.type==='potiguar:onboarding:proposal') {
+        if(message.step!==current || !Array.isArray(message.suggestions) ||
+           message.suggestions.length!==1 || !activeField)return {status:'denied'};
+        const item=message.suggestions[0];
+        if(item?.field!==activeField.name || !validSuggestion(item) ||
+           !guide.validSafeValue(activeField,item.value))return {status:'validation_failed'};
+        const success=await applyGuidedSuggestion(item);
+        return {status:success?'saved':'validation_failed',step:current};
+      }
+      return {status:'denied'};
+    } catch(err) {
+      if(blocked)return {status:'conflict'};
+      alertError('O Copiloto não conseguiu concluir esta ação no formulário.');
+      return {status:'execution_failed'};
+    } finally {agentCommandBusy=false;}
+  }
+  function replyAgentCommand(message,result) {
+    if(!copilotFrame.contentWindow)return;
+    const payload={type:'potiguar:onboarding:result',requestId:message.requestId,
+      status:result?.status||'execution_failed',step:current};
+    // Somente o nome do campo, nunca seu valor, é informado ao agente.
+    if(result?.status==='state' && /^[a-z_]{2,40}$/.test(result.field||''))payload.field=result.field;
+    copilotFrame.contentWindow.postMessage(payload,window.location.origin);
+  }
   window.addEventListener('message',event=>{
     if(event.origin!==window.location.origin || event.source!==copilotFrame.contentWindow)return;
     const message=event.data;
     if(!message || typeof message!=='object')return;
+    // Comandos originados pelo modelo exigem identificador; o recibo é enviado após a execução.
+    if(['potiguar:onboarding:execute','potiguar:onboarding:navigate','potiguar:onboarding:proposal'].includes(message.type)
+        && typeof message.requestId==='string' && /^[a-f0-9-]{36}$/i.test(message.requestId)){
+      executeAgentCommand(message).then(result=>replyAgentCommand(message,result))
+        .catch(()=>replyAgentCommand(message,{status:'execution_failed'}));
+      return;
+    }
     if(message.type==='potiguar:onboarding:ready'){sendStepContext();return;}
     if(message.type==='potiguar:onboarding:stop'){
       guided=false;activeField=null;forcedField=null;clearTimeout(advanceTimer);guidedFieldLabel.hidden=true;return;

@@ -1,6 +1,7 @@
 /** Propostas por IA, sem permissão de escrita ou leitura de dados confidenciais. */
 export const ONBOARDING_FUNCTION_NAME = 'suggest_onboarding_fields';
 export const ONBOARDING_NAVIGATION_NAME = 'navigate_onboarding';
+export const ONBOARDING_OPERATION_NAME = 'operate_onboarding';
 export const ALLOWED_ONBOARDING_FIELDS = Object.freeze({
   0: ['relation_type', 'other_relation'],
   1: ['full_name', 'social_name', 'nationality', 'education'],
@@ -40,8 +41,21 @@ export const onboardingSuggestionTool = {
       },
       required: ['kind','step'],
     },
+  }, {
+    name: ONBOARDING_OPERATION_NAME,
+    description: 'Execute uma ação REAL no formulário V2, com retorno da interface. Consulte o estado sem ler os valores preenchidos, salve o rascunho, abra o campo atual no formulário ou pule um campo opcional. Nunca conclua cadastro, altere permissões nem invente valores.',
+    parametersJsonSchema: {
+      type: 'object', properties: {
+        action: {type: 'string', enum: ['get_state', 'save_draft', 'focus_current_field', 'skip_optional']},
+      }, required: ['action'],
+    },
   }],
 };
+export function sanitizeOnboardingOperation(raw) {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+  return ['get_state','save_draft','focus_current_field','skip_optional'].includes(raw.action)
+    ? {action:raw.action} : null;
+}
 export function sanitizeOnboardingNavigation(raw) {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
   if (!['correct_field','open_step'].includes(raw.kind) || !Number.isInteger(raw.step) || raw.step<0 || raw.step>7) return null;
