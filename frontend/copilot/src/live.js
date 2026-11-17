@@ -81,8 +81,8 @@ export class PotiguarLive {
                 'Não peça CPF, RG, documentos, dados financeiros, senhas, raça/cor, saúde, PCD ou biometria.',
                 'Aguarde o controlador informar o campo atual. Faça uma pergunta por vez. Para resposta sobre campo seguro, invoque suggest_onboarding_fields SOMENTE com o campo atual e o valor que o usuário informou. Nunca invente ou infira valores.',
                 'Se o usuário disser corrige, altere ou volte a uma etapa, use navigate_onboarding sem enviar qualquer dado existente.',
-                'Use operate_onboarding para consultar estado, salvar o rascunho, mostrar o campo no formulário ou pular um campo opcional. Espere o resultado da ferramenta antes de dizer se funcionou.',
-                'Apenas valores explicitamente informados podem entrar nos campos seguros. Campos protegidos permanecem locais. Nenhuma ferramenta pode criar o funcionário, ativar credenciais ou finalizar cadastros.',
+                'Use operate_onboarding para consultar estado, salvar rascunho, mostrar campo, pular opcional ou request_completion quando estiver na etapa 7 e a pessoa solicitar a conclusão. request_completion mostra a revisão e exige que o humano confirme na interface; não cria funcionário. Aguarde recibos.',
+                'Apenas valores explicitamente informados podem entrar nos campos seguros. Campos protegidos permanecem locais. Nenhuma ferramenta cria funcionário diretamente: a pessoa confirma na interface após revisar; nunca afirme cadastro concluído antes do resultado verificado do Flask.',
                 'Etapas: 0 Relação, 1 Dados pessoais, 2 Endereço, 3 Vínculo, 4 Pagamento, 5 Acesso, 6 Biometria, 7 Revisão.',
                 'Etapas 4 a 7: só oriente; não sugira preenchimento.',
                 'Fora do cadastro V2, não use ferramentas do formulário. Não afirme ter executado operações antes de receber o recibo verificado.',
@@ -197,7 +197,7 @@ export class PotiguarLive {
       }
       // Somente status e metadados não sensíveis atravessam a fronteira da ferramenta.
       const allowed = ['saved','navigated','focused','skipped','state','navigation_started',
-        'awaiting_human_review','no_eligible_suggestions','denied','execution_failed',
+        'awaiting_human_review','awaiting_human_confirmation','no_eligible_suggestions','denied','execution_failed',
         'not_available','timeout','invalid_state','validation_failed','conflict'];
       const status = receipt && allowed.includes(receipt.status) ? receipt.status : 'execution_failed';
       const safeResponse = {status,created:false};

@@ -154,12 +154,18 @@
     try {busy(true);const data=await send(app.dataset.discard,{});window.location.assign(data.redirect);} catch(e){alertError(e.message);busy(false);}
   });
   complete.addEventListener('click',async()=>{
-    if (!window.confirm('Confirmar o cadastro do funcionário? Os dados serão salvos no servidor.')) return;
+    if (current!==7 || complete.hidden || blocked) return;
+    const name=serialize().full_name;
+    if (!window.confirm('Conferiu todos os dados de '+(name||'este funcionário')+
+        '? Confirma criar o registro real com os dados exibidos no formulário?')) return;
     try {
       await saveDraft();
       busy(true);status.textContent='Concluindo cadastro...';
       const data=await send(app.dataset.complete,{version});
+      if (data.created!==true || !Number.isInteger(data.employee_id))
+        throw Error('O servidor não confirmou a criação do funcionário.');
       status.textContent='Funcionário criado com sucesso.';
+      sendToCopilot({type:'potiguar:onboarding:completed'});
       window.location.assign(data.redirect);
     } catch(e){alertError(e.message);busy(false);}
   });
@@ -338,6 +344,22 @@
         if(message.action==='save_draft') {
           await saveDraft();
           return {status:'saved',step:current};
+        }
+        if(message.action==='request_completion') {
+          // O modelo não possui ferramenta de criação: a etapa 8 só exibe
+          // a revisão. O humano deve clicar e confirmar antes do POST.
+          if(current!==7 || complete.hidden || blocked || app.dataset.demo==='1')
+            return {status:'denied'};
+          await saveDraft();
+          review();
+          if(shellHosted) {
+            window.parent.postMessage({type:'potiguar:shell:show-form'},location.origin);
+          } else {
+            minimizeDrawer();
+          }
+          complete.focus({preventScroll:false});
+          complete.scrollIntoView({behavior:'smooth',block:'center'});
+          return {status:'awaiting_human_confirmation',step:current};
         }
         if(message.action==='focus_current_field') {
           if(!activeField)return {status:'invalid_state'};

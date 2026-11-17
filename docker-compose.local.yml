@@ -5,7 +5,9 @@ services:
     env_file:
       - .env.local
     environment:
-      APP_ENV: pilot
+      APP_ENV: development
+      POTIGUAR_DEPLOYMENT_ROLE: development
+      POTIGUAR_PUBLIC_DEMO: "0"
       PORT: 8000
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       BIOMETRIC_STORAGE_FOLDER: /app/instance/biometrics

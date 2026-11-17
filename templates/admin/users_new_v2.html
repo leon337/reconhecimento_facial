@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='admin-onboarding-v2.css') }}">
 </head>
 <body>
-<div class="container" id="onboarding-v2" data-save="{{ url_for('admin.onboarding_save', draft_id=draft.id) }}" data-complete="{{ url_for('admin.onboarding_complete', draft_id=draft.id) }}" data-discard="{{ url_for('admin.onboarding_discard', draft_id=draft.id) }}" data-version="{{ draft.version }}">
+<div class="container" id="onboarding-v2" data-save="{{ url_for('admin.onboarding_save', draft_id=draft.id) }}" data-complete="{{ url_for('admin.onboarding_complete', draft_id=draft.id) }}" data-discard="{{ url_for('admin.onboarding_discard', draft_id=draft.id) }}" data-version="{{ draft.version }}" data-demo="{{ '1' if config.get('PUBLIC_DEMO_MODE') else '0' }}">
   <header class="header">
     <a class="brand" href="{{ url_for('admin.list_users') }}"><span class="brand-mark">P</span><span><strong>POTIGUAR</strong><small>Gestão de ponto</small></span></a>
     <nav class="top-actions" aria-label="Navegação principal">
@@ -42,7 +42,7 @@
         {% if loop.index == 2 %}
         <div class="info-banner">Apenas dados necessários para uma finalidade legítima devem ser registrados. Campos de raça/cor, deficiência, reabilitação e dependentes são opcionais e exigem cuidados especiais de privacidade.</div>
         {% elif loop.index == 5 %}
-        <div class="info-banner">Dados financeiros não aparecem no histórico de ponto e são criptografados antes de serem persistidos. Não utilize dados reais para testes de homologação.</div>
+        <div class="info-banner">Dados financeiros não aparecem no histórico de ponto e são criptografados antes de serem persistidos. {% if config.get("PUBLIC_DEMO_MODE") %}Esta demonstração pública não aceita dados financeiros reais.{% else %}Em cadastro real, insira esses dados diretamente no formulário autenticado; não os informe ao Copiloto.{% endif %}</div>
         {% elif loop.index == 6 %}
         <div class="info-banner">Funcionário cadastrado não recebe login administrativo automaticamente. Solicitações de acesso ficam pendentes de ativação por um administrador autorizado.</div>
         {% elif loop.index == 7 %}
@@ -79,7 +79,7 @@
         <div class="wizard-actions-right"><button type="button" class="action" id="back-button" hidden>Voltar</button><button type="button" class="action primary" id="next-button">Continuar</button><button type="button" class="action primary" id="complete-button" hidden>Concluir cadastro</button></div>
       </footer>
     </form>
-    <p class="help">Fluxo de homologação. Acesso condicionado ao perfil administrativo e ao escopo de empresa/obra. Cadastros anteriores não são alterados.</p>
+    <p class="help">{% if config.get("PUBLIC_DEMO_MODE") %}Demonstração: somente dados fictícios, sem criação definitiva.{% else %}Cadastro autenticado: revise todos os dados antes de confirmar. O Copiloto auxilia em campos permitidos; CPF, contatos, pagamento e biometria permanecem fora da conversa com a IA. O registro final depende de confirmação humana e das permissões de empresa/obra.{% endif %}</p>
     <div id="onboarding-copilot-backdrop" class="copilot-backdrop" hidden></div>
     <aside id="onboarding-copilot-drawer" class="copilot-drawer" aria-label="Copiloto de preenchimento" aria-hidden="true" hidden>
       <div class="copilot-drawer-header"><strong>✦ Copiloto integrado ao cadastro V2</strong><button id="copilot-minimize" type="button" class="action" aria-label="Ver formulário, mantendo cadastro assistido">Ver formulário</button><button id="copilot-close" type="button" class="action" aria-label="Fechar Copiloto">Fechar</button></div>

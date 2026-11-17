@@ -92,7 +92,11 @@ def metadata():
             "drafts": url_for("admin.onboarding_drafts") if user.can(Permission.USERS_CREATE) else None,
             "new_user": url_for("admin.new_user") if user.can(Permission.USERS_CREATE) else None,
         },
-        "mode": "guided_drafts_v2",
+        "mode": ("guided_drafts_v2" if (
+            _available()
+            and current_app.config.get("COPILOT_ACTIONS_ENABLED", False)
+            and user.can(Permission.USERS_CREATE)
+        ) else "guidance_only"),
     }))
 
 

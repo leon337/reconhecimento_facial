@@ -38,6 +38,16 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     instance_dir.mkdir(exist_ok=True)
 
     app_env = os.environ.get("APP_ENV", "development").lower()
+    # Um único código; duas implantações oficiais com fronteiras explícitas.
+    deployment_role = os.environ.get("POTIGUAR_DEPLOYMENT_ROLE", "").strip().lower()
+    if deployment_role and deployment_role not in {"development", "production"}:
+        raise RuntimeError("POTIGUAR_DEPLOYMENT_ROLE inválido")
+    if deployment_role == "development" and app_env != "development":
+        raise RuntimeError("A implantação de desenvolvimento exige APP_ENV=development")
+    if deployment_role == "production" and app_env != "production":
+        raise RuntimeError("A implantação de produção exige APP_ENV=production")
+    if deployment_role == "production" and os.environ.get("POTIGUAR_PUBLIC_DEMO") == "1":
+        raise RuntimeError("Demonstração anônima proibida na produção")
     secret_key = os.environ.get("SECRET_KEY")
     if app_env == "production" and not secret_key:
         raise RuntimeError("SECRET_KEY é obrigatória em produção.")

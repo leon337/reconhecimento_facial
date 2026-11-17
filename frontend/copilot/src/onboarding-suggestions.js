@@ -44,17 +44,17 @@ export const onboardingSuggestionTool = {
     },
   }, {
     name: ONBOARDING_OPERATION_NAME,
-    description: 'Execute uma ação REAL no formulário V2, com retorno da interface. Consulte o estado sem ler os valores preenchidos, salve o rascunho, abra o campo atual no formulário ou pule um campo opcional. Nunca conclua cadastro, altere permissões nem invente valores.',
+    description: 'Execute uma ação REAL no formulário V2, com retorno da interface. Consulte estado, salve o rascunho, abra o campo ou pule um opcional. Ação request_completion somente mostra a revisão para confirmação humana no formulário; NUNCA cria funcionário, altera permissões ou inventa valores.',
     parametersJsonSchema: {
       type: 'object', properties: {
-        action: {type: 'string', enum: ['get_state', 'save_draft', 'focus_current_field', 'skip_optional']},
+        action: {type: 'string', enum: ['get_state', 'save_draft', 'focus_current_field', 'skip_optional', 'request_completion']},
       }, required: ['action'],
     },
   }],
 };
 export function sanitizeOnboardingOperation(raw) {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
-  return ['get_state','save_draft','focus_current_field','skip_optional'].includes(raw.action)
+  return ['get_state','save_draft','focus_current_field','skip_optional','request_completion'].includes(raw.action)
     ? {action:raw.action} : null;
 }
 export function sanitizeOnboardingNavigation(raw) {

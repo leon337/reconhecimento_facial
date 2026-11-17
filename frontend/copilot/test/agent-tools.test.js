@@ -24,7 +24,7 @@ test('URLs de navegação devem ser internas e canônicas',()=>{
     '/admin/users?next=https://bad.com','/admin/users#foo','javascript:alert(1)',null,'/logout'])assert.equal(safeAppPath(p),false,String(p));
 });
 test('operação de formulário não permite concluir, excluir nem acessar dados protegidos',()=>{
-  for(const action of ['get_state','save_draft','focus_current_field','skip_optional'])
+  for(const action of ['get_state','save_draft','focus_current_field','skip_optional','request_completion'])
     assert.deepEqual(sanitizeOnboardingOperation({action}),{action});
   for(const action of ['complete','delete','update_salary','activate_access','read_cpf','click_anywhere'])
     assert.equal(sanitizeOnboardingOperation({action}),null);
@@ -33,5 +33,5 @@ test('operação de formulário não permite concluir, excluir nem acessar dados
   const declaration=onboardingSuggestionTool.functionDeclarations.find(x=>x.name===ONBOARDING_OPERATION_NAME);
   assert(declaration);
   assert.deepEqual(declaration.parametersJsonSchema.properties.action.enum,
-    ['get_state','save_draft','focus_current_field','skip_optional']);
+    ['get_state','save_draft','focus_current_field','skip_optional','request_completion']);
 });

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {ALLOWED_ONBOARDING_FIELDS, sanitizeOnboardingSuggestions} from '../src/onboarding-suggestions.js';
+import {ALLOWED_ONBOARDING_FIELDS, sanitizeOnboardingSuggestions,
+ sanitizeOnboardingOperation} from '../src/onboarding-suggestions.js';
 
 test('sugestão segura somente na etapa correta',()=>{
  const raw={step:3,suggestions:[{field:'job_role',value:'Analista de Teste'}]};
@@ -20,4 +21,12 @@ test('impede HTML, campos duplicados e excesso de sugestões',()=>{
  assert.deepEqual(sanitizeOnboardingSuggestions({step:1,suggestions:[{field:'full_name',value:'Maria de Teste'},{field:'full_name',value:'Outro Nome'}]},1),[{field:'full_name',value:'Maria de Teste'}]);
  assert.deepEqual(sanitizeOnboardingSuggestions({step:1,suggestions:[{field:'full_name',value:'Valor\nRuim'}]},1),[]);
  assert.deepEqual(sanitizeOnboardingSuggestions({step:1,suggestions:Array(6).fill({field:'full_name',value:'Teste'})},1),[]);
+});
+
+test('solicitar confirmação humana na etapa final não permite criação automática',()=>{
+ assert.deepEqual(sanitizeOnboardingOperation({action:'request_completion'}),
+    {action:'request_completion'});
+ for(const action of ['complete','complete_employee','create_employee','delete','admin']){
+   assert.equal(sanitizeOnboardingOperation({action}),null);
+ }
 });

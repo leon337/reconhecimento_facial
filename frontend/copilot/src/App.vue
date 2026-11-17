@@ -196,7 +196,12 @@ function onAppFrameMessage(event) {
   if(data.type==='potiguar:onboarding:review') {
     live.setOnboardingField(null);
     onboardingQuestion.value=null;onboardingReview.value=true;
-    pushMessage('guide','Revisão final: confira o formulário. Somente você pode concluir o cadastro.');
+    pushMessage('guide','Revisão final: confira todos os dados. Em ambiente protegido, peça para mostrar a conclusão e confirme diretamente no formulário; a demonstração pública não cria funcionários.');
+    return;
+  }
+  if(data.type==='potiguar:onboarding:completed') {
+    pushMessage('guide','Cadastro confirmado pelo servidor após sua aprovação. Consulte a lista de funcionários.');
+    onboardingReview.value=false;
     return;
   }
   if(data.type==='potiguar:onboarding:error') {

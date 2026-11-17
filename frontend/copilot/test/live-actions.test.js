@@ -56,3 +56,22 @@ test('valores confidenciais e ações destrutivas são negados e não entram nos
     ['no_eligible_suggestions','denied','denied']);
   assert(!JSON.stringify(packets).includes('52998224725'));
 });
+
+test('agente solicita revisão final sem criar funcionário nem revelar dados',async()=>{
+ const called=[];
+ const {live,packets}=harness({
+   onOnboardingAction:async({action})=>{
+      called.push(action);
+      return {status:'awaiting_human_confirmation',step:7,created:true,cpf:'00000000191'};
+   },
+ });
+ live.allowOnboardingSuggestions=true;
+ live.setOnboardingMode(true);live.setOnboardingStep(7);
+ await live.handleToolCalls([{
+   id:'complete-request',name:'operate_onboarding',args:{action:'request_completion'}
+ }]);
+ assert.deepEqual(called,['request_completion']);
+ assert.deepEqual(packets[0].functionResponses[0].response,
+     {status:'awaiting_human_confirmation',created:false,step:7});
+ assert(!JSON.stringify(packets).includes('00000000191'));
+});
