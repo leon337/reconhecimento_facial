@@ -68,6 +68,12 @@ const copilotVisible = ref(true);
 const settingsVisible = ref(false);
 const onboardingQuestion = ref(null);
 const onboardingReview = ref(false);
+// Só pula opcionais protegidos quando o operador optar explicitamente.
+const autoSkipProtected = ref(false);
+const skipProtectedBusy = ref(false);
+const skippedProtectedCount = ref(0);
+let micPausedForProtected = false;
+let micPausePromise = Promise.resolve();
 const formActive = computed(() => isOnboardingFormRoute(frameRoute.value));
 const stageLabel = computed(() => {
   const pairs = [
@@ -128,6 +134,43 @@ function beginGuidedForm() {
   live.setOnboardingMode(true);
   appFrame.value.contentWindow.postMessage({type:'potiguar:onboarding:begin'},window.location.origin);
 }
+// Comandos locais: não enviam valores protegidos para o Gemini.
+async function skipCurrentProtectedOptional() {
+  const q=onboardingQuestion.value;
+  if (!connected.value || !formActive.value || !q || q.safe || q.required || skipProtectedBusy.value) return;
+  const originalKey=String(q.step)+':'+q.field;
+  skipProtectedBusy.value=true;
+  try {
+    const receipt=await postToForm('potiguar:onboarding:execute',{action:'skip_optional'});
+    if(receipt.status!=='skipped') throw Error('Não foi possível avançar. Confira o formulário.');
+    skippedProtectedCount.value++;
+  } catch(failure) {
+    autoSkipProtected.value=false;
+    error.value=failure.message || 'Falha ao avançar no cadastro.';
+  } finally {
+    skipProtectedBusy.value=false;
+    // A pergunta seguinte pode chegar antes do recibo anterior.
+    const next=onboardingQuestion.value;
+    if(autoSkipProtected.value && next && !next.safe && !next.required &&
+       String(next.step)+':'+next.field!==originalKey) {
+      queueMicrotask(()=>skipCurrentProtectedOptional());
+    }
+  }
+}
+function skipProtectedOptionalsByChoice() {
+  autoSkipProtected.value=true;
+  pushMessage('guide','Você optou por adiar os campos opcionais protegidos. Eles ficam em branco; confira CPF, contatos, pagamento e demais dados necessários no formulário antes de concluir.');
+  void skipCurrentProtectedOptional();
+}
+function openCurrentProtectedField() {
+  const q=onboardingQuestion.value;
+  if(!q || q.safe) return;
+  void postToForm('potiguar:onboarding:execute',{action:'focus_current_field'})
+    .then(receipt=>{
+      if(receipt.status!=='focused') error.value='Não foi possível abrir o campo.';
+      else copilotVisible.value=false;
+    });
+}
 function scheduleGuide(data) {
   clearTimeout(guideTimer);
   const text = `CONTROLE DO FORMULÁRIO: etapa ${data.step+1}; campo ${data.field} (${data.label});
@@ -180,12 +223,26 @@ function onAppFrameMessage(event) {
       options:Array.isArray(data.options)?data.options.filter(option=>typeof option==='string'&&option.length<90):[]};
     if(!data.safe) {
       clearTimeout(guideTimer);
-      live.stopMic().catch(()=>{});
+      if(micActive.value) micPausedForProtected=true;
+      micPausePromise=live.stopMic().catch(()=>{});
       micActive.value=false;
-      pushMessage('guide',`Campo protegido: ${data.label}. Preencha diretamente no formulário, sem ditar.`);
+      if(!data.required && autoSkipProtected.value) void skipCurrentProtectedOptional();
+      if(!autoSkipProtected.value || data.required)
+        pushMessage('guide','Campo protegido: '+data.label+'. '+
+          (data.required
+            ? 'Obrigatório: preencha no formulário, sem ditar.'
+            : 'Preencha no formulário ou pule o campo opcional. Nunca dite esse valor.'));
     } else {
       pushMessage('guide',`Etapa ${data.step+1}: ${data.label}. Informe um campo por vez.`);
       if(connected.value) scheduleGuide(data);
+      if(connected.value && micPausedForProtected) {
+        micPausedForProtected=false;
+        void micPausePromise.then(async()=>{
+          if(!connected.value || !formActive.value || onboardingQuestion.value?.field!==data.field)return;
+          await live.startMic(micMode.value);
+          micActive.value=true;
+        }).catch(()=>{error.value='Para retomar a voz, clique em Conversar por voz.';});
+      }
     }
     return;
   }
@@ -196,7 +253,11 @@ function onAppFrameMessage(event) {
   if(data.type==='potiguar:onboarding:review') {
     live.setOnboardingField(null);
     onboardingQuestion.value=null;onboardingReview.value=true;
-    pushMessage('guide','Revisão final: confira todos os dados. Em ambiente protegido, peça para mostrar a conclusão e confirme diretamente no formulário; a demonstração pública não cria funcionários.');
+    pushMessage('guide','Revisão final: confira todos os dados. '+
+      (skippedProtectedCount.value
+        ? 'Atenção: '+skippedProtectedCount.value+' campos opcionais protegidos foram adiados; preencha os necessários no formulário antes da confirmação. '
+        : '')+
+      'Em ambiente protegido, peça para mostrar a conclusão e confirme diretamente no formulário.');
     return;
   }
   if(data.type==='potiguar:onboarding:completed') {
@@ -237,14 +298,23 @@ async function onAppFrameLoad() {
   }catch{}
   if(formActive.value) {
     if(changed){
+      autoSkipProtected.value=false;skippedProtectedCount.value=0;micPausedForProtected=false;
       cancelPendingActions();onboardingQuestion.value=null;onboardingReview.value=false;
       live.setOnboardingField(null);
     }
     live.setOnboardingMode(connected.value && live.allowOnboardingSuggestions);
-    if(changed && micActive.value){await live.stopMic();micActive.value=false;}
+    if(changed && micActive.value){
+      micPausedForProtected=true;
+      micPausePromise=live.stopMic().catch(()=>{});
+      await micPausePromise;
+      micActive.value=false;
+    }
     if(connected.value && live.allowOnboardingSuggestions)beginGuidedForm();
   } else {
-    if(wasForm){cancelPendingActions();onboardingQuestion.value=null;onboardingReview.value=false;}
+    if(wasForm){
+      autoSkipProtected.value=false;skippedProtectedCount.value=0;micPausedForProtected=false;
+      cancelPendingActions();onboardingQuestion.value=null;onboardingReview.value=false;
+    }
     live.setOnboardingMode(false);
   }
   if(navigationWaiter)resolveNavigation(routeReached(navigationWaiter.expected,route)?'navigated':'denied');
@@ -419,6 +489,12 @@ function send() {
       return;
     }
   }
+  // Texto "pular campo" é executado localmente e não enviado ao provedor.
+  if(formActive.value && question && !question.safe && !question.required &&
+     /^(?:pular|pule|próximo|proximo|seguir|avançar|avancar|não informar|nao informar|deixar em branco)(?: (?:este |esse |o |a )?(?:campo|cpf))?[.!]?$/i.test(message)) {
+    textInput.value='';pushMessage('user',message);
+    void skipCurrentProtectedOptional();return;
+  }
   if(formActive.value && isProtectedInput(message)) {
     error.value='Dado possivelmente protegido: preencha diretamente no formulário.';return;
   }
@@ -575,6 +651,24 @@ onUnmounted(()=>{
           </div>
 
           <div class="composer">
+            <p v-if="formActive && skippedProtectedCount>0" class="protected-review-alert" role="note">
+              {{ skippedProtectedCount }} campos opcionais protegidos adiados. Revise-os no formulário antes de concluir.
+            </p>
+            <div v-if="connected && formActive && onboardingQuestion && !onboardingQuestion.safe"
+                 class="protected-step-actions" role="group" aria-label="Avançar no campo protegido">
+              <strong>Campo protegido: {{ onboardingQuestion.label }}</strong>
+              <p v-if="onboardingQuestion.required">Obrigatório: preencha diretamente no formulário, sem ditar para a IA.</p>
+              <p v-else>Opcional: preencha no formulário ou deixe para a revisão final.</p>
+              <div class="protected-step-buttons">
+                <button type="button" @click="openCurrentProtectedField">Preencher no formulário</button>
+                <button v-if="!onboardingQuestion.required && !autoSkipProtected" type="button"
+                    :disabled="skipProtectedBusy" @click="skipCurrentProtectedOptional">Pular este campo</button>
+                <button v-if="!onboardingQuestion.required && !autoSkipProtected" type="button"
+                    :disabled="skipProtectedBusy" @click="skipProtectedOptionalsByChoice">Seguir sem opcionais protegidos</button>
+                <button v-if="autoSkipProtected" type="button" @click="autoSkipProtected=false">Parar de pular automaticamente</button>
+              </div>
+              <p v-if="autoSkipProtected" class="protected-step-note">Opcionais protegidos adiados: {{ skippedProtectedCount }}. Revise os dados necessários antes de concluir.</p>
+            </div>
             <p v-if="error" class="error" role="alert">{{ error }}</p>
             <p v-if="detail && connected" class="thinking" aria-live="polite">Estado da IA: {{ detail }}</p>
             <form @submit.prevent="send" class="prompt-form">
