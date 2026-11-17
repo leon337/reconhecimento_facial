@@ -146,6 +146,34 @@ const checks=[],errors=[],tokenResponses=[],sockets=new Set(),closed=new Set();
   await page.waitForFunction(()=>document.querySelector('iframe.app-frame')?.contentDocument
     ?.querySelector('#guided-field')?.textContent?.includes('Data de nascimento'),{timeout:13000});
   checks.push('single_optional_protected_field_skipped_by_operator');
+  // Etapa pessoal real: abrir o campo protegido no formulário (a conversa fica oculta).
+  await page.evaluate(()=>document.querySelector('.protected-step-buttons button:nth-child(2)').click());
+  await page.waitForFunction(()=>document.querySelector('iframe.app-frame')?.contentDocument
+    ?.querySelector('#guided-field')?.textContent?.includes('Documento de identidade'),{timeout:11000});
+  await page.evaluate(()=>document.querySelector('.protected-step-buttons button:first-child').click());
+  await page.waitForFunction(()=>Boolean(document.querySelector('iframe.app-frame')?.contentDocument
+    ?.querySelector('.guided-manual-actions .guided-manual-save')),{timeout:11000});
+  assert.equal(await page.evaluate(()=>getComputedStyle(
+    document.querySelector('.persistent-copilot-grid')).display),'none');
+  checks.push('manual_focus_opens_inline_form_actions_and_hides_chat');
+  await page.evaluate(()=>{
+    const inside=document.querySelector('iframe.app-frame').contentDocument;
+    const action=inside.querySelector('.guided-manual-actions');
+    const field=action.closest('.field-item').querySelector('input,textarea,select');
+    if(!field || !field.name)throw Error('Protected field not found');
+    field.value='IDENTIFICACAO-FICTICIA';
+    field.dispatchEvent(new Event('input',{bubbles:true}));
+    // Não disparar blur ou change: o botão local deve confirmar a transição.
+    inside.querySelector('.guided-manual-save').click();
+  });
+  await page.waitForFunction(()=>!document.querySelector('iframe.app-frame')
+    ?.contentDocument?.querySelector('.guided-manual-actions')
+    && !document.querySelector('iframe.app-frame')?.contentDocument
+      ?.querySelector('#guided-field')?.textContent?.includes('Documento de identidade'),{timeout:14000});
+  checks.push('manual_inline_save_continues_without_blurring');
+  await page.evaluate(()=>document.querySelector('.app-stage-controls button:first-child').click());
+  await page.waitForFunction(()=>Boolean(document.querySelector('.protected-step-buttons button:nth-child(3)')),
+    {timeout:10000});
   await page.evaluate(()=>document.querySelector('.protected-step-buttons button:nth-child(3)').click());
   await page.waitForFunction(()=>document.querySelector('iframe.app-frame')?.contentDocument
     ?.querySelector('#guided-field')?.textContent?.includes('Escolaridade'),{timeout:18000});

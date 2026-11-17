@@ -197,6 +197,7 @@
     'access_role','access_login','access_scope','biometric_notice_ack',
   ]);
   let pendingProposal=null;
+  let manualFieldActions=null;
   const guide = window.PotiguarOnboardingController;
   const guidedFieldLabel = document.getElementById('guided-field');
   let guided=false, activeField=null, forcedField=null, guideBusy=false, guidedApplying=false;
@@ -210,7 +211,59 @@
   function fieldLabel(control) {
     return control.closest('.field-item')?.querySelector('label')?.textContent?.replace('*','').trim() || control.name;
   }
+  function clearManualFieldActions() {
+    manualFieldActions?.remove();
+    manualFieldActions=null;
+  }
+  function showManualFieldActions(control) {
+    clearManualFieldActions();
+    if(!guided || !control || control!==activeField || guide.isSafe(current,control.name))
+      return;
+    const holder=control.closest('.field-item');
+    if(!holder)return;
+    const action=document.createElement('div');
+    action.className='guided-manual-actions';
+    action.setAttribute('role','group');
+    action.setAttribute('aria-label','Continuar o cadastro após preenchimento manual');
+    const note=document.createElement('p');
+    note.className='guided-manual-note';
+    note.textContent='Preencha somente no formulário. Depois clique em Salvar e continuar.';
+    const confirm=document.createElement('button');
+    confirm.type='button';
+    confirm.className='guided-manual-save';
+    confirm.textContent='Salvar e continuar';
+    confirm.addEventListener('click',async()=>{
+      if(control!==activeField || blocked)return;
+      if(!guide.hasValue(control) || !control.checkValidity()){
+        alertError('Preencha o campo manualmente ou, se opcional, use Pular sem informar.');
+        control.focus({preventScroll:false});
+        return;
+      }
+      confirm.disabled=true;
+      await fieldCompleted(control);
+      if(control===activeField)confirm.disabled=false;
+    });
+    action.append(note,confirm);
+    if(!control.required && !mustConfirmManually.has(control.name)){
+      const skip=document.createElement('button');
+      skip.type='button';
+      skip.className='guided-manual-skip';
+      skip.textContent='Pular sem informar';
+      skip.addEventListener('click',async()=>{
+        if(control!==activeField || blocked || guide.hasValue(control))return;
+        visitedFields.add(String(current)+':'+control.name);
+        activeField=null;
+        clearManualFieldActions();
+        await guideNext();
+      });
+      action.append(skip);
+    }
+    holder.append(action);
+    manualFieldActions=action;
+    action.scrollIntoView({block:'nearest',behavior:'smooth'});
+  }
   function announceField(control) {
+    clearManualFieldActions();
     activeField=control;
     const safe=guide.isSafe(current,control.name);
     const options=control.tagName==='SELECT'
@@ -234,6 +287,7 @@
       forcedField=null;
       if (chosen) { announceField(chosen); return; }
       activeField=null;
+      clearManualFieldActions();
       guidedFieldLabel.hidden=true;
       if (current===7) {
         if (!reviewAnnounced) { reviewAnnounced=true; sendToCopilot({type:'potiguar:onboarding:review'}); }
@@ -253,6 +307,7 @@
     try {
       await saveDraft();
       if (activeField!==control) return;
+      clearManualFieldActions();
       visitedFields.add(`${current}:${control.name}`);
       activeField=null;
       sendToCopilot({type:'potiguar:onboarding:filled',step:current,field:control.name});
@@ -290,6 +345,7 @@
   }
   const originalShowStep=showStep;
   showStep=function(index){
+    clearManualFieldActions();
     originalShowStep(index);
     pendingProposal=null;
     proposalPanel.hidden=true;
@@ -319,6 +375,7 @@
     copilotDrawer.hidden=true;copilotBackdrop.hidden=true;
     copilotDrawer.setAttribute('aria-hidden','true');openCopilot.setAttribute('aria-expanded','false');
     guided=false;activeField=null;forcedField=null;
+    clearManualFieldActions();
     guidedFieldLabel.hidden=true;
     clearTimeout(advanceTimer);
     pendingProposal=null;proposalPanel.hidden=true;openCopilot.focus();
@@ -370,10 +427,13 @@
         }
         if(message.action==='focus_current_field') {
           if(!activeField)return {status:'invalid_state'};
+          const control=activeField;
+          if(!guide.isSafe(current,control.name))showManualFieldActions(control);
           if(shellHosted){
-            activeField.focus({preventScroll:false});
             window.parent.postMessage({type:'potiguar:shell:show-form'},location.origin);
           }else minimizeDrawer();
+          control.focus({preventScroll:false});
+          control.scrollIntoView({block:'center',behavior:'smooth'});
           return {status:'focused',step:current};
         }
         if(message.action==='skip_optional') {
@@ -441,7 +501,8 @@
     }
     if(message.type==='potiguar:onboarding:ready'){sendStepContext();return;}
     if(message.type==='potiguar:onboarding:stop'){
-      guided=false;activeField=null;forcedField=null;clearTimeout(advanceTimer);guidedFieldLabel.hidden=true;return;
+      guided=false;activeField=null;forcedField=null;
+      clearManualFieldActions();clearTimeout(advanceTimer);guidedFieldLabel.hidden=true;return;
     }
     if(message.type==='potiguar:onboarding:begin'){
       if(!guide || blocked || (!shellHosted && copilotDrawer.hidden))return;
