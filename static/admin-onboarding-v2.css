@@ -27,3 +27,10 @@
 .copilot-proposal-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}
 .copilot-proposal-actions button{flex:1}
 @media(max-width:680px){.draft-line{flex-wrap:wrap}.copilot-open-button{width:100%;margin-left:0}.copilot-drawer{width:100vw}.copilot-drawer-header{padding:11px 13px}.copilot-proposal{margin:7px;max-height:33vh}}
+
+/* Confirmacao manual local: a pessoa nao depende da janela do Copiloto para avancar. */
+.guided-manual-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:8px;padding:10px;border:1px solid #9ac2aa;background:#f2f9f4;border-radius:9px}
+.guided-manual-note{width:100%;margin:0;color:#315d42;font-size:12px;line-height:1.35}
+.guided-manual-actions button{border:1px solid #9ac2aa;background:#fff;color:#14533a;border-radius:8px;padding:9px 11px;font-size:12px;font-weight:700;cursor:pointer}
+.guided-manual-actions .guided-manual-save{background:#176143;color:#fff;border-color:#176143}
+.guided-manual-actions button:disabled{opacity:.55;cursor:wait}
