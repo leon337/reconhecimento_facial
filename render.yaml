@@ -1,0 +1,42 @@
+# Potiguar public SYNTHETIC demo only. Never point to main:app or a real database.
+# Not yet applied: workspace Render Hobby is at its 25-service limit (2026-11-17).
+previews:
+  generation: off
+
+services:
+  - type: web
+    name: potiguar-v2-demo-backend
+    runtime: docker
+    plan: free
+    region: virginia
+    repo: https://github.com/leon337/reconhecimento_facial
+    branch: develop
+    autoDeployTrigger: off
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    dockerCommand: "sh -c 'exec gunicorn --bind 0.0.0.0:$PORT --workers 1 --timeout 120 scripts.potiguar_render_demo_entry:app'"
+    envVars:
+      - key: APP_ENV
+        value: development
+      - key: POTIGUAR_DEPLOYMENT_ROLE
+        value: development
+      - key: POTIGUAR_RENDER_SYNTHETIC_ONLY
+        value: "1"
+      - key: POTIGUAR_PUBLIC_DEMO
+        value: "1"
+      - key: POTIGUAR_ENV_LABEL
+        value: DEMO_PUBLICA_SINTETICA_SEM_LOGIN
+      - key: POTIGUAR_HML_PUBLIC_HTTPS
+        value: "1"
+      - key: POTIGUAR_COPILOT_ENABLED
+        value: "1"
+      - key: POTIGUAR_COPILOT_ACTIONS_ENABLED
+        value: "1"
+      - key: POTIGUAR_COPILOT_DEMO_DAILY_LIMIT
+        value: "60"
+      - key: DATABASE_URL
+        value: sqlite:////app/instance/ponto.db
+      - key: WEB_CONCURRENCY
+        value: "1"
+      - key: SECRET_KEY
+        generateValue: true
