@@ -53,3 +53,13 @@ Registrar SHA local/remoto, status PR/CI, resultado do deploy, evidências PASS/
 - Vercel potiguar-v2-demo possui rootDirectory deploy/vercel-demo configurado e URL sintética respondendo HTTP 200 com cabeçalho esperado. **Ainda não há Git conectado nem origem HTTPS backend permanente**: a ligação automática deve ser feita somente após configurar branch de produção da demo em develop e validar que não será adotada main inadvertidamente.
 - Recibos locais sem segredos: /home/leo/.local/state/potiguar-consolidation-20261117. Não versionar dumps privados.
 - Continuidades ainda abertas e deliberadamente não tratadas como concluídas: infraestrutura durável da demo, integração Git/Vercel, sessão longa/etapas 4–8 com Gemini Web, NF-01 não rastreado, cadeia de pagamentos em draft. Não criar implementação concorrente para elas.
+
+## Preparação de Render gratuito (2026-11-17, não publicada)
+
+- Workspace Render autorizado: Leandro's workspace, ID `tea-d2u2msje5dus73eb6ehg`; inventário ao vivo: **25 serviços**, nenhum do repositório `leon337/reconhecimento_facial`.
+- Criação de serviço web `potiguar-v2-demo-backend` com plano `free` rejeitada: **Hobby Tier is limited to 25 services**. Nenhum plano pago nem serviço novo criado.
+- Blueprint `exs-dbue7m8jo6nc739qvtb0` criado com `autoSync=false`, `existingResources=create_new` e branch de trabalho isolada; planejamento com status `failed` pela mesma restrição de 25 serviços. **Não aprovado/aplicado**.
+- Arquivos canônicos: `render.yaml`, `scripts/potiguar_render_demo_environment.py`, `scripts/potiguar_render_demo_entry.py`, `tests/test_render_demo_environment_unittest.py`, `scripts/potiguar_render_demo_smoke.py`; guia `docs/POTIGUAR-RENDER-DEMO-READINESS.md`.
+- Não reutilizar serviços de outros repositórios nem apagar recursos apenas para contornar limite sem decisão humana específica. Serviço `potiguar-intermitente-app` preservado: é outro repositório.
+- Render Free hiberna e perde SQLite local: domínio HTTPS pode ser estável, **rascunhos não são persistentes**. A demo Render ficará sem Gemini Live até controle durável de quota/credenciais e novo aceite; não injetar chaves da homologação.
+- A Vercel **continua apontando ao Quick Tunnel existente**. Não alterar `deploy/vercel-demo/vercel.json` até Render passar verificações de segurança externas e haver vaga livre, sem custos.
