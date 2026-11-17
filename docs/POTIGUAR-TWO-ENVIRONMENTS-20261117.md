@@ -36,7 +36,7 @@ O cadastro V2 possui oito etapas. O Gemini Live pode navegar nos módulos, orien
 
 ## Estado de implantação: reconciliação obrigatória
 
-Em 2026-11-17 havia três instalações Flask de testes ativas no notebook (public demo e duas HML), além de túnel e gateway auxiliares e vários contêineres de backup **parados**. Isso é legado de testes e não representa três versões oficiais. **Produção externa não foi confirmada na consulta ao host**, logo não alegar dois deploys ativos. A migração deve:
+Em 2026-11-17 foram encontradas três instalações Flask de testes ativas no notebook, além de túneis e gateways auxiliares. As seis instâncias/serviços antigos foram **parados** com preservação de todos os bancos, volumes e containers de backup. Inventário confidencial em `~/.local/state/potiguar-dual-environment-20261117/legacy-container-inventory.json` (0600). **Resta uma instância de desenvolvimento ativa localmente**, `potiguar-copilot-mobile-hml-20261113`, autenticada e respondendo HTTP 200 em `127.0.0.1:18953/admin/login`. **Produção externa não foi confirmada como ativa**, logo não afirmar haver dois deploys. A migração deve:
 - Identificar o banco real e backups antes de parar ou excluir qualquer contêiner/volume;
 - Preservar evidências e dados, desligar os túneis e demos antigos somente depois de validar o novo desenvolvimento restrito;
 - Não apagar volumes, registros ou credenciais sem autorização específica;
@@ -57,9 +57,9 @@ Após **cada** alteração de código:
 - [x] Fonte única e ambientes definidos; guardas de APP_ENV para desenvolvimento/produção.
 - [x] Contrato `request_completion` com recibo sem criação; confirmação humana no V2.
 - [x] Contrato de metadados atualizado para manter modo `guidance_only` com recurso desabilitado.
-- [ ] CI do PR de desenvolvimento inteiramente verde após alterações atuais (bloqueia merge).
-- [ ] Teste ponta a ponta em desenvolvimento protegido até a criação sintética transacional, verificando lista e auditoria.
-- [ ] Reconciliar e aposentar instâncias legadas depois de backups e validação; não excluir arquivos de pessoas.
+- [ ] CI do PR #45 inteiramente verde no **SHA final** antes de merge. O SHA intermediário `2593bd4` passou nas cinco verificações do GitHub Actions.
+- [x] Teste ponta a ponta na instância protegida: seis verificações aprovadas com funcionário explicitamente sintético; criado **após** diálogo humano no navegador e comprovado na lista; também passou a regressão Flask com transação atômica e rascunho criptografado. Nenhum dado real foi usado.
+- [x] Instâncias legadas ativas foram paradas (não removidas) e inventariadas; volumes, bancos e backups preservados; somente a instância privada de desenvolvimento permanece ativa no host.
 - [ ] Identificar ambiente real de produção e homologar backups, credenciais, domínio e plano de rollback.
 - [ ] Obter dados de funcionário e consentimentos correspondentes, quando houver registro real autorizado. Nenhum dado pessoal foi fornecido nesta missão.
 - [ ] Gate humano de publicação na produção.
