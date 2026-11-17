@@ -74,6 +74,15 @@ def audit(action: str, outcome: str, *, actor=None, target_type=None, target_id=
     return event
 
 
+SHELL_FRAME_ENDPOINTS = frozenset({
+    # Somente interfaces autenticadas; login, respostas JSON, APIs de escrita e
+    # biometria POST permanecem com enquadramento negado por padrão.
+    'admin.dashboard', 'admin.history', 'admin.reports', 'admin.list_users',
+    'admin.new_user', 'admin.onboarding_drafts', 'admin.onboarding_new',
+    'admin.onboarding_form', 'admin.biometric_form',
+})
+
+
 def init_observability(app):
     app.config.setdefault("LOGIN_RATE_LIMIT_ATTEMPTS", 5)
     app.config.setdefault("LOGIN_RATE_LIMIT_WINDOW_SECONDS", 300)
@@ -90,7 +99,11 @@ def init_observability(app):
         request_id = _request_id()
         response.headers["X-Request-ID"] = request_id
         response.headers["X-Content-Type-Options"] = "nosniff"
-        response.headers["X-Frame-Options"] = "DENY"
+        frame_allowed = (request.method == 'GET' and response.status_code == 200
+                         and request.endpoint in SHELL_FRAME_ENDPOINTS)
+        response.headers["X-Frame-Options"] = (
+            "SAMEORIGIN" if frame_allowed or request.endpoint == "copilot.onboarding_embed" else "DENY"
+        )
         # Padrões rígidos para as rotas existentes; um endpoint específico
         # pode definir cabeçalhos ainda restritos ao seu próprio propósito
         # (ex.: microfone apenas na página autenticada do copiloto).
@@ -98,12 +111,20 @@ def init_observability(app):
         response.headers.setdefault(
             "Permissions-Policy", "camera=(self), microphone=(), geolocation=()"
         )
-        response.headers.setdefault(
-            "Content-Security-Policy",
-            "default-src 'self'; img-src 'self' data:; "
-            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
-            "script-src 'self'; frame-ancestors 'none'",
-        )
+        if frame_allowed:
+            response.headers.setdefault(
+                'Content-Security-Policy',
+                "default-src 'self'; img-src 'self' data:; "
+                "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+                "script-src 'self'; frame-ancestors 'self'",
+            )
+        else:
+            response.headers.setdefault(
+                'Content-Security-Policy',
+                "default-src 'self'; img-src 'self' data:; "
+                "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+                "script-src 'self'; frame-ancestors 'none'",
+            )
         if current_app.config.get("SESSION_COOKIE_SECURE"):
             response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
         started_at = getattr(g, "request_started_at", time.monotonic())

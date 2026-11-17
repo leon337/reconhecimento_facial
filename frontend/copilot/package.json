@@ -6,7 +6,7 @@
   "scripts": {
     "build": "vite build",
     "test": "node --test test/*.test.js",
-    "check": "node --check src/main.js && node --check src/live.js && node --check src/audio.js"
+    "check": "node --check src/main.js && node --check src/live.js && node --check src/audio.js && node --check src/vad.js && node --check src/registration.js"
   },
   "dependencies": {
     "@google/genai": "3.1.0",

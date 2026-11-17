@@ -43,14 +43,14 @@ def _no_cache(response):
 @permission_required(Permission.USERS_VIEW)
 def workspace():
     response = make_response(render_template("admin/copilot.html", csrf_value=generate_csrf()))
-    response.headers["Permissions-Policy"] = "microphone=(self), camera=()"
+    response.headers["Permissions-Policy"] = "microphone=(self), camera=(self)"
     # Restrito ao shell; áudio e tokens permanecem em memória do navegador.
     response.headers["Content-Security-Policy"] = (
         "default-src 'self'; script-src 'self'; style-src 'self'; "
         "connect-src 'self' https://generativelanguage.googleapis.com "
         "wss://generativelanguage.googleapis.com; "
         "img-src 'self' data:; media-src 'self' blob:; worker-src 'self'; "
-        "object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+        "frame-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
     )
     # Flask-WTF exige Referer de mesma origem em HTTPS para aceitar CSRF.
     # no-referrer bloquearia o POST do cliente Vue antes da chamada Gemini.
@@ -58,6 +58,13 @@ def workspace():
     response = _no_cache(response)
     response.headers["Referrer-Policy"] = "same-origin"
     return response
+
+
+@bp.get("/csrf-token")
+@permission_required(Permission.USERS_VIEW)
+def session_csrf_token():
+    """Emite CSRF para o cookie de sessão atual, sem cache ou acesso externo."""
+    return _no_cache(jsonify(csrf_token=generate_csrf()))
 
 
 @bp.get("/meta")
@@ -69,12 +76,116 @@ def metadata():
         "configured": bool(_api_key()),
         "models": sorted(ALLOWED_MODELS),
         "can_create_user": user.can(Permission.USERS_CREATE),
+        "can_create_with_ai": bool(
+            _available()
+            and current_app.config.get("COPILOT_ACTIONS_ENABLED", False)
+            and user.can(Permission.USERS_CREATE)
+        ),
+        "demo_synthetic_only": bool(os.environ.get("POTIGUAR_COPILOT_DEMO_DAILY_LIMIT")),
+        "public_demo_no_login": bool(current_app.config.get('PUBLIC_DEMO_MODE', False)),
         "links": {
+            # Catálogo canônico de telas; o navegador não aceita URLs propostas pelo modelo.
+            "dashboard": url_for("admin.dashboard"),
+            "attendance": url_for("admin.history"),
+            "reports": url_for("admin.reports") if user.can(Permission.PUNCH_VIEW) else None,
             "users": url_for("admin.list_users"),
+            "drafts": url_for("admin.onboarding_drafts") if user.can(Permission.USERS_CREATE) else None,
             "new_user": url_for("admin.new_user") if user.can(Permission.USERS_CREATE) else None,
         },
-        "mode": "guidance_only",
+        "mode": ("guided_drafts_v2" if (
+            _available()
+            and current_app.config.get("COPILOT_ACTIONS_ENABLED", False)
+            and user.can(Permission.USERS_CREATE)
+        ) else "guidance_only"),
     }))
+
+
+@bp.get('/embed/onboarding')
+@permission_required(Permission.USERS_CREATE)
+def onboarding_embed():
+    """Copiloto Gemini Live em iframe mesma origem, sem permissões de persistência."""
+    if not _available() or not current_app.config.get('COPILOT_ACTIONS_ENABLED'):
+        return _no_cache(jsonify(error='Copiloto não habilitado.')), 503
+    response = make_response(render_template('admin/copilot_onboarding_embed.html', csrf_value=generate_csrf()))
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    response.headers['Permissions-Policy'] = 'microphone=(self), camera=()'
+    response.headers['Content-Security-Policy'] = (
+        "default-src 'self'; script-src 'self'; style-src 'self'; "
+        "connect-src 'self' https://generativelanguage.googleapis.com "
+        "wss://generativelanguage.googleapis.com; "
+        "img-src 'self' data:; media-src 'self' blob:; worker-src 'self'; "
+        "object-src 'none'; base-uri 'self'; frame-ancestors 'self'"
+    )
+    response = _no_cache(response)
+    response.headers['Referrer-Policy'] = 'same-origin'
+    return response
+
+
+@bp.post('/employee-create')
+@permission_required(Permission.USERS_CREATE)
+def employee_create():
+    """Endpoint legado encerrado: cadastro só pode ser concluído no V2."""
+    return _no_cache(jsonify(
+        error='A criação direta foi desativada. Continue pelo cadastro V2 de oito etapas.',
+        redirect=url_for('admin.new_user'),
+    )), 410
+
+
+@bp.post('/employee-draft')
+@permission_required(Permission.USERS_CREATE)
+def employee_draft():
+    """Converte a proposta básica do Copiloto em rascunho V2; NÃO cria funcionário."""
+    if not _available() or not current_app.config.get('COPILOT_ACTIONS_ENABLED'):
+        return _no_cache(jsonify(error='Cadastro assistido não habilitado.')), 503
+    if not request.is_json:
+        return _no_cache(jsonify(error='Envie JSON.')), 415
+    if request.content_length is not None and request.content_length > 4096:
+        return _no_cache(jsonify(error='Cadastro excede o tamanho permitido.')), 413
+    from app.copilot.actions import InvalidDraft, validate_draft
+    from app.onboarding_models import OnboardingDraft
+    from app.admin.onboarding import _seal, MAX_ACTIVE_DRAFTS
+    from app.models import db
+    from app.observability import audit
+    from uuid import uuid4
+    try:
+        draft = validate_draft(request.get_json(silent=True))
+    except InvalidDraft as exc:
+        return _no_cache(jsonify(error=str(exc))), 422
+    if os.environ.get('POTIGUAR_COPILOT_DEMO_DAILY_LIMIT'):
+        if not (
+            (draft.name.lower().endswith(' de teste') or draft.name.lower().startswith('teste '))
+            and (draft.username.endswith('.teste') or draft.username.startswith('teste.'))
+            and (draft.registration or '').upper().startswith('TEST-')
+        ):
+            return _no_cache(jsonify(
+                error='Homologação: use apenas nome de Teste, usuário .teste e matrícula TEST-...'
+            )), 422
+    if OnboardingDraft.query.filter_by(owner_user_id=g.admin_user.id, status='draft').count() >= MAX_ACTIVE_DRAFTS:
+        return _no_cache(jsonify(error='Limite de rascunhos atingido.')), 429
+    row=OnboardingDraft(
+        id=uuid4().hex,
+        owner_user_id=g.admin_user.id,
+        company_id=session.get('admin_company_id'),
+        worksite_id=session.get('admin_worksite_id'),
+        encrypted_payload=_seal({
+            'full_name': draft.name,
+            'job_role': draft.job_title or '',
+            'schedule': draft.schedule or '',
+            'access_login': draft.username,  # Solicitação de acesso permanece DESMARCADA.
+            'has_system_access': False,
+        }),
+        version=0,
+        status='draft',
+    )
+    db.session.add(row)
+    audit('copilot.onboarding.draft_prepared','success',actor=g.admin_user,
+          target_type='onboarding_draft',target_id=row.id,
+          metadata={'source':'human_confirmed_v2'})
+    db.session.commit()
+    return _no_cache(jsonify(
+        created=False, draft_created=True,
+        redirect=url_for('admin.onboarding_form',draft_id=row.id),
+    )), 201
 
 
 @bp.post("/session-token")

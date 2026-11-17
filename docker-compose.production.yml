@@ -4,6 +4,8 @@ services:
     restart: unless-stopped
     environment:
       APP_ENV: production
+      POTIGUAR_DEPLOYMENT_ROLE: production
+      POTIGUAR_PUBLIC_DEMO: "0"
       SECRET_KEY: ${SECRET_KEY}
       BIOMETRIC_ENCRYPTION_KEY: ${BIOMETRIC_ENCRYPTION_KEY}
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}

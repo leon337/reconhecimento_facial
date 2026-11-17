@@ -18,14 +18,16 @@ class DemoQuotaUnavailable(RuntimeError):
     pass
 
 
-def reserve_session(instance_path: str, limit: int) -> int:
+def reserve_session(instance_path: str, limit: int, *, category: str = "voice") -> int:
+    if category not in {"voice", "employee"}:
+        raise DemoQuotaUnavailable("Categoria de cota não reconhecida")
     if limit <= 0:
         return 0
     folder = Path(instance_path).resolve()
     if not folder.is_dir():
         raise DemoQuotaUnavailable("Diretório privado da homologação ausente")
     db_path = folder / "copilot-demo-quota.sqlite3"
-    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    today = category + ":" + datetime.now(timezone.utc).strftime("%Y-%m-%d")
     try:
         with sqlite3.connect(str(db_path), timeout=5, isolation_level=None) as conn:
             conn.execute(

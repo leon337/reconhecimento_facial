@@ -9,6 +9,9 @@ from flask_migrate import Migrate
 from flask_wtf.csrf import CSRFProtect
 
 from app.admin.routes import bp as admin_bp
+from app.admin import dashboard as _dashboard_routes  # noqa: F401; register read-only reports
+from app.admin import reporting as _report_routes  # noqa: F401
+from app.admin import onboarding as _onboarding_routes  # noqa: F401
 from app.models import db
 from app.observability import init_observability
 
@@ -35,6 +38,16 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     instance_dir.mkdir(exist_ok=True)
 
     app_env = os.environ.get("APP_ENV", "development").lower()
+    # Um único código; duas implantações oficiais com fronteiras explícitas.
+    deployment_role = os.environ.get("POTIGUAR_DEPLOYMENT_ROLE", "").strip().lower()
+    if deployment_role and deployment_role not in {"development", "production"}:
+        raise RuntimeError("POTIGUAR_DEPLOYMENT_ROLE inválido")
+    if deployment_role == "development" and app_env != "development":
+        raise RuntimeError("A implantação de desenvolvimento exige APP_ENV=development")
+    if deployment_role == "production" and app_env != "production":
+        raise RuntimeError("A implantação de produção exige APP_ENV=production")
+    if deployment_role == "production" and os.environ.get("POTIGUAR_PUBLIC_DEMO") == "1":
+        raise RuntimeError("Demonstração anônima proibida na produção")
     secret_key = os.environ.get("SECRET_KEY")
     if app_env == "production" and not secret_key:
         raise RuntimeError("SECRET_KEY é obrigatória em produção.")
@@ -64,6 +77,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
         LOGIN_RATE_LIMIT_ATTEMPTS=5,
         LOGIN_RATE_LIMIT_WINDOW_SECONDS=300,
         COPILOT_ENABLED=os.environ.get("POTIGUAR_COPILOT_ENABLED", "0") == "1",
+        COPILOT_ACTIONS_ENABLED=os.environ.get("POTIGUAR_COPILOT_ACTIONS_ENABLED", "0") == "1",
     )
 
     if test_config:
@@ -78,6 +92,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     db.init_app(app)
     from app.audit_models import AuditEvent  # noqa: F401
     from app.biometric_models import BiometricProfile  # noqa: F401
+    from app.onboarding_models import OnboardingDraft, EmployeeOnboarding  # noqa: F401
     from app.attendance_models import (  # noqa: F401
         AttendanceAdjustment,
         AttendanceClosure,
