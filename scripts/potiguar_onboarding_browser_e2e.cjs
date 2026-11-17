@@ -98,6 +98,12 @@ const sleep=(ms)=>new Promise(resolve=>setTimeout(resolve,ms));
   await frame.evaluate(()=>parent.postMessage({type:'potiguar:onboarding:proposal',step:1,suggestions:[{field:'full_name',value:'Maria Oliveira de Teste'}]},location.origin));
   await page.waitForFunction(()=>document.querySelector('#field-full_name')?.value==='Maria Oliveira de Teste'&&document.querySelector('#guided-field')?.textContent.includes('CPF'),{timeout:7000});
   checks.push('one_safe_field_then_protected_field');
+  // Não pular um valor protegido presente, mesmo ainda não salvo.
+  await page.$eval('#field-cpf',el=>{el.value='VALOR_DE_TESTE';});
+  receipt=await operation('potiguar:onboarding:execute',{action:'skip_optional'});
+  assert.equal(receipt.status,'denied');
+  checks.push('cannot_skip_optional_with_unsaved_protected_value');
+  await page.$eval('#field-cpf',el=>{el.value='';});
   await page.click('#copilot-minimize');
   assert.equal(await page.$eval('#onboarding-copilot-drawer',el=>getComputedStyle(el).display),'none');
   await page.focus('#field-cpf');
@@ -129,8 +135,19 @@ const sleep=(ms)=>new Promise(resolve=>setTimeout(resolve,ms));
       assert(values[q.field],'unexpected required safe field: '+q.field);
       await frame.evaluate(data=>parent.postMessage({type:'potiguar:onboarding:proposal',step:data.step,suggestions:[{field:data.field,value:data.value}]},location.origin),{...q,value:values[q.field]});
     }else{
-      assert.equal(q.field,'biometric_timing','unexpected protected required field');
-      await page.$eval('#field-biometric_timing',el=>{el.value='Depois';el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));});
+      if(q.field==='biometric_timing'){
+        await page.$eval('#field-biometric_timing',el=>{
+          el.value='Agora';el.dispatchEvent(new Event('input',{bubbles:true}));
+          el.dispatchEvent(new Event('change',{bubbles:true}));
+        });
+      }else if(q.field==='biometric_notice_ack'){
+        receipt=await operation('potiguar:onboarding:execute',{action:'skip_optional'});
+        assert.equal(receipt.status,'denied','conditional consent cannot be auto-skipped');
+        checks.push('biometric_conditional_consent_requires_explicit_action');
+        await page.$eval('[name=biometric_notice_ack]',el=>{
+          el.checked=true;el.dispatchEvent(new Event('change',{bubbles:true}));
+        });
+      }else assert.fail('unexpected protected required field: '+q.field);
     }
     await page.waitForFunction((count)=>
       document.querySelector('#current-step-label')?.textContent.includes('Etapa 8')

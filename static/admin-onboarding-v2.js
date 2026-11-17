@@ -190,6 +190,12 @@
     3:['department','job_role','manager','schedule','contract_type','transport_benefit','benefit_policy'],
     4:[],5:[],6:[],7:[],
   };
+  // São condicionais, e quando aplicáveis exigem decisão humana explícita.
+  // Nunca os ignorar em modo de avanço automático por campos opcionais.
+  const mustConfirmManually=new Set([
+    'sensitive_data_ack','third_party_name','third_party_cpf','third_party_reason',
+    'access_role','access_login','access_scope','biometric_notice_ack',
+  ]);
   let pendingProposal=null;
   const guide = window.PotiguarOnboardingController;
   const guidedFieldLabel = document.getElementById('guided-field');
@@ -212,7 +218,8 @@
     guidedFieldLabel.hidden=false;
     guidedFieldLabel.textContent=`Campo atual: ${fieldLabel(control)}`;
     sendToCopilot({type:'potiguar:onboarding:question',step:current,field:control.name,
-      label:fieldLabel(control),safe,required:control.required,options});
+      label:fieldLabel(control),safe,
+      required:control.required||mustConfirmManually.has(control.name),options});
     // O campo protegido só recebe foco quando o usuário abre o formulário.
   }
   async function guideNext() {
@@ -370,7 +377,9 @@
           return {status:'focused',step:current};
         }
         if(message.action==='skip_optional') {
-          if(!activeField || activeField.required)return {status:'denied'};
+          if(!activeField || activeField.required ||
+             mustConfirmManually.has(activeField.name) || guide.hasValue(activeField))
+            return {status:'denied'};
           visitedFields.add(`${current}:${activeField.name}`);
           activeField=null;
           await guideNext();

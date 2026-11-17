@@ -1,6 +1,14 @@
 /* Shell persistente: uma sessão Live; as telas internas podem navegar sem desmontá-la. */
 .public-demo-banner{flex:0 0 auto;background:#fff6e5;color:#704a00;border:1px solid #ead49f;border-radius:10px;padding:9px 12px;font-size:12px;line-height:1.35;margin-bottom:8px}
 .public-demo-banner strong{font-size:11px;letter-spacing:.03em}
+.protected-step-actions{border:1px solid #cfded4;background:#f6faf7;border-radius:10px;padding:9px 10px;margin-bottom:9px;font-size:12px;color:#234c3e}
+.protected-step-actions strong{display:block;margin-bottom:4px}
+.protected-step-actions p{margin:2px 0 8px;line-height:1.35}
+.protected-step-buttons{display:flex;gap:6px;flex-wrap:wrap}
+.protected-step-buttons button{padding:7px 9px;border-radius:8px;border:1px solid #a5c7b3;background:#fff;color:#12513a;cursor:pointer;font-weight:650;font-size:11px}
+.protected-step-buttons button:disabled{opacity:.55;cursor:wait}
+.protected-step-actions .protected-step-note{color:#6a5632;margin-top:8px}
+.protected-review-alert{padding:7px 9px;background:#fff7e7;border:1px solid #d9bf82;border-radius:8px;color:#79520a;font-size:11px;line-height:1.35}
 .persistent-shell{height:100dvh;min-height:0;overflow:hidden}
 .persistent-shell .sidebar{height:100%;overflow-y:auto}
 .persistent-shell .sidebar .side-item[type="button"]{
