@@ -17,12 +17,21 @@ if command -v gh >/dev/null;then
  gh pr list -R leon337/reconhecimento_facial --state open --limit 100 --json number,headRefName,baseRefName,isDraft --jq '.[]|[.number,.headRefName,.baseRefName,.isDraft]|@tsv'
 else echo 'gh CLI unavailable: PRs not checked';fi
 echo 'PUBLIC_SYNTHETIC_DEMO'
-if command -v curl >/dev/null;then
- curl -sSk --max-time 10 -o /dev/null -w 'Vercel HTTP %{http_code}\n' https://potiguar-v2-demo.vercel.app/admin/copilot || echo 'Vercel not reachable'
+command -v curl >/dev/null || { echo 'BLOCKED: curl unavailable';exit 4; }
+headers="$(mktemp)"
+trap 'rm -f "$headers"' EXIT
+http="$(curl -sSL --max-time 12 -D "$headers" -o /dev/null -w '%{http_code}' https://potiguar-v2-demo.vercel.app/admin/copilot)" || { echo 'BLOCKED: Vercel unreachable';exit 4; }
+printf 'Vercel HTTP %s\n' "$http"
+if test "$http" != 200 || ! grep -qi '^x-potiguar-demo: synthetic-no-login' "$headers";then
+ echo 'BLOCKED: Vercel synthetic-demo gate invalid';exit 4
 fi
 echo 'DISK';df -h . |tail -1
-echo 'CHECK_RESULT'
-if test "$branch" != develop || test "$local_head" != "$dev_head" || test -n "$(git status --porcelain)";then
- echo 'BLOCKED: use clean synchronized develop';exit 3
+free_kib="$(df -Pk . |awk 'NR==2 {print $4}')"
+if test "$free_kib" -lt 3145728;then
+ echo 'BLOCKED: less than 3 GiB free for builds';exit 5
 fi
-echo 'PASS: clean develop synchronized to GitHub'
+echo 'CHECK_RESULT'
+if test "$branch" != develop || test "$local_head" != "$dev_head" || test "$(git rev-parse main)" != "$prod_head" || test -n "$(git status --porcelain)";then
+ echo 'BLOCKED: local branches or worktree diverged from GitHub';exit 3
+fi
+echo 'PASS: clean develop/main, synthetic Vercel and disk preflight'
