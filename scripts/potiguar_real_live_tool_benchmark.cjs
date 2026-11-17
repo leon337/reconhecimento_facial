@@ -4,8 +4,16 @@
 const cp=require('node:child_process');
 const path=require('node:path');
 const {pathToFileURL}=require('node:url');
-const {GoogleGenAI,Modality}=require('/home/leo/mcf-worktrees/potiguar-copilot-onboarding-20261112/frontend/copilot/node_modules/@google/genai');
 const root=path.resolve(__dirname,'..');
+let GoogleGenAI,Modality;
+try {
+  ({GoogleGenAI,Modality}=require(require.resolve('@google/genai',{
+    paths:[path.join(root,'frontend/copilot')]
+  })));
+} catch(error) {
+  console.error('Dependência @google/genai não instalada no checkout ativo. Execute: npm ci --prefix frontend/copilot');
+  process.exit(2);
+}
 const cases=[
  {id:'nav_dashboard',mode:'nav',text:'Por favor, abre o painel principal agora.',tool:'navigate_potiguar',destination:'dashboard'},
  {id:'nav_employees',mode:'nav',text:'Quero ir para a lista de funcionários.',tool:'navigate_potiguar',destination:'employees'},
