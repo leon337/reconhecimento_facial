@@ -1,0 +1,27 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "version": 2,
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/admin/copilot",
+      "permanent": false
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/:path*",
+      "destination": "https://unexpected-practitioners-stuck-paul.trycloudflare.com/:path*"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/:path*",
+      "headers": [
+        {"key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive"},
+        {"key": "Referrer-Policy", "value": "no-referrer"},
+        {"key": "Cache-Control", "value": "private, no-store"}
+      ]
+    }
+  ]
+}
