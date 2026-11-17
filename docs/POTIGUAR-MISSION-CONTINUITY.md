@@ -42,3 +42,14 @@ Desenvolver uma missão por vez em branch curta derivada de develop; não duplic
 ## Regra de conclusão
 
 Registrar SHA local/remoto, status PR/CI, resultado do deploy, evidências PASS/FAIL e pendências. Não afirmar que um teste não executado passou, nem declarar sincronização total enquanto houver outras árvores sujas.
+
+## Recibo de consolidação executada em 2026-11-17
+
+- PR #50 integrado: develop@8e10ec5c3ca690ce59fc328b42741fe7c78385b9; CI 3/3 PASS; main real permanece d64326789092992c2357dc6f945546bb192bebbf.
+- Worktrees locais redundantes removidos após preflight de alterações, SHA remoto exato, Docker mounts e processos: Copiloto legado e três fases de pagamentos. Filiais de pagamentos permanecem no GitHub nos PRs #42, #43 e #44.
+- Dois worktrees físicos restantes: desenvolvimento (develop) e checkout legado NF-01. NF-01 não é produção e contém dados não rastreados; manter até reconciliação documental própria.
+- Frontend reinstalado no checkout único de desenvolvimento; 41/41 testes JavaScript PASS, check de fontes PASS. Formulário de oito etapas sintético 24/24 PASS (incluindo bloqueios de CPF/consentimento e ação manual de continuar); esses testes não substituem voz física ou aceite de dados reais.
+- Limpeza de artefatos regeneráveis: npm/pip cache e imagens Docker antigas sem containers dependentes; disco passou de 99% / 1,7 GB livres para 94% / 8,3 GB livres. Perfis, dados, modelos, Docker volumes e demais worktrees com dados únicos preservados.
+- Vercel potiguar-v2-demo possui rootDirectory deploy/vercel-demo configurado e URL sintética respondendo HTTP 200 com cabeçalho esperado. **Ainda não há Git conectado nem origem HTTPS backend permanente**: a ligação automática deve ser feita somente após configurar branch de produção da demo em develop e validar que não será adotada main inadvertidamente.
+- Recibos locais sem segredos: /home/leo/.local/state/potiguar-consolidation-20261117. Não versionar dumps privados.
+- Continuidades ainda abertas e deliberadamente não tratadas como concluídas: infraestrutura durável da demo, integração Git/Vercel, sessão longa/etapas 4–8 com Gemini Web, NF-01 não rastreado, cadeia de pagamentos em draft. Não criar implementação concorrente para elas.
