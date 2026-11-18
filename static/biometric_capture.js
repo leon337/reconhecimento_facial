@@ -27,6 +27,7 @@
   const challengeUrl = app.dataset.challengeUrl;
   const csrfToken = app.dataset.csrfToken;
   let stream = null;
+  let cameraStarting = false;
   let busy = false;
 
   const sleep = (milliseconds) =>
@@ -56,6 +57,7 @@
   };
 
   const startCamera = async () => {
+    if (cameraStarting) return;
     if (!secureCameraAvailable()) {
       setStatus(
         "A câmera ao vivo exige HTTPS no celular. Use o endereço seguro exibido pelo instalador.",
@@ -64,6 +66,8 @@
       return;
     }
 
+    cameraStarting = true;
+    startCameraButton.disabled = true;
     try {
       stopCamera();
       stream = await navigator.mediaDevices.getUserMedia({
@@ -85,7 +89,17 @@
     } catch (error) {
       console.error("biometric_secure_camera_failed", error);
       stopCamera();
-      setStatus("Não foi possível abrir a câmera. Verifique a permissão do navegador.", true);
+      const message = error.name === "NotReadableError" || error.name === "TrackStartError"
+        ? "A câmera está ocupada ou indisponível. Feche o aplicativo que a utiliza ou tente em outro dispositivo."
+        : error.name === "NotAllowedError" || error.name === "PermissionDeniedError"
+          ? "Permissão da câmera negada. Autorize o acesso nas configurações deste site."
+          : error.name === "NotFoundError" || error.name === "DevicesNotFoundError"
+            ? "Nenhuma câmera foi encontrada. Conecte uma câmera ou use outro dispositivo."
+            : "Não foi possível iniciar a câmera. Confira a conexão e tente novamente.";
+      setStatus(message, true);
+    } finally {
+      cameraStarting = false;
+      startCameraButton.disabled = false;
     }
   };
 
@@ -202,8 +216,9 @@
   window.addEventListener("pagehide", stopCamera);
 
   if (secureCameraAvailable()) {
-    startCamera();
+    setStatus("Clique em Abrir câmera segura para começar.");
   } else {
+
     setStatus(
       "Câmera bloqueada neste endereço. No celular, abra o endereço HTTPS e confie no certificado local.",
       true,

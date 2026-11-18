@@ -28,3 +28,7 @@ COPY templates/admin/copilot.html templates/admin/copilot.html
 COPY static/potiguar-design.css static/potiguar-design.css
 COPY templates/admin/copilot_onboarding_embed.html templates/admin/copilot_onboarding_embed.html
 COPY migrations/versions/20261118_10_punch_reviews.py migrations/versions/20261118_10_punch_reviews.py
+
+COPY static/punch.js static/punch.js
+COPY static/biometric_capture.js static/biometric_capture.js
+COPY templates/punch.html templates/punch.html
