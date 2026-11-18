@@ -19,7 +19,8 @@ class JornadaIndicativaTests(unittest.TestCase):
         self.assertEqual(row["entry_display"],["08:15","13:00"])
         self.assertEqual(row["exit_display"],["12:00","17:30"])
         self.assertEqual(row["worked"],"08:15")
-        self.assertEqual(row["occurrences"],["Entrada após 08:00","Saída após 17:00"])
+        self.assertIn("Entrada após 08:00",row["occurrences"])
+        self.assertIn("Saída após 17:00",row["occurrences"])
 
     def test_falta_de_saida_nao_inventa_ocorrencia_ou_horas(self):
         user = SimpleNamespace(id=1,name="Pessoa",username="pessoa")

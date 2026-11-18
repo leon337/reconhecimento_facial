@@ -15,7 +15,6 @@ def summarize_punches(punches, start_day, end_day):
     Sequências inconsistentes não viram horas trabalhadas.
     """
     policy = reference_policy()
-    tolerance = timedelta(minutes=policy.tolerance_minutes or 0)
     summaries = {}
     pending = {}
     for point in sorted(punches, key=lambda p: (p.timestamp, p.id)):
@@ -90,21 +89,42 @@ def summarize_punches(punches, start_day, end_day):
             row["worked"] = f'{int(row["seconds"] // 3600):02d}:{int(row["seconds"] % 3600 // 60):02d}'
             row["entry_display"] = [t.strftime("%H:%M") for t in row["entry_times"]]
             row["exit_display"] = [t.strftime("%H:%M") for t in row["exit_times"]]
-            # Indicativo, sem presumir intervalo ou usar cálculo de folha.
+            # Variações são indicadores, não descontos nem horas extras.
             row["occurrences"] = []
-            if row["entry_times"]:
-                first = row["entry_times"][0]
-                expected = first.replace(hour=policy.start.hour,minute=policy.start.minute,second=0,microsecond=0)
-                if first > expected + tolerance:
-                    row["occurrences"].append(f"Entrada após {policy.start:%H:%M}")
-            if row["exit_times"] and row["entry_times"] and not row["issues"]:
-                last = row["exit_times"][-1]
-                if last.date() == row["day"]:
-                    expected = last.replace(hour=policy.end.hour,minute=policy.end.minute,second=0,microsecond=0)
-                    if last < expected - tolerance:
-                        row["occurrences"].append(f"Saída antes de {policy.end:%H:%M}")
-                    elif last > expected + tolerance:
-                        row["occurrences"].append(f"Saída após {policy.end:%H:%M}")
+            row["interval_display"] = "Não confirmado"
+            row["tolerance_display"] = "Apuração diária pendente"
+            entries, exits = row["entry_times"], row["exit_times"]
+            if entries and exits and not row["issues"] and all(t.date() == row["day"] for t in entries + exits):
+                first, last = entries[0], exits[-1]
+                def seconds_from(value, reference):
+                    expected=value.replace(hour=reference.hour, minute=reference.minute, second=0, microsecond=0)
+                    return (value-expected).total_seconds()
+                entry_delta=seconds_from(first,policy.start)
+                exit_delta=seconds_from(last,policy.end)
+                deltas=[entry_delta,exit_delta]
+                complete_interval=(len(entries)==2 and len(exits)==2 and entries[0] < exits[0] < entries[1] < exits[1])
+                if complete_interval:
+                    pause=(entries[1]-exits[0]).total_seconds()
+                    row["interval_display"] = f"{int(pause//3600):02d}:{int(pause%3600//60):02d} registrado"
+                    deltas += [seconds_from(exits[0],policy.break_start),seconds_from(entries[1],policy.break_end)]
+                    if pause < policy.break_minutes*60:
+                        row["occurrences"].append("Intervalo registrado inferior a 1h — conferir")
+                elif row["seconds"] > 6*3600:
+                    row["issues"].add("Intervalo não confirmado por marcação")
+                daily_exceeded = sum(abs(d) for d in deltas) > policy.daily_tolerance_minutes*60
+                individual_exceeded = any(abs(d) > policy.tolerance_minutes*60 for d in deltas)
+                if individual_exceeded or daily_exceeded:
+                    row["tolerance_display"] = "Variação fora da referência — conferir"
+                elif complete_interval:
+                    row["tolerance_display"] = "Variações dentro da referência — conferir"
+                if abs(entry_delta)>policy.tolerance_minutes*60 or (daily_exceeded and entry_delta != 0):
+                    row["occurrences"].append(f"Entrada {'após' if entry_delta>0 else 'antes de'} {policy.start:%H:%M}")
+                if abs(exit_delta)>policy.tolerance_minutes*60 or (daily_exceeded and exit_delta != 0):
+                    row["occurrences"].append(f"Saída {'após' if exit_delta>0 else 'antes de'} {policy.end:%H:%M}")
+                if daily_exceeded:
+                    row["occurrences"].append("Variações observadas somam mais de 10 min — conferir")
+                if not complete_interval:
+                    row["occurrences"].append("Tolerância diária e intervalo: conferência pendente")
             row["status"] = "Revisar" if row["issues"] else ("Completo" if row["pairs"] else "Sem par")
             row["issues"] = sorted(row["issues"])
             result.append(row)

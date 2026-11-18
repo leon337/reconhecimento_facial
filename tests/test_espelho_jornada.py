@@ -13,18 +13,19 @@ class PolicyTests(unittest.TestCase):
         p=reference_policy()
         self.assertEqual(p.start.strftime("%H:%M"),"08:00")
         self.assertEqual(p.end.strftime("%H:%M"),"17:00")
-        self.assertIsNone(p.break_minutes)
-        self.assertIsNone(p.tolerance_minutes)
+        self.assertEqual(p.break_minutes,60)
+        self.assertEqual(p.tolerance_minutes,5)
+        self.assertEqual(p.daily_tolerance_minutes,10)
         self.assertIsNone(p.working_days)
 
     @patch.dict("os.environ", {"POTIGUAR_JORNADA_INICIO":"07:00","POTIGUAR_JORNADA_FIM":"16:00",
-                              "POTIGUAR_JORNADA_TOLERANCIA_MIN":"10","POTIGUAR_JORNADA_DIAS":"0,1,2,3,4"},clear=True)
+                              "POTIGUAR_JORNADA_DIAS":"0,1,2,3,4"},clear=True)
     def test_configured_policy_changes_indicators(self):
         user=SimpleNamespace(id=1,name="Teste",username="teste")
         row=summarize_punches([ponto(1,user,"ENTRADA",datetime(2026,11,16,10,5)),
                                ponto(2,user,"SAIDA",datetime(2026,11,16,19,5))],
                               date(2026,11,16),date(2026,11,16))[0]
-        self.assertEqual(row["occurrences"],[])
+        self.assertIn("Tolerância diária e intervalo: conferência pendente",row["occurrences"])
         self.assertEqual(reference_policy().working_days,(0,1,2,3,4))
 
     @patch.dict("os.environ", {"POTIGUAR_JORNADA_DIAS":"0,,2"},clear=True)

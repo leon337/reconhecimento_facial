@@ -13,7 +13,7 @@
       <a href="{{ url_for('admin.list_users') }}">Funcionários</a>
     </nav></header>
   <main><div class="page-heading"><span class="eyebrow">Conferência operacional</span><h1>Relatórios de ponto</h1>
-    <p class="subtitle">Jornada de referência {{ policy.start.strftime("%H:%M") }}–{{ policy.end.strftime("%H:%M") }}, horário de Recife. Intervalo: {% if policy.break_minutes is none %}não configurado{% else %}{{ policy.break_minutes }} min de referência{% endif %}; tolerância: {% if policy.tolerance_minutes is none %}não configurada{% else %}{{ policy.tolerance_minutes }} min{% endif %}; dias de trabalho: {% if policy.working_days is none %}não configurados{% else %}configurados{% endif %}. Sem desconto automático de almoço ou cálculo de folha.</p></div>
+    <p class="subtitle">Jornada de referência {{ policy.start.strftime("%H:%M") }}–{{ policy.end.strftime("%H:%M") }}, horário de Recife. Intervalo previsto {{ policy.break_start.strftime("%H:%M") }}–{{ policy.break_end.strftime("%H:%M") }}; referência de tolerância: {{ policy.tolerance_minutes }} min por marcação e {{ policy.daily_tolerance_minutes }} min por dia; dias de trabalho: {% if policy.working_days is none %}não configurados{% else %}configurados{% endif %}. Sem desconto automático de almoço ou cálculo de folha.</p></div>
     <section class="panel">
       <form class="history-filters" method="get" action="{{ url_for('admin.reports') }}">
         <div class="field"><label for="inicio">De</label><input id="inicio" name="inicio" type="date" required value="{{ start }}"></div>
@@ -28,19 +28,19 @@
       </form>
       <section class="report-totals" aria-label="Resumo dos dados">
         <p><strong>{{ daily|length }}</strong> dia(s) com registros</p>
-        <p><strong>{{ calculated }}</strong> de tempo apurado em pares válidos</p>
+        <p><strong>{{ calculated }}</strong> entre pares válidos (sem intervalo presumido)</p>
         <p><strong>{{ flagged }}</strong> dia(s) que exigem revisão</p>
       </section>
       <div class="table-scroll"><table class="users-table">
-        <thead><tr><th>Data</th><th>Funcionário</th><th>Horários de entrada</th><th>Horários de saída</th><th>Tempo apurado</th><th>Ocorrências indicativas</th><th>Situação</th></tr></thead>
+        <thead><tr><th>Data</th><th>Funcionário</th><th>Horários de entrada</th><th>Horários de saída</th><th>Tempo entre marcações</th><th>Intervalo</th><th>Ocorrências indicativas</th><th>Situação</th></tr></thead>
         <tbody>{% for item in daily %}
           <tr><td data-label="Data">{{ item.day.strftime('%d/%m/%Y') }}</td>
             <td data-label="Funcionário">{{ item.user.name or item.user.username }}</td>
             <td data-label="Entradas">{{ item.entry_display | join(' · ') or '—' }}</td><td data-label="Saídas">{{ item.exit_display | join(' · ') or '—' }}</td>
-            <td data-label="Tempo">{{ item.worked }}</td><td data-label="Ocorrências">{{ item.occurrences | join('; ') or '—' }}</td>
+            <td data-label="Tempo">{{ item.worked }}</td><td data-label="Intervalo">{{ item.interval_display }}</td><td data-label="Ocorrências">{{ item.occurrences | join('; ') or '—' }}<div>{{ item.tolerance_display }}</div></td>
             <td data-label="Situação">{% if item.simulated %}<strong>SIMULADO</strong> · {% endif %}<strong>{{ item.status }}</strong>{% if item.issues %}<div class="report-warnings">{{ item.issues | join('; ') }}</div>{% endif %}</td>
           </tr>
-        {% else %}<tr><td colspan="7"><p class="empty-state">Nenhum registro encontrado para o período.</p></td></tr>{% endfor %}</tbody>
+        {% else %}<tr><td colspan="8"><p class="empty-state">Nenhum registro encontrado para o período.</p></td></tr>{% endfor %}</tbody>
       </table></div>
       <p class="help dashboard-footnote">Período máximo: 31 dias. Horários após o fim da jornada não são automaticamente horas extras; confirme jornada, intervalo e regras aplicáveis. Turnos noturnos são atribuídos ao dia da entrada. Registros incompletos exigem revisão.</p>
     </section>
