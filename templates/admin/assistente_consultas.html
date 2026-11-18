@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0d2337">
+  <title>Assistente de Consultas — Potiguar</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='assistente-consultas.css') }}">
+  <script src="{{ url_for('static', filename='assistente-consultas.js') }}" defer></script>
+</head>
+<body>
+  <header class="top"><div class="top-inner"><a href="{{ url_for('admin.dashboard') }}" class="back" aria-label="Voltar ao painel">←</a><div><strong>POTIGUAR</strong><small>Agente Gemini · RH e Ponto</small></div><span class="environment">Homologação</span></div></header>
+  <main class="shell" data-csrf="{{ csrf_value }}" data-api="{{ url_for('copilot.assistant_ask') }}">
+    <div class="intro"><span class="eyebrow">CONSULTAS AUTORIZADAS</span><h1>Converse com o Gemini</h1><p>Consulte funcionários e registros de ponto em linguagem natural, com interpretação de linguagem natural pelo Gemini e dados consultados no próprio sistema.</p></div>
+    <section class="chat" aria-label="Conversa com o assistente">
+      <div id="messages" class="messages" aria-live="polite">
+        <article class="bubble bot"><span class="speaker">Assistente Potiguar</span><p>Olá! Posso consultar funcionários, marcações e indicadores de jornada dentro das suas permissões. Não altero dados.</p></article>
+      </div>
+      <form id="ask-form" autocomplete="off">
+        <label for="question">Sua pergunta</label>
+        <div class="composer"><input id="question" name="question" maxlength="240" required placeholder="Ex.: Quem bateu ponto hoje?" aria-label="Pergunta ao assistente"><button id="send" type="submit">Enviar</button></div>
+      </form>
+    </section>
+    <section class="examples" aria-label="Exemplos de consultas"><h2>Experimente perguntar</h2><div class="chips">
+      <button type="button" data-question="Quantos funcionários estão cadastrados?">Quantos funcionários?</button>
+      <button type="button" data-question="Quais foram as marcações de ponto hoje?">Marcações de hoje</button>
+      <button type="button" data-question="Quais jornadas têm ocorrências nesta semana?">Ocorrências da semana</button>
+      <button type="button" data-question="Quem chegou atrasado hoje?">Atrasos de hoje</button>
+    </div></section>
+    <p class="privacy">🔒 Somente leitura · Acesso autenticado · O Gemini recebe sua pergunta; não recebe resultados do banco. Não informe nomes, CPF ou matrículas. Indicadores de jornada exigem conferência humana.</p>
+  </main>
+</body>
+</html>
