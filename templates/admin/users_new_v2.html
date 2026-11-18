@@ -40,21 +40,21 @@
       <section class="step-panel" data-step="{{ loop.index0 }}" {% if not loop.first %}hidden{% endif %} aria-label="{{ title }}">
         <div class="step-heading"><div class="step-kicker">ETAPA {{ loop.index }} DE {{ steps|length }}</div><h2>{{ title }}</h2><p>{{ description }}</p></div>
         {% if loop.index == 2 %}
-        <div class="info-banner">Apenas dados necessários para uma finalidade legítima devem ser registrados. Campos de raça/cor, deficiência, reabilitação e dependentes são opcionais e exigem cuidados especiais de privacidade.</div>
+        <div class="info-banner">Apenas dados necessários para uma finalidade legítima devem ser registrados. Campos de raça/cor, deficiência, reabilitação e dependentes são opcionais e exigem cuidados especiais de privacidade. {% if config.get("PUBLIC_DEMO_MODE") %}<strong>Demo pública:</strong> mantenha CPF, documentos, contatos, dependentes e dados sensíveis em branco; mesmo valores fictícios são recusados nesses campos.{% endif %}</div>
         {% elif loop.index == 5 %}
-        <div class="info-banner">Dados financeiros não aparecem no histórico de ponto e são criptografados antes de serem persistidos. {% if config.get("PUBLIC_DEMO_MODE") %}Esta demonstração pública não aceita dados financeiros reais.{% else %}Em cadastro real, insira esses dados diretamente no formulário autenticado; não os informe ao Copiloto.{% endif %}</div>
+        <div class="info-banner">Dados financeiros não aparecem no histórico de ponto e são criptografados antes de serem persistidos. {% if config.get("PUBLIC_DEMO_MODE") %}Esta demonstração pública bloqueia qualquer informação financeira, inclusive valores fictícios e a modalidade de pagamento. Não selecione nem preencha esses campos para avançar; as opções são apenas demonstrativas.{% else %}Em cadastro real, insira esses dados diretamente no formulário autenticado; não os informe ao Copiloto.{% endif %}</div>
         {% elif loop.index == 6 %}
-        <div class="info-banner">Funcionário cadastrado não recebe login administrativo automaticamente. Solicitações de acesso ficam pendentes de ativação por um administrador autorizado.</div>
+        <div class="info-banner">Funcionário cadastrado não recebe login administrativo automaticamente. Solicitações de acesso ficam pendentes de ativação por um administrador autorizado. {% if config.get("PUBLIC_DEMO_MODE") %}<strong id="demo-access-note">Na demo pública, solicitar acesso ao sistema está indisponível. A opção permanece desativada, e o servidor mantém o bloqueio HTTP 422.</strong>{% endif %}</div>
         {% elif loop.index == 7 %}
-        <div class="info-banner">Nenhuma imagem ou template facial é armazenado pelo formulário. Após concluir, a opção "Agora" abre a captura segura de biometria do sistema, sujeita a permissão e transparência.</div>
+        <div class="info-banner">Nenhuma imagem ou template facial é armazenado pelo formulário. Após concluir, a opção "Agora" abre a captura segura de biometria do sistema, sujeita a permissão e transparência. {% if config.get("PUBLIC_DEMO_MODE") %}<strong>Demo pública:</strong> selecione "Depois" para testar o rascunho. Captura real, aviso biométrico confirmado e conclusão definitiva são bloqueados.{% endif %}</div>
         {% elif loop.index == 8 %}
-        <div class="review-panel"><h3>Conferência antes de concluir</h3><div id="review-details"></div><p>Salvar o rascunho não cria funcionários. O cadastro é criado apenas ao pressionar <strong>Concluir cadastro</strong>.</p></div>
+        <div class="review-panel"><h3>Conferência antes de concluir</h3><div id="review-details"></div><p>Salvar o rascunho não cria funcionários. O cadastro é criado apenas ao pressionar <strong>Concluir cadastro</strong> em ambiente autorizado. {% if config.get("PUBLIC_DEMO_MODE") %}<strong>A demonstração permite somente Salvar e sair; Concluir cadastro permanece bloqueado no servidor (HTTP 403).</strong>{% endif %}</p></div>
         {% endif %}
         <div class="fields-grid">
         {% for field in fields %}
           <div class="field-item{% if field.kind == 'textarea' %} field-wide{% endif %}">
             {% if field.kind == 'checkbox' %}
-            <label class="checkbox-label"><input type="checkbox" name="{{ field.name }}" {% if saved.get(field.name) %}checked{% endif %}><span>{{ field.label }}</span></label>
+            <label class="checkbox-label"><input type="checkbox" name="{{ field.name }}" {% if saved.get(field.name) %}checked{% endif %} {% if config.get("PUBLIC_DEMO_MODE") and field.name == "has_system_access" %}disabled aria-describedby="demo-access-note"{% endif %}><span>{{ field.label }}</span></label>
             {% else %}
             <label for="field-{{ field.name }}">{{ field.label }}{% if field.required %} <span class="required-marker">*</span>{% endif %}</label>
               {% if field.kind == 'select' %}

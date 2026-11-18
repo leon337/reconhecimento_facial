@@ -16,7 +16,7 @@
 }
 .persistent-workspace{
   display:flex;flex-direction:column;height:100dvh;min-height:0;
-  padding:16px clamp(12px,2vw,28px);max-width:none;overflow:hidden
+  padding:16px clamp(12px,2vw,28px);padding-bottom:calc(86px + env(safe-area-inset-bottom, 0px));max-width:none;overflow:hidden
 }
 .persistent-workspace .topbar{flex:0 0 auto;margin:0 0 14px}
 .persistent-workspace .topbar h1{font-size:clamp(23px,2vw,29px)}
@@ -68,7 +68,7 @@
 }
 @media(max-width:850px) {
   .persistent-shell .sidebar{display:none}
-  .persistent-workspace{height:100dvh;padding:8px 9px}
+  .persistent-workspace{height:100dvh;padding:8px 9px;padding-bottom:calc(90px + env(safe-area-inset-bottom, 0px))}
   .persistent-workspace .topbar{flex-direction:row;align-items:center;gap:7px;margin-bottom:8px}
   .persistent-workspace .topbar h1{font-size:20px}
   .persistent-workspace .topbar .subtitle{font-size:11px}
@@ -80,7 +80,7 @@
   .persistent-copilot-grid{flex:0 0 40dvh;min-height:190px}
   .persistent-copilot-grid .conversation{height:35dvh;min-height:220px}
   .persistent-copilot-grid .assist-panel{display:flex}
-  .persistent-voice-dock{right:9px;left:9px;bottom:8px;justify-content:center}
+  .persistent-voice-dock{right:9px;left:9px;bottom:calc(8px + env(safe-area-inset-bottom, 0px));justify-content:center}
   .persistent-voice-dock button{flex:0 0 auto}
   .persistent-copilot-grid .chat-log{padding:8px}
   .persistent-copilot-grid .composer{padding:9px}
