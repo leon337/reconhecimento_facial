@@ -8,6 +8,7 @@ from sqlalchemy.orm import joinedload
 from app.admin import bp
 from app.admin.simulation import simulated_ids
 from app.attendance_reporting import summarize_punches
+from app.shift_policy import reference_policy
 from app.admin.auth import permission_required
 from app.biometric_models import BiometricProfile
 from app.models import Employee, Ponto, User
@@ -87,6 +88,7 @@ def dashboard():
         recent_simulated=bool(simulated_ids(recent)),
         daily=daily,
         summary_truncated=truncated,
+        policy=reference_policy(),
         today=today.strftime("%d/%m/%Y"),
         local_time=_local_time,
     )

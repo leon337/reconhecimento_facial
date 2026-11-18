@@ -11,6 +11,7 @@ from app.admin import bp
 from app.admin.simulation import simulated_ids
 from app.admin.auth import permission_required
 from app.attendance_reporting import summarize_punches
+from app.shift_policy import reference_policy
 from app.models import Ponto, User
 from app.rbac import Permission
 
@@ -100,7 +101,7 @@ def reports():
     total_seconds = sum(r["seconds"] for r in daily)
     return render_template(
         "admin/relatorios.html", start=start.isoformat(), end=end.isoformat(),
-        users=users, employee_id=employee_id, daily=daily,
+        users=users, employee_id=employee_id, daily=daily, policy=reference_policy(),
         flagged=sum(bool(r["issues"]) for r in daily),
         calculated=f'{int(total_seconds // 3600):02d}:{int(total_seconds % 3600 // 60):02d}',
     )
@@ -130,4 +131,30 @@ def export_punches():
     response.headers["Content-Disposition"] = f'attachment; filename="potiguar-pontos-{start}-{end}.csv"'
     response.headers["Cache-Control"] = "no-store, private"
     response.headers["X-Content-Type-Options"] = "nosniff"
+    return response
+
+
+@bp.get("/relatorios/espelho")
+@permission_required(Permission.PUNCH_VIEW)
+def individual_mirror():
+    start, end, users, employee_id, points = _records()
+    if employee_id is None:
+        abort(400, "Selecione um funcionário para o espelho")
+    employee = next(u for u in users if u.id == employee_id)
+    daily = summarize_punches(points, start, end)
+    marked = simulated_ids(points)
+    by_day = {row["day"]: row for row in daily}
+    days = []
+    for offset in range((end-start).days+1):
+        day=start+timedelta(days=offset)
+        row=by_day.get(day)
+        if row:
+            row["simulated"] = bool(marked.intersection(row["point_ids"]))
+        days.append((day,row))
+    total=sum(row["seconds"] for row in daily)
+    response = Response(render_template(
+        "admin/espelho.html", employee=employee, start=start, end=end, days=days,
+        worked=f"{int(total // 3600):02d}:{int(total % 3600 // 60):02d}",
+        policy=reference_policy(), has_simulation=bool(marked)))
+    response.headers["Cache-Control"] = "no-store, private"
     return response

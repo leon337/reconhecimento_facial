@@ -1,0 +1,13 @@
+# Extensão da imagem já usada na homologação local.
+# Construa em ambiente confiável com a imagem-base local previamente disponível.
+FROM potiguar-copilot-hml-embedded:20261112-ready
+WORKDIR /app
+COPY app/attendance_reporting.py app/attendance_reporting.py
+COPY app/shift_policy.py app/shift_policy.py
+COPY app/admin/dashboard.py app/admin/dashboard.py
+COPY app/admin/reporting.py app/admin/reporting.py
+COPY app/admin/simulation.py app/admin/simulation.py
+COPY templates/admin/dashboard.html templates/admin/dashboard.html
+COPY templates/admin/pontos.html templates/admin/pontos.html
+COPY templates/admin/relatorios.html templates/admin/relatorios.html
+COPY templates/admin/espelho.html templates/admin/espelho.html

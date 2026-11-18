@@ -31,7 +31,7 @@
     </section>
     <section class="panel" aria-label="Ocorrências dos últimos sete dias">
       <div class="section-bar"><h2>Ocorrências · últimos 7 dias</h2><a class="action secondary" href="{{ url_for('admin.reports') }}">Abrir relatório</a></div>
-      <p class="help">Comparação indicativa com 08:00–17:00; não substitui apuração de jornada ou folha. {% if recent_simulated %}<strong>Inclui registros SIMULADOS.</strong>{% endif %}</p>
+      <p class="help">Comparação indicativa com {{ policy.start.strftime("%H:%M") }}–{{ policy.end.strftime("%H:%M") }}; não substitui apuração de jornada ou folha. {% if recent_simulated %}<strong>Inclui registros SIMULADOS.</strong>{% endif %}</p>
       {% if summary_truncated %}<p>Período excede o limite de 10.000 marcações; consulte o relatório por período menor.</p>{% else %}
       <div class="report-totals">
         <p><strong>{{ daily | selectattr('issues') | list | length }}</strong> dia(s) com inconsistências</p>

@@ -13,7 +13,7 @@
       <a href="{{ url_for('admin.list_users') }}">Funcionários</a>
     </nav></header>
   <main><div class="page-heading"><span class="eyebrow">Conferência operacional</span><h1>Relatórios de ponto</h1>
-    <p class="subtitle">Jornada de referência 08:00–17:00, horário de Recife. Apuração indicativa; sem desconto automático de almoço ou cálculo de folha. Registros incompletos exigem revisão.</p></div>
+    <p class="subtitle">Jornada de referência {{ policy.start.strftime("%H:%M") }}–{{ policy.end.strftime("%H:%M") }}, horário de Recife. Intervalo: {% if policy.break_minutes is none %}não configurado{% else %}{{ policy.break_minutes }} min de referência{% endif %}; tolerância: {% if policy.tolerance_minutes is none %}não configurada{% else %}{{ policy.tolerance_minutes }} min{% endif %}; dias de trabalho: {% if policy.working_days is none %}não configurados{% else %}configurados{% endif %}. Sem desconto automático de almoço ou cálculo de folha.</p></div>
     <section class="panel">
       <form class="history-filters" method="get" action="{{ url_for('admin.reports') }}">
         <div class="field"><label for="inicio">De</label><input id="inicio" name="inicio" type="date" required value="{{ start }}"></div>
@@ -24,6 +24,7 @@
         </select></div>
         <button class="action primary" type="submit">Aplicar filtros</button>
         <a class="action secondary" href="{{ url_for('admin.export_punches', inicio=start, fim=end, funcionario=employee_id or '') }}">Exportar CSV</a>
+        {% if employee_id %}<a class="action secondary" href="{{ url_for('admin.individual_mirror', inicio=start, fim=end, funcionario=employee_id) }}">Ver espelho individual</a>{% endif %}
       </form>
       <section class="report-totals" aria-label="Resumo dos dados">
         <p><strong>{{ daily|length }}</strong> dia(s) com registros</p>
@@ -41,6 +42,6 @@
           </tr>
         {% else %}<tr><td colspan="7"><p class="empty-state">Nenhum registro encontrado para o período.</p></td></tr>{% endfor %}</tbody>
       </table></div>
-      <p class="help dashboard-footnote">Período máximo: 31 dias. Horários após 17h não são automaticamente horas extras; confirme jornada, intervalo e regras aplicáveis. Turnos noturnos são atribuídos ao dia da entrada. Registros incompletos exigem revisão.</p>
+      <p class="help dashboard-footnote">Período máximo: 31 dias. Horários após o fim da jornada não são automaticamente horas extras; confirme jornada, intervalo e regras aplicáveis. Turnos noturnos são atribuídos ao dia da entrada. Registros incompletos exigem revisão.</p>
     </section>
   </main></div></body></html>

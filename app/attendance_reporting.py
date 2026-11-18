@@ -1,6 +1,7 @@
 """Leitura conservadora de pares entrada/saída, sem inferências de folha de pagamento."""
 from collections import defaultdict
-from datetime import time, timezone
+from datetime import timedelta, timezone
+from app.shift_policy import reference_policy
 from zoneinfo import ZoneInfo
 
 RECIFE = ZoneInfo("America/Recife")
@@ -13,6 +14,8 @@ def summarize_punches(punches, start_day, end_day):
     Credita cada par ao dia LOCAL da ENTRADA, inclusive em turnos noturnos.
     Sequências inconsistentes não viram horas trabalhadas.
     """
+    policy = reference_policy()
+    tolerance = timedelta(minutes=policy.tolerance_minutes or 0)
     summaries = {}
     pending = {}
     for point in sorted(punches, key=lambda p: (p.timestamp, p.id)):
@@ -62,6 +65,16 @@ def summarize_punches(punches, start_day, end_day):
             elif 0 < duration <= MAX_SHIFT_SECONDS:
                 summaries[entry_key]["pairs"] += 1
                 summaries[entry_key]["seconds"] += duration
+                if entry_key != key:
+                    # A saída noturna pertence à jornada do dia da entrada.
+                    row["exit_times"].pop()
+                    row["exits"] -= 1
+                    row["point_ids"].remove(point.id)
+                    summaries[entry_key]["exit_times"].append(local_time)
+                    summaries[entry_key]["exits"] += 1
+                    summaries[entry_key]["point_ids"].append(point.id)
+                    if not row["point_ids"] and not row["issues"]:
+                        del summaries[key]
             else:
                 summaries[entry_key]["issues"].add("Intervalo inválido")
                 row["issues"].add("Intervalo inválido")
@@ -77,17 +90,21 @@ def summarize_punches(punches, start_day, end_day):
             row["worked"] = f'{int(row["seconds"] // 3600):02d}:{int(row["seconds"] % 3600 // 60):02d}'
             row["entry_display"] = [t.strftime("%H:%M") for t in row["entry_times"]]
             row["exit_display"] = [t.strftime("%H:%M") for t in row["exit_times"]]
-            # Comparação indicativa: jornada 08–17; não calcula folha ou intervalo presumido.
+            # Indicativo, sem presumir intervalo ou usar cálculo de folha.
             row["occurrences"] = []
-            if row["entry_times"] and row["entry_times"][0].time() > time(8):
-                row["occurrences"].append("Entrada após 08:00")
+            if row["entry_times"]:
+                first = row["entry_times"][0]
+                expected = first.replace(hour=policy.start.hour,minute=policy.start.minute,second=0,microsecond=0)
+                if first > expected + tolerance:
+                    row["occurrences"].append(f"Entrada após {policy.start:%H:%M}")
             if row["exit_times"] and row["entry_times"] and not row["issues"]:
                 last = row["exit_times"][-1]
                 if last.date() == row["day"]:
-                    if last.time() < time(17):
-                        row["occurrences"].append("Saída antes de 17:00")
-                    elif last.time() > time(17):
-                        row["occurrences"].append("Saída após 17:00")
+                    expected = last.replace(hour=policy.end.hour,minute=policy.end.minute,second=0,microsecond=0)
+                    if last < expected - tolerance:
+                        row["occurrences"].append(f"Saída antes de {policy.end:%H:%M}")
+                    elif last > expected + tolerance:
+                        row["occurrences"].append(f"Saída após {policy.end:%H:%M}")
             row["status"] = "Revisar" if row["issues"] else ("Completo" if row["pairs"] else "Sem par")
             row["issues"] = sorted(row["issues"])
             result.append(row)
