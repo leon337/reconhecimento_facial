@@ -6,10 +6,10 @@ import time
 from flask import current_app, g, jsonify, make_response, render_template, request, session, url_for
 from flask_wtf.csrf import generate_csrf
 
-from app.admin.auth import permission_required
+from app.admin.auth import permission_required, current_admin_user
 from app.copilot import bp
 from app.copilot.live import ALLOWED_MODELS, LiveProvisioningError, provision_live_token
-from app.rbac import Permission
+from app.rbac import Permission, AccessRole
 
 
 def _available() -> bool:
@@ -83,6 +83,12 @@ def metadata():
         ),
         "demo_synthetic_only": bool(os.environ.get("POTIGUAR_COPILOT_DEMO_DAILY_LIMIT")),
         "public_demo_no_login": bool(current_app.config.get('PUBLIC_DEMO_MODE', False)),
+        "text_enabled": bool(
+            _available() and current_app.config.get("COPILOT_ACTIONS_ENABLED", False)
+            and current_app.config.get("COPILOT_TEXT_ENABLED", False)
+            and _api_key() and user.can(Permission.USERS_CREATE)
+        ),
+        "text_mode_label": "Copiloto texto (HTTPS), sem voz",
         "links": {
             # Catálogo canônico de telas; o navegador não aceita URLs propostas pelo modelo.
             "dashboard": url_for("admin.dashboard"),
@@ -234,3 +240,87 @@ def session_token():
         return _no_cache(jsonify(error="Não foi possível conectar ao serviço de voz.")), 502
 
     return _no_cache(jsonify(token=token, model=body["model"]))
+
+@bp.post("/text-turn")
+def text_turn():
+    """Geração por HTTPS com contrato fechado: apenas sugestão, nunca persistência.
+
+    CSRF é verificado pelo Flask-WTF global antes desta view.
+    """
+    from app.copilot.text_https import (
+        UnsafeTextTurn, TextProviderUnavailable, generate_text_proposal,
+        text_model_name, validate_text_turn,
+    )
+    from app.copilot.text_quota import (
+        TextQuotaExceeded, TextQuotaUnavailable, TextReplay, reserve_text_turn,
+    )
+
+    user = current_admin_user()
+    if user is None:
+        current_app.logger.info("copilot.text.status=UNAUTHORIZED_401")
+        return _no_cache(jsonify(error="Autenticação necessária.")), 401
+    if not user.can(Permission.USERS_CREATE):
+        current_app.logger.info("copilot.text.status=FORBIDDEN_403")
+        return _no_cache(jsonify(error="Acesso negado.")), 403
+    if current_app.config.get("PUBLIC_DEMO_MODE", False):
+        # Em demo pública, jamais aceitar user_id privado ou de outra sessão.
+        if (session.get("public_demo_user_id") != user.id
+                or user.access_role != AccessRole.MANAGER.value
+                or not user.username.startswith("demo.")
+                or not user.company_id or not user.worksite_id
+                or session.get("admin_company_id") != user.company_id
+                or session.get("admin_worksite_id") != user.worksite_id):
+            current_app.logger.info("copilot.text.status=DEMO_IDENTITY_FORBIDDEN_403")
+            return _no_cache(jsonify(error="Identidade sintética inválida.")), 403
+    if not (_available() and current_app.config.get("COPILOT_ACTIONS_ENABLED", False)
+            and current_app.config.get("COPILOT_TEXT_ENABLED", False)):
+        return _no_cache(jsonify(error="Modo texto não habilitado.")), 503
+    if not request.is_json:
+        return _no_cache(jsonify(error="Somente JSON.")), 415
+    if request.content_length is not None and request.content_length > 512:
+        return _no_cache(jsonify(error="Requisição excede tamanho permitido.")), 413
+    try:
+        turn = validate_text_turn(request.get_json(silent=True))
+    except UnsafeTextTurn:
+        current_app.logger.info("copilot.text.status=REJECTED_422")
+        return _no_cache(jsonify(error="Campo ou resposta não permitidos neste modo.")), 422
+    try:
+        model = text_model_name(current_app.config)
+        key = _api_key()
+        if not key:
+            raise TextProviderUnavailable("sem chave")
+    except TextProviderUnavailable:
+        return _no_cache(jsonify(error="Serviço textual indisponível.")), 503
+    try:
+        reserve_text_turn(
+            current_app.instance_path,
+            f"{user.company_id}:{user.id}",
+            turn["request_id"],
+            daily_limit=current_app.config["COPILOT_TEXT_DAILY_LIMIT"],
+            principal_daily_limit=current_app.config["COPILOT_TEXT_PRINCIPAL_DAILY_LIMIT"],
+            source_id=request.remote_addr or "unknown",
+            source_daily_limit=current_app.config["COPILOT_TEXT_SOURCE_DAILY_LIMIT"],
+        )
+    except TextReplay:
+        current_app.logger.info("copilot.text.status=REPLAY_409")
+        return _no_cache(jsonify(error="Solicitação já recebida; não foi repetida.")), 409
+    except TextQuotaExceeded:
+        current_app.logger.info("copilot.text.status=THROTTLED_429")
+        return _no_cache(jsonify(error="Limite de mensagens ou intervalo mínimo atingido.")), 429
+    except (TextQuotaUnavailable, KeyError, ValueError):
+        current_app.logger.warning("copilot.text.status=QUOTA_UNAVAILABLE")
+        return _no_cache(jsonify(error="Limite de uso indisponível.")), 503
+    try:
+        proposal = generate_text_proposal(key, model, turn)
+    except TextProviderUnavailable:
+        current_app.logger.warning("copilot.text.status=PROVIDER_FAILED")
+        return _no_cache(jsonify(error="Não foi possível obter sugestão textual.")), 502
+    # Auditável sem corpo, prompt, chave, documento ou nome.
+    current_app.logger.info(
+        "copilot.text.status=SUCCESS step=%s field=%s",
+        turn["step"], turn["field"],
+    )
+    return _no_cache(jsonify(
+        mode="https_text", model_type="text_not_live", request_id=turn["request_id"],
+        proposal=proposal,
+    )), 200
