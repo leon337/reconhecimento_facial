@@ -5,11 +5,12 @@ Não envia dados pessoais para modelos externos. Não executa SQL gerado pelo us
 from __future__ import annotations
 
 import re
+import time as clock
 import unicodedata
 from datetime import datetime, time, timedelta, timezone
 from zoneinfo import ZoneInfo
 
-from flask import abort, g, jsonify, make_response, render_template, request, session, url_for
+from flask import abort, g, jsonify, make_response, render_template, request, session, url_for, current_app
 from flask_wtf.csrf import generate_csrf
 from sqlalchemy import func
 
@@ -143,6 +144,31 @@ def _point_rows(points):
     } for p in points]
 
 
+def answer_with_gemini(question, actor):
+    """Gemini classifica; apenas consultas autorizadas e parametrizadas acessam o banco."""
+    from app.copilot.gemini_consultas import classify
+    intent, period = classify(question)
+    if intent == "help":
+        return {"answer": "Posso consultar quantidades de funcionários, marcações e indicadores de jornada. Não realizo alterações nem acesso biometria.", "rows": [], "source": "Gemini · catálogo seguro", "ai": True}
+    if intent in {"punch_count", "punch_list", "late", "issues"} and not actor.can(Permission.PUNCH_VIEW):
+        abort(403)
+    if not actor.can(Permission.USERS_VIEW):
+        abort(403)
+    when = {"today": "hoje", "yesterday": "ontem", "week": "na semana", "month": "no mes"}[period]
+    fixed = {
+        "employees_count": "quantos funcionarios",
+        "employees_list": "listar funcionarios",
+        "punch_count": "quantos pontos ",
+        "punch_list": "marcacoes de ponto ",
+        "late": "atrasos de ponto ",
+        "issues": "ocorrencias de jornada ",
+    }[intent] + (when if intent not in {"employees_count", "employees_list"} else "")
+    result = answer(fixed, actor)
+    result["ai"] = True
+    result["source"] = result["source"] + " · intenção interpretada pelo Gemini"
+    return result
+
+
 @bp.get("/consultas")
 @permission_required(Permission.USERS_VIEW)
 def assistant_consultas():
@@ -163,9 +189,28 @@ def assistant_ask():
     if not isinstance(body, dict) or set(body) != {"question"} or not isinstance(body["question"], str):
         return jsonify(error="Informe uma pergunta em texto."), 400
     try:
-        result = answer(body["question"], g.admin_user)
+        if current_app.config.get("COPILOT_ENABLED", False):
+            # Limite de uso por sessão para evitar rajadas e custos imprevistos.
+            today = datetime.now(RECIFE).date().isoformat()
+            if session.get("assistant_ai_day") != today:
+                session["assistant_ai_day"] = today
+                session["assistant_ai_count"] = 0
+            if int(session.get("assistant_ai_count", 0)) >= 40:
+                return jsonify(error="Limite diário de 40 perguntas por sessão atingido."), 429
+            if clock.time() - float(session.get("assistant_ai_last", 0)) < 3:
+                return jsonify(error="Aguarde três segundos entre perguntas."), 429
+            session["assistant_ai_last"] = clock.time()
+            session["assistant_ai_count"] = int(session.get("assistant_ai_count", 0)) + 1
+            result = answer_with_gemini(body["question"], g.admin_user)
+        else:
+            result = answer(body["question"], g.admin_user)
     except ValueError as exc:
         return jsonify(error=str(exc)), 422
+    except Exception as exc:
+        from app.copilot.gemini_consultas import GeminiUnavailable
+        if not isinstance(exc, GeminiUnavailable):
+            raise
+        return jsonify(error=str(exc)), 503
     response = jsonify(result)
     response.headers["Cache-Control"] = "no-store, private"
     return response

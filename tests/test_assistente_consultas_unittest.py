@@ -3,6 +3,7 @@ import tempfile
 import unittest
 from datetime import datetime
 from pathlib import Path
+from unittest.mock import patch
 
 from main import create_app
 from app.models import db, Employee, Ponto, User
@@ -79,6 +80,33 @@ class AssistantReadOnlyTests(unittest.TestCase):
         self._login()
         self.assertEqual(self.client.post("/admin/copilot/consultas/perguntar", json={"sql": "DELETE FROM users"}).status_code, 400)
         self.assertEqual(self._ask("x" * 241).status_code, 422)
+
+    def test_gemini_routes_only_allowed_intents(self):
+        self._login()
+        self.app.config["COPILOT_ENABLED"] = True
+        with patch("app.copilot.gemini_consultas.classify", return_value=("punch_count", "today")) as mock:
+            result = self._ask("Quantas marcações hoje?")
+        self.assertEqual(result.status_code, 200)
+        self.assertTrue(result.json["ai"])
+        self.assertIn("1 marcação", result.json["answer"])
+        mock.assert_called_once()
+
+    def test_gemini_rejects_unavailable_without_fabricated_answer(self):
+        from app.copilot.gemini_consultas import GeminiUnavailable
+        self._login()
+        self.app.config["COPILOT_ENABLED"] = True
+        with patch("app.copilot.gemini_consultas.classify", side_effect=GeminiUnavailable("Gemini indisponível")):
+            response = self._ask("Quantos funcionários?")
+        self.assertEqual(response.status_code, 503)
+        self.assertNotIn("rows", response.json)
+
+    def test_gemini_help_never_queries_sensitive_data(self):
+        self._login()
+        self.app.config["COPILOT_ENABLED"] = True
+        with patch("app.copilot.gemini_consultas.classify", return_value=("help", "today")):
+            response = self._ask("Faça uma alteração no cadastro")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json["rows"], [])
 
     def test_scope_does_not_leak_other_company(self):
         self._login()
