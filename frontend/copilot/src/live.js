@@ -3,6 +3,7 @@ import { registrationTool, REGISTRATION_FUNCTION_NAME, sanitizeRegistrationDraft
 import { onboardingSuggestionTool, ONBOARDING_FUNCTION_NAME, ONBOARDING_NAVIGATION_NAME, ONBOARDING_OPERATION_NAME, sanitizeOnboardingSuggestions, sanitizeOnboardingNavigation, sanitizeOnboardingOperation } from './onboarding-suggestions.js';
 import { appNavigationTool, APP_NAVIGATION_NAME, sanitizeAppNavigation } from './app-navigation.js';
 import { AudioPlayer, Microphone } from './audio.js';
+import { classifyLiveFailure, liveSessionClosedMessage, safeCloseCode } from './live-connection-diagnostics.js';
 
 const MODEL_IDS = ['gemini-3.8-live', 'gemini-3.8-live-extended-thinking'];
 const SYSTEM_INSTRUCTIONS = [
@@ -19,8 +20,16 @@ const SYSTEM_INSTRUCTIONS = [
 ].join('\n');
 
 export class PotiguarLive {
-  constructor(handlers = {}) {
+  constructor(handlers = {}, dependencies = {}) {
     this.handlers = handlers;
+    // Factories injectable only for deterministic, credential-free tests.
+    this.fetchFn = dependencies.fetchFn || ((...args) => fetch(...args));
+    this.createClient = dependencies.createClient || ((token) => new GoogleGenAI({
+      apiKey: token,
+      // Token efêmero Live exige v1alpha (não alterar sem teste de integração).
+      httpOptions: { apiVersion: 'v1alpha' },
+    }));
+    this.connectionAttempt = null;
     this.session = null;
     this.microphone = null;
     this.player = new AudioPlayer();
@@ -33,9 +42,22 @@ export class PotiguarLive {
     this.onboardingField = null;
   }
 
-  async connect(model, csrf, { allowEmployeeActions = false, allowOnboardingSuggestions = false, persistentShell = false } = {}) {
+  async connect(model, csrf, options = {}) {
     if (!MODEL_IDS.includes(model)) throw new Error('Modelo não autorizado.');
     if (this.session) return;
+    if (this.connectionAttempt) throw new Error('Já existe uma conexão em andamento [LIVE_CONNECT_BUSY].');
+    const attempt = { opened:false, closed:false, errored:false, ready:false, closeCode:null, errorReported:false };
+    this.connectionAttempt = attempt;
+    try {
+      await this.connectAttempt(attempt, model, csrf, options);
+    } catch (error) {
+      if (this.connectionAttempt === attempt) this.connectionAttempt = null;
+      throw error;
+    }
+  }
+
+  async connectAttempt(attempt, model, csrf, { allowEmployeeActions = false, allowOnboardingSuggestions = false, persistentShell = false } = {}) {
+    const isCurrent = () => this.connectionAttempt === attempt;
     // Extended Thinking não emitiu toolCall no teste real 11/11/2026.
     // Cadastro por voz exige o modelo Live padrão; Extended mantém orientação.
     this.onboardingMode = Boolean(allowOnboardingSuggestions) && !persistentShell;
@@ -44,29 +66,54 @@ export class PotiguarLive {
     this.allowAppNavigation = (!this.onboardingMode || persistentShell) && model === 'gemini-3.8-live';
     // Navegações concorrentes do iframe podem atualizar o cookie da sessão.
     // Emitir um CSRF imediatamente antes do POST evita usar um token antigo do HTML.
-    const csrfResponse = await fetch('/admin/copilot/csrf-token', {
-      credentials: 'same-origin', cache: 'no-store',
-      headers: { Accept: 'application/json' },
-    });
-    if (!csrfResponse.ok) throw new Error('Sessão expirada. Faça login novamente.');
-    const freshCsrf = await csrfResponse.json().catch(() => ({}));
-    if (!freshCsrf.csrf_token) throw new Error('Não foi possível validar a sessão.');
-    const response = await fetch('/admin/copilot/session-token', {
-      method: 'POST',
-      credentials: 'same-origin',
-      cache: 'no-store',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': freshCsrf.csrf_token },
-      body: JSON.stringify({ model }),
-    });
-    const payload = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(payload.error || 'Conexão não disponível.');
-    const ai = new GoogleGenAI({
-      apiKey: payload.token,
-      // A emissão de tokens efêmeros da Live API utiliza v1alpha (testado em 13/11/2026).
-      httpOptions: { apiVersion: 'v1alpha' },
-    });
+    this.handlers.onStatusDetail?.('validando_csrf');
+    let csrfResponse;
     try {
-      this.session = await ai.live.connect({
+      csrfResponse = await this.fetchFn('/admin/copilot/csrf-token', {
+        credentials: 'same-origin', cache: 'no-store',
+        headers: { Accept: 'application/json' },
+      });
+    } catch {
+      throw new Error('Não foi possível consultar a sessão [LIVE_CSRF_NETWORK].');
+    }
+    if (!csrfResponse.ok) throw new Error(`Sessão não validada [LIVE_CSRF_HTTP_${csrfResponse.status}].`);
+    const freshCsrf = await csrfResponse.json().catch(() => ({}));
+    if (!freshCsrf || typeof freshCsrf.csrf_token !== 'string' || !freshCsrf.csrf_token)
+      throw new Error('Resposta CSRF inválida [LIVE_CSRF_INVALID].');
+
+    this.handlers.onStatusDetail?.('solicitando_token');
+    let response;
+    try {
+      response = await this.fetchFn('/admin/copilot/session-token', {
+        method: 'POST', credentials: 'same-origin', cache: 'no-store',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': freshCsrf.csrf_token },
+        body: JSON.stringify({ model }),
+      });
+    } catch {
+      throw new Error('Falha de rede na emissão do token [LIVE_TOKEN_NETWORK].');
+    }
+    const rawPayload = await response.json().catch(() => ({}));
+    const payload = rawPayload && typeof rawPayload === 'object' ? rawPayload : {};
+    if (!response.ok) {
+      // A API já aplica cooldown/quotas no servidor. Sem tentativas automáticas.
+      const hint = response.status === 429
+        ? (payload.error === 'Aguarde antes de iniciar outra sessão.'
+            ? 'Aguarde 15 segundos antes de tentar novamente.'
+            : 'Limite temporário de sessões. Não tente repetidamente.')
+        : response.status === 403 || response.status === 400
+          ? 'Sessão ou solicitação recusada.' : 'Serviço Live indisponível.';
+      throw new Error(`${hint} [LIVE_TOKEN_HTTP_${response.status}].`);
+    }
+    if (typeof payload.token !== 'string' || !payload.token || payload.model !== model)
+      throw new Error('Resposta de token inválida [LIVE_TOKEN_INVALID].');
+    if (!isCurrent()) throw new Error('Conexão interrompida [LIVE_CANCELLED].');
+
+    this.handlers.onStatusDetail?.('negociando_websocket');
+    let ai;
+    try { ai = this.createClient(payload.token); }
+    catch { throw new Error('Não foi possível inicializar o cliente Live [LIVE_SDK_INIT].'); }
+    try {
+      const openedSession = await ai.live.connect({
         model: payload.model,
         config: {
           responseModalities: [Modality.AUDIO],
@@ -114,22 +161,56 @@ export class PotiguarLive {
         callbacks: {
           // WebSocket aberto não significa que o SDK já entregou uma sessão utilizável.
           // Sinalize conectado apenas após await ai.live.connect() concluir.
-          onopen: () => this.handlers.onStatusDetail?.('negociando_sessao_live'),
-          onmessage: (message) => this.handleMessage(message),
-          onerror: () => this.handlers.onError?.('A conexão de voz apresentou uma falha.'),
-          onclose: () => {
+          onopen: () => {
+            if (!isCurrent()) return;
+            attempt.opened = true;
+            this.handlers.onStatusDetail?.('websocket_aberto');
+          },
+          onmessage: (message) => {
+            if (!isCurrent()) return;
+            if (message?.setupComplete) this.handlers.onStatusDetail?.('setup_live_confirmado');
+            this.handleMessage(message);
+          },
+          onerror: () => {
+            if (!isCurrent()) return;
+            attempt.errored = true;
+            // O evento do SDK pode conter URL/token; nunca registrar ou exibir e.message.
+            if (attempt.ready && !attempt.errorReported) {
+              attempt.errorReported = true;
+              this.handlers.onError?.(classifyLiveFailure(attempt));
+            }
+          },
+          onclose: (event) => {
+            if (!isCurrent()) return;
+            attempt.closed = true;
+            attempt.closeCode = safeCloseCode(event);
             this.session = null;
-            // Nunca manter o microfone aberto após uma queda de rede.
             this.stopMic().catch(() => {});
             this.player.close().catch(() => {});
             this.handlers.onStatus?.('disconnected');
+            if (attempt.ready && !attempt.errorReported) {
+              attempt.errorReported = true;
+              this.handlers.onError?.(liveSessionClosedMessage(attempt));
+            }
+            this.connectionAttempt = null;
           },
         },
       });
+      // Um onerror/onclose pode chegar antes de o SDK resolver connect().
+      // Nunca indicar conectado se a sessão já foi encerrada ou substituída.
+      if (!isCurrent() || attempt.closed || attempt.errored) {
+        try { openedSession.close(); } catch { /* conexão já encerrada */ }
+        throw new Error('Live interrompido durante a negociação.');
+      }
+      this.session = openedSession;
+      attempt.ready = true;
       this.handlers.onStatus?.('connected');
     } catch {
-      this.handlers.onStatus?.('disconnected');
-      throw new Error('Não foi possível abrir a conversa com o modelo selecionado.');
+      if (isCurrent()) {
+        this.session = null;
+        this.handlers.onStatus?.('disconnected');
+      }
+      throw new Error(classifyLiveFailure(attempt));
     }
   }
 
@@ -262,9 +343,12 @@ export class PotiguarLive {
   }
 
   async disconnect() {
+    // Invalida callbacks atrasados de sessões anteriores sem desconectar a nova.
+    this.connectionAttempt = null;
     await this.stopMic();
-    this.session?.close();
+    const oldSession = this.session;
     this.session = null;
+    oldSession?.close();
     await this.player.close();
     this.handlers.onStatus?.('disconnected');
   }
