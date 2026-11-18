@@ -78,6 +78,11 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
         LOGIN_RATE_LIMIT_WINDOW_SECONDS=300,
         COPILOT_ENABLED=os.environ.get("POTIGUAR_COPILOT_ENABLED", "0") == "1",
         COPILOT_ACTIONS_ENABLED=os.environ.get("POTIGUAR_COPILOT_ACTIONS_ENABLED", "0") == "1",
+        COPILOT_TEXT_ENABLED=os.environ.get("POTIGUAR_COPILOT_TEXT_ENABLED", "0") == "1",
+        COPILOT_TEXT_MODEL=os.environ.get("POTIGUAR_COPILOT_TEXT_MODEL", "gemini-3.8-flash"),
+        COPILOT_TEXT_DAILY_LIMIT=25,
+        COPILOT_TEXT_PRINCIPAL_DAILY_LIMIT=8,
+        COPILOT_TEXT_SOURCE_DAILY_LIMIT=20,
     )
 
     if test_config:

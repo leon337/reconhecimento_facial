@@ -30,7 +30,7 @@ STATIC_ALLOWLIST = frozenset({
     '/static/admin-onboarding-controller.js',
 })
 POST_ENDPOINTS = frozenset({
-    'copilot.session_token', 'copilot.employee_draft',
+    'copilot.session_token', 'copilot.employee_draft', 'copilot.text_turn',
     'admin.onboarding_save', 'admin.onboarding_discard',
 })
 # Valores opcionais fora desta lista ficam em branco na demo; nunca são

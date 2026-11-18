@@ -3,9 +3,11 @@ import { ref, nextTick, onMounted, onUnmounted } from 'vue';
 import { PotiguarLive } from './live.js';
 import { isProtectedInput } from './protected-input.js';
 import { resolveOnboardingAnswer } from './onboarding-natural-language.js';
+import { safeTextCandidate, requestTextTurn } from './text-https.js';
 const props=defineProps({csrf:{type:String,required:true}});
 const meta=ref({enabled:false,configured:false,can_create_with_ai:false});
 const model=ref('gemini-3.8-live'),consent=ref(false),connected=ref(false),busy=ref(false),micOn=ref(false);
+const textActive=ref(false),textConsent=ref(false),textBusy=ref(false);
 const currentStep=ref(0),text=ref(''),error=ref(''),question=ref(null),reviewMode=ref(false);
 const names=['Tipo de relação','Dados pessoais','Endereço','Vínculo','Pagamento','Acesso','Biometria','Revisão'];
 const messages=ref([{role:'guide',text:'Conecte o Copiloto para iniciar o cadastro orientado. Uma pergunta por vez; campos protegidos somente no formulário.'}]);
@@ -15,7 +17,7 @@ const pendingActions=new Map();
 let deferredGuide=null;
 let voiceTranscript='';
 function flushGuide(){
-  if(pendingActions.size||!deferredGuide||!connected.value)return;
+  if(pendingActions.size||!deferredGuide||!connected.value)return; // Só o Live recebe instruções persistentes.
   const pending=deferredGuide;deferredGuide=null;
   // A resposta da ferramenta precisa chegar ao Gemini antes da próxima instrução do campo.
   setTimeout(()=>{
@@ -25,7 +27,7 @@ function flushGuide(){
   },400);
 }
 function executeOnParent(type,params={}){
-  if(!connected.value)return Promise.resolve({status:'denied'});
+  if(!connected.value&&!textActive.value)return Promise.resolve({status:'denied'});
   const requestId=crypto.randomUUID();
   return new Promise(resolve=>{
     const timeout=setTimeout(()=>{pendingActions.delete(requestId);resolve({status:'timeout'});},10000);
@@ -83,7 +85,7 @@ function receive(event){
       flushGuide();}
     return;
   }
-  if(data.type==='potiguar:onboarding:pause'){live.disconnect().catch(()=>{});micOn.value=false;question.value=null;return;}
+  if(data.type==='potiguar:onboarding:pause'){textActive.value=false;live.disconnect().catch(()=>{});micOn.value=false;question.value=null;return;}
   if(data.type==='potiguar:onboarding:mute'){live.stopMic().catch(()=>{});micOn.value=false;return;}
   if(data.type==='potiguar:onboarding:context'&&Number.isInteger(data.step)&&data.step>=0&&data.step<8){
     currentStep.value=data.step;live.setOnboardingStep(data.step);
@@ -122,6 +124,7 @@ function receive(event){
 }
 async function load(){try{const r=await fetch('/admin/copilot/meta',{credentials:'same-origin',cache:'no-store'});if(!r.ok)throw Error('Permissões indisponíveis.');meta.value=await r.json();}catch(e){error.value=e.message;}}
 async function connect(){
+  if(textActive.value)return;
   if(busy.value)return;busy.value=true;error.value='';
   try{
     if(connected.value){await live.disconnect();question.value=null;window.parent.postMessage({type:'potiguar:onboarding:stop'},location.origin);return;}
@@ -132,7 +135,52 @@ async function connect(){
     window.parent.postMessage({type:'potiguar:onboarding:begin'},location.origin);
   }catch(e){error.value=e.message;}finally{busy.value=false;}
 }
+function toggleText(){
+  if(textBusy.value || busy.value || connected.value)return;
+  error.value='';
+  if(textActive.value){
+    textActive.value=false;question.value=null;clearPending();
+    window.parent.postMessage({type:'potiguar:onboarding:stop'},location.origin);
+    add('guide','Modo texto HTTPS encerrado.');
+    return;
+  }
+  if(!meta.value.text_enabled){error.value='Modo texto não disponível nesta instalação.';return;}
+  if(!textConsent.value){error.value='Autorize especificamente o processamento no modo texto HTTPS.';return;}
+  textActive.value=true;
+  add('guide','Copiloto texto (HTTPS), sem voz. Responda somente à pergunta do campo atual com opções seguras. Campos protegidos ficam no formulário.');
+  window.parent.postMessage({type:'potiguar:onboarding:begin'},location.origin);
+}
+async function sendHttps(){
+  if(!textActive.value || textBusy.value)return;
+  const current=question.value;
+  const raw=text.value.trim();
+  if(!current?.safe){error.value='Este campo é preenchido somente no formulário protegido.';return;}
+  const candidate=safeTextCandidate(current.step,current.field,raw);
+  if(!candidate){error.value='Para esta demo, use somente uma opção fechada ou nome sintético autorizado. Dados reais e texto livre não são enviados.';return;}
+  if(!textConsent.value){error.value='Consentimento HTTPS necessário.';return;}
+  const oldField=current.field, oldStep=current.step;
+  textBusy.value=true;error.value='';
+  const requestId=crypto.randomUUID();
+  try{
+    const result=await requestTextTurn({
+      step:oldStep,field:oldField,candidate,requestId,consent:textConsent.value,
+    });
+    if(!textActive.value || question.value?.step!==oldStep || question.value?.field!==oldField){
+      throw Error('O campo mudou durante a resposta. Nenhuma alteração foi aplicada.');
+    }
+    const receipt=await executeOnParent('potiguar:onboarding:proposal',{
+      step:oldStep,suggestions:[{field:oldField,value:result.proposal.value}],
+    });
+    if(receipt.status!=='saved')throw Error('Sugestão recebida, mas não foi salva pelo formulário.');
+    add('user',candidate);
+    add('assistant',result.proposal.reply);
+    add('guide','Campo salvo no rascunho. Aguarde a próxima pergunta.');
+    text.value='';
+  }catch(e){error.value=e?.message||'Falha de sugestão por HTTPS.';}
+  finally{textBusy.value=false;}
+}
 function send(){
+  if(textActive.value){void sendHttps();return;}
   const value=text.value.trim();
   if(!value||value.length>1000||!connected.value)return;
   error.value='';
@@ -191,24 +239,30 @@ function send(){
 async function mic(){error.value='';if(!question.value?.safe){error.value='Microfone desativado para campos protegidos. Use o formulário.';return;}try{if(micOn.value){await live.stopMic();micOn.value=false;}else{await live.startMic('automatic');micOn.value=true;}}catch{error.value='Não foi possível ativar o microfone. Verifique permissões do navegador.';micOn.value=false;}}
 function skip(){if(!question.value||question.value.required)return;window.parent.postMessage({type:'potiguar:onboarding:skip',step:question.value.step,field:question.value.field},location.origin);question.value=null;}
 onMounted(()=>{window.addEventListener('message',receive);load();window.parent.postMessage({type:'potiguar:onboarding:ready'},location.origin);});
-onUnmounted(()=>{window.removeEventListener('message',receive);clearPending();live.disconnect().catch(()=>{});});
+onUnmounted(()=>{window.removeEventListener('message',receive);textActive.value=false;clearPending();live.disconnect().catch(()=>{});});
 </script>
 <template>
 <div class="embedded">
-  <header><strong>✦ Copiloto Potiguar</strong><span>{{connected?'Conectado':'Desconectado'}}</span></header>
+  <header><strong>✦ Copiloto Potiguar</strong><span>{{textActive?'Texto HTTPS · sem voz':connected?'Conectado Live':'Desconectado'}}</span></header>
   <p class="step-title">Etapa {{currentStep+1}} de 8 · {{names[currentStep]}}</p>
   <p class="privacy">Só suas mensagens e falas são enviadas ao Gemini. Não dite documentos, contatos, endereço completo, finanças, dados sensíveis, biometria ou senhas. Para esses dados, use apenas o formulário protegido.</p>
-  <section v-if="question" class="field-prompt" aria-live="polite"><strong>Campo atual: {{question.label}}</strong><span>{{question.safe?"Responda por voz ou texto.":"Preencha diretamente no formulário, sem ditar o valor."}}</span><button v-if="!question.required" type="button" @click="skip">Pular campo opcional</button></section>
+  <section v-if="question" class="field-prompt" aria-live="polite"><strong>Campo atual: {{question.label}}</strong><span>{{!question.safe?"Preencha diretamente no formulário, sem ditar o valor.":textActive?"Modo HTTPS: somente uma opção segura autorizada; sem voz.":"Responda por voz ou texto."}}</span><button v-if="!question.required" type="button" @click="skip">Pular campo opcional</button></section>
   <section v-else-if="reviewMode" class="field-prompt">Revise os dados no formulário antes de concluir. A IA não pode criar o funcionário.</section>
   <section class="config">
-    <label for="onb-model">Modelo da conversa</label><select id="onb-model" v-model="model" :disabled="connected||busy"><option value="gemini-3.8-live">Gemini 3.8 Live</option><option value="gemini-3.8-live-extended-thinking">Gemini 3.8 Extended</option></select>
+    <label for="onb-model">Modelo da conversa Live (voz)</label><select id="onb-model" v-model="model" :disabled="connected||busy||textActive"><option value="gemini-3.8-live">Gemini 3.8 Live</option><option value="gemini-3.8-live-extended-thinking">Gemini 3.8 Extended</option></select>
     <small v-if="model.endsWith('extended-thinking')">Modo avançado fornece orientação; sugestões estruturadas dependem do modelo Live padrão.</small>
     <label class="consent"><input type="checkbox" v-model="consent" :disabled="connected"> Autorizo o processamento das mensagens ou falas que eu enviar ao Gemini.</label>
-    <button @click="connect" :disabled="busy||(!connected&&(!consent||!meta.enabled||!meta.configured))" type="button">{{busy?'Aguarde…':connected?'Desconectar':'Conectar Copiloto'}}</button>
+    <button @click="connect" :disabled="textActive||busy||(!connected&&(!consent||!meta.enabled||!meta.configured))" type="button">{{busy?'Aguarde…':connected?'Desconectar':'Conectar Copiloto'}}</button>
+  </section>
+  <section v-if="meta.text_enabled" class="config text-https" aria-label="Modo texto HTTPS">
+    <strong>Copiloto texto (HTTPS), sem voz</strong>
+    <small>Alternativa explícita quando o WebSocket Live não funciona. Usa modelo textual no servidor, sem microfone. Apenas opções de campos sintéticos permitidos; não envie dados reais.</small>
+    <label class="consent"><input type="checkbox" v-model="textConsent" :disabled="textActive"> Autorizo o envio de uma opção sintética por vez ao serviço de IA textual via HTTPS.</label>
+    <button id="onb-text-mode" type="button" @click="toggleText" :disabled="connected||busy||textBusy||(!textActive&&!textConsent)">{{textActive?'Encerrar modo texto HTTPS':'Iniciar modo texto HTTPS'}}</button>
   </section>
   <div class="messages" role="log" aria-live="polite"><div v-for="(m,i) in messages" :key="i" :class="['bubble',m.role]"><strong>{{m.role==='user'?'Você':m.role==='assistant'?'Copiloto':'Orientação'}}</strong><p>{{m.text}}</p></div><span ref="logEnd"></span></div>
   <p v-if="error" class="error" role="alert">{{error}}</p>
-  <form class="composer" @submit.prevent="send"><label for="onb-text">Pergunte ou solicite preenchimento de campos permitidos</label><textarea id="onb-text" v-model="text" maxlength="1000" rows="2" :disabled="!connected" placeholder="Ex.: a função é Analista de Teste"></textarea><div class="actions"><button type="submit" :disabled="!connected||!text.trim()">Enviar</button><button type="button" @click="mic" :aria-pressed="micOn" :disabled="!connected||!question?.safe">{{micOn?'Parar microfone':'🎙 Falar'}}</button></div></form>
+  <form class="composer" @submit.prevent="send"><label for="onb-text">Pergunte ou solicite preenchimento de campos permitidos</label><textarea id="onb-text" v-model="text" :maxlength="textActive?90:1000" rows="2" :disabled="!(connected||textActive)||textBusy" :placeholder="textActive?'Ex.: CLT comum (somente valores de teste)':'Ex.: a função é Analista de Teste'"></textarea><div class="actions"><button type="submit" :disabled="!(connected||textActive)||!text.trim()||textBusy">{{textBusy?'Validando…':'Enviar'}}</button><button type="button" @click="mic" :aria-pressed="micOn" :disabled="textActive||!connected||!question?.safe">{{micOn?'Parar microfone':'🎙 Falar'}}</button></div></form>
   <small>Respostas permitidas são aplicadas e salvas automaticamente no rascunho. Criar o funcionário exige confirmação humana na revisão.</small>
 </div>
 </template>
@@ -217,6 +271,7 @@ onUnmounted(()=>{window.removeEventListener('message',receive);clearPending();li
 header{display:flex;align-items:center;justify-content:space-between;gap:8px}header strong{font-size:17px;color:#146542}header span,small{color:#577061;font-size:11px}.step-title{font-weight:700;color:#146542;margin:0}.privacy{margin:0;padding:9px;background:#e8f4ec;border-radius:8px;font-size:11px;line-height:1.5}
 .config{display:flex;flex-direction:column;gap:7px;background:#fff;padding:10px;border:1px solid #d7e4da;border-radius:9px}.config>label:not(.consent){font-weight:700}.consent{display:flex;gap:7px;font-size:11px;line-height:1.45}.consent input{align-self:start}
 select,textarea{border:1px solid #a9c5b4;border-radius:8px;padding:9px;width:100%;box-sizing:border-box;font:inherit;background:white;color:#17482d}button{border:0;background:#176143;color:#fff;font-weight:700;border-radius:8px;padding:10px;cursor:pointer}button:disabled{opacity:.48;cursor:not-allowed}button[aria-pressed=true]{background:#a13635}
+.text-https{border:1px solid #88b5c3;background:#edf7fb}.text-https>strong{color:#075879}
  .field-prompt{display:flex;flex-direction:column;gap:7px;background:#fff;padding:10px;border:1px solid #aad1b7;border-radius:9px}.field-prompt span{font-size:12px}.field-prompt button{align-self:flex-start}
 .messages{min-height:160px;max-height:31vh;overflow:auto;flex:1;display:flex;flex-direction:column;gap:8px}.bubble{background:#fff;border:1px solid #dfebe2;border-radius:10px;padding:8px;max-width:95%;align-self:flex-start;overflow-wrap:anywhere}.bubble.user{background:#dcefe5;align-self:flex-end}.bubble strong{font-size:11px;color:#46735a}.bubble p{white-space:pre-wrap;margin:5px 0 0;line-height:1.45}.composer{display:flex;flex-direction:column;gap:7px}.composer label{font-size:11px;font-weight:700}.actions{display:flex;gap:8px}.actions button{flex:1}.error{margin:0;padding:9px;border-radius:8px;background:#fee;border:1px solid #e5b7b7;color:#8d2626}
 </style>
