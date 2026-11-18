@@ -87,3 +87,30 @@ export function resolveNaturalSelect(field,utterance,availableOptions) {
 }
 
 export const SUPPORTED_SELECT_FIELDS=Object.freeze(Object.keys(ALIASES));
+
+
+// Respostas de texto livre SOMENTE para campos previamente autorizados pelo
+// controlador. A seleção sempre é verificada novamente pelo formulário.
+const SAFE_FREE_TEXT_FIELDS = new Set([
+  'other_relation', 'full_name', 'social_name', 'nationality', 'education',
+  'country', 'city', 'state', 'department', 'job_role', 'manager',
+  'schedule', 'contract_type', 'benefit_policy',
+]);
+
+/**
+ * Resposta inequívoca à pergunta atual. Perguntas e instruções abertas
+ * permanecem com o Gemini; valores protegidos nunca são classificados aqui.
+ */
+export function resolveOnboardingAnswer(field, utterance, availableOptions = []) {
+  if (typeof utterance !== 'string' || !Array.isArray(availableOptions)) return null;
+  if (availableOptions.length) return resolveNaturalSelect(field, utterance, availableOptions);
+  if (!SAFE_FREE_TEXT_FIELDS.has(field)) return null;
+  const raw = utterance.trim();
+  if (raw.length < 2 || raw.length > 120 || /[<>\x00-\x1f?]/.test(raw)) return null;
+  if (/^(?:como|qual|quais|por que|porque|explique|me ajude|pode me|posso|onde|o que|será que|nao sei|não sei)\b/i.test(fold(raw))) return null;
+  const value = field === 'full_name'
+    ? raw.replace(/^(?:meu nome (?:completo )?[ée]|o nome (?:completo )?[ée]|nome(?: completo)?\s*:)\s*/iu, '').trim()
+    : raw;
+  if (field === 'full_name' && !(/^[\p{L}][\p{L}\p{M} '’-]{3,100}$/u.test(value) && value.trim().split(/\s+/).length >= 2)) return null;
+  return value;
+}
