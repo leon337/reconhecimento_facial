@@ -78,6 +78,7 @@ SHELL_FRAME_ENDPOINTS = frozenset({
     # Somente interfaces autenticadas; login, respostas JSON, APIs de escrita e
     # biometria POST permanecem com enquadramento negado por padrão.
     'admin.dashboard', 'admin.history', 'admin.reports', 'admin.list_users',
+    'admin.occurrences', 'admin.occurrence_detail', 'admin.individual_mirror',
     'admin.new_user', 'admin.onboarding_drafts', 'admin.onboarding_new',
     'admin.onboarding_form', 'admin.biometric_form',
 })

@@ -1,3 +1,4 @@
+@import url('/static/potiguar-design.css');
 /* Potiguar — telas administrativas mobile-first, sem dependência de CDN */
 :root {
   font-family: system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;

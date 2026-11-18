@@ -17,6 +17,7 @@ class Permission(str, Enum):
     BIOMETRICS_MANAGE = "biometrics:manage"
     PUNCH_VIEW = "punch:view"
     PUNCH_CREATE = "punch:create"
+    PUNCH_REVIEW = "punch:review"
 
 
 ROLE_PERMISSIONS: dict[AccessRole, frozenset[Permission]] = {
@@ -26,12 +27,14 @@ ROLE_PERMISSIONS: dict[AccessRole, frozenset[Permission]] = {
             Permission.USERS_VIEW,
             Permission.USERS_CREATE,
             Permission.BIOMETRICS_MANAGE,
+            Permission.PUNCH_REVIEW,
             Permission.PUNCH_VIEW,
             Permission.PUNCH_CREATE,
         }
     ),
     AccessRole.MANAGER: frozenset(
         {
+            Permission.PUNCH_REVIEW,
             Permission.USERS_VIEW,
             Permission.USERS_CREATE,
             Permission.PUNCH_VIEW,

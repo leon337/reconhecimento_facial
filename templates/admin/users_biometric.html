@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Registrar Biometria Facial</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='potiguar-design.css') }}">
 </head>
-<body class="min-h-screen bg-gray-100 p-4 md:p-6">
+<body class="biometric-screen min-h-screen bg-gray-100 p-4 md:p-6">
   <main
     id="biometric-app"
     data-submit-url="{{ url_for('admin.save_biometric', user_id=user.id) }}"

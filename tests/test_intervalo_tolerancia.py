@@ -26,6 +26,7 @@ class LimitesEIntervaloTests(unittest.TestCase):
     @patch.dict("os.environ", {}, clear=True)
     def test_more_than_five_minutes_not_subtracted_from_deviation(self):
         row=self.row([(8,6,0,"ENTRADA"),(12,0,0,"SAIDA"),(13,0,0,"ENTRADA"),(17,0,0,"SAIDA")])
+        self.assertTrue(row["has_outside_reference"])
         self.assertIn("Entrada após 08:00",row["occurrences"])
         self.assertEqual(row["tolerance_display"],"Variação fora da referência — conferir")
 
@@ -37,6 +38,8 @@ class LimitesEIntervaloTests(unittest.TestCase):
     @patch.dict("os.environ", {}, clear=True)
     def test_no_lunch_punch_is_not_invented_or_deducted(self):
         row=self.row([(8,0,0,"ENTRADA"),(17,0,0,"SAIDA")])
+        self.assertFalse(row["has_outside_reference"])
+        self.assertTrue(row["occurrences"])
         self.assertEqual(row["worked"],"09:00")
         self.assertEqual(row["interval_display"],"Não confirmado")
         self.assertEqual(row["status"],"Revisar")

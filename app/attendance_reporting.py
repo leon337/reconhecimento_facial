@@ -91,6 +91,7 @@ def summarize_punches(punches, start_day, end_day):
             row["exit_display"] = [t.strftime("%H:%M") for t in row["exit_times"]]
             # Variações são indicadores, não descontos nem horas extras.
             row["occurrences"] = []
+            row["has_outside_reference"] = False
             row["interval_display"] = "Não confirmado"
             row["tolerance_display"] = "Apuração diária pendente"
             entries, exits = row["entry_times"], row["exit_times"]
@@ -114,6 +115,7 @@ def summarize_punches(punches, start_day, end_day):
                 daily_exceeded = sum(abs(d) for d in deltas) > policy.daily_tolerance_minutes*60
                 individual_exceeded = any(abs(d) > policy.tolerance_minutes*60 for d in deltas)
                 if individual_exceeded or daily_exceeded:
+                    row["has_outside_reference"] = True
                     row["tolerance_display"] = "Variação fora da referência — conferir"
                 elif complete_interval:
                     row["tolerance_display"] = "Variações dentro da referência — conferir"

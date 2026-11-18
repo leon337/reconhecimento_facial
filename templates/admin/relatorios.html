@@ -11,7 +11,7 @@
       <a href="{{ url_for('admin.history') }}">Histórico</a>
       <a class="primary" href="{{ url_for('admin.reports') }}" aria-current="page">Relatórios</a>
       <a href="{{ url_for('admin.list_users') }}">Funcionários</a>
-    </nav></header>
+    <a href="{{ url_for('admin.occurrences') }}">Ocorrências</a></nav></header>
   <main><div class="page-heading"><span class="eyebrow">Conferência operacional</span><h1>Relatórios de ponto</h1>
     <p class="subtitle">Jornada de referência {{ policy.start.strftime("%H:%M") }}–{{ policy.end.strftime("%H:%M") }}, horário de Recife. Intervalo previsto {{ policy.break_start.strftime("%H:%M") }}–{{ policy.break_end.strftime("%H:%M") }}; referência de tolerância: {{ policy.tolerance_minutes }} min por marcação e {{ policy.daily_tolerance_minutes }} min por dia; dias de trabalho: {% if policy.working_days is none %}não configurados{% else %}configurados{% endif %}. Sem desconto automático de almoço ou cálculo de folha.</p></div>
     <section class="panel">

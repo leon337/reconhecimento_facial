@@ -1,0 +1,30 @@
+<!doctype html><html lang="pt-BR"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Conferir ocorrência — Potiguar</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='admin-mobile.css') }}"><link rel="stylesheet" href="{{ url_for('static', filename='admin-dashboard.css') }}">
+</head><body><div class="container"><header class="header">
+<a class="brand" href="{{ url_for('admin.dashboard') }}"><span class="brand-mark">P</span><span><strong>POTIGUAR</strong><small>Gestão de ponto</small></span></a>
+<nav class="top-actions"><a href="{{ url_for('admin.occurrences') }}">Voltar às ocorrências</a><a href="{{ url_for('admin.reports') }}">Relatórios</a></nav></header>
+<main><div class="page-heading"><span class="eyebrow">Conferência de jornada</span><h1>{{ subject.name or subject.username }}</h1>
+<p class="subtitle">{{ day.strftime('%d/%m/%Y') }} · Horários de Recife. As ações abaixo não modificam os registros originais.</p></div>
+<section class="panel"><h2>Marcações originais</h2><ul>
+{% for point in points %}<li>{{ local_time(point.timestamp) }} · {{ point.tipo }} · #{{ point.id }}{% if point.id in synthetic %} · <strong>SIMULADO</strong>{% endif %}</li>
+{% else %}<li>Nenhuma marcação para este dia.</li>{% endfor %}</ul>
+{% if row %}<p><strong>Conferir:</strong> {{ (row.issues + row.occurrences) | join('; ') or 'Nenhuma indicação' }}</p>{% endif %}</section>
+<section class="panel review-form"><h2>Registrar conferência</h2>
+{% if can_review %}<p>Justifique, proponha um ajuste ou registre a revisão. A proposta fica pendente e não muda os horários.</p>
+<form method="post" action="{{ url_for('admin.occurrence_record',user_id=subject.id,day_text=day.isoformat()) }}">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="request_key" value="{{ nonce }}">
+<div class="field"><label for="action">Ação</label><select id="action" name="action" required><option value="justificativa">Registrar justificativa</option><option value="proposta_ajuste">Propor ajuste de marcação</option><option value="revisado">Registrar revisão</option></select></div>
+<div class="field"><label for="point_id">Marcação relacionada à proposta (opcional)</label><select id="point_id" name="point_id"><option value="">Nova marcação proposta</option>{% for point in points %}<option value="{{ point.id }}">#{{ point.id }} · {{ local_time(point.timestamp) }} · {{ point.tipo }}</option>{% endfor %}</select></div>
+<div class="field"><label for="proposed_type">Tipo proposto (obrigatório para proposta)</label><select id="proposed_type" name="proposed_type"><option value="">Selecione</option><option value="ENTRADA">Entrada</option><option value="SAIDA">Saída</option></select></div>
+<div class="field"><label for="proposed_time">Horário proposto (obrigatório para proposta)</label><input id="proposed_time" name="proposed_time" type="time"></div>
+<div class="field"><label for="note">Justificativa</label><textarea id="note" name="note" rows="4" minlength="3" maxlength="1000" required></textarea></div>
+<button class="action primary" type="submit">Registrar conferência</button></form>
+{% else %}<p>Seu perfil permite consultar esta ocorrência. Para registrar uma conferência, procure uma pessoa administradora ou gestora.</p>{% endif %}</section>
+<section class="panel review-history"><h2>Histórico da conferência</h2>
+{% for entry, note in events %}<article class="review-entry"><strong>{{ {'justificativa':'Justificativa','proposta_ajuste':'Ajuste proposto','revisado':'Revisão registrada'}[entry.action] }}</strong>
+<p>Registrado em {{ local_time(entry.created_at) }} · Responsável #{{ entry.actor_user_id }}</p>
+{% if entry.action == 'proposta_ajuste' %}<p>{{ entry.proposed_type }} às {{ entry.proposed_time }}{% if entry.point_id %} · marcação original #{{ entry.point_id }}{% else %} · nova marcação proposta{% endif %} · não aplicada</p>{% endif %}<p>{{ note }}</p></article>
+{% else %}<p>Nenhuma conferência registrada para este dia.</p>{% endfor %}</section>
+</main></div></body></html>

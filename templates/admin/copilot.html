@@ -8,7 +8,8 @@
     <title>Copiloto Potiguar — Design Lab</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='copilot/style.css') }}">
     <script type="module" src="{{ url_for('static', filename='copilot/app.js') }}"></script>
-  </head>
+  <link rel="stylesheet" href="{{ url_for('static', filename='potiguar-design.css') }}">
+</head>
   <body>
     <div id="potiguar-copilot" data-csrf-token="{{ csrf_value }}"></div>
     <noscript>Para usar o Copiloto Potiguar, habilite o JavaScript no navegador.</noscript>
