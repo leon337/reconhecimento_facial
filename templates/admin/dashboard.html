@@ -29,11 +29,21 @@
       <div class="metric"><span>Pontos hoje</span><strong>{{ punches_today }}</strong><small>{{ today }} • Recife</small></div>
       <div class="metric"><span>Pontos registrados</span><strong>{{ punches_total }}</strong><small>Histórico completo do escopo</small></div>
     </section>
+    <section class="panel" aria-label="Ocorrências dos últimos sete dias">
+      <div class="section-bar"><h2>Ocorrências · últimos 7 dias</h2><a class="action secondary" href="{{ url_for('admin.reports') }}">Abrir relatório</a></div>
+      <p class="help">Comparação indicativa com 08:00–17:00; não substitui apuração de jornada ou folha. {% if recent_simulated %}<strong>Inclui registros SIMULADOS.</strong>{% endif %}</p>
+      {% if summary_truncated %}<p>Período excede o limite de 10.000 marcações; consulte o relatório por período menor.</p>{% else %}
+      <div class="report-totals">
+        <p><strong>{{ daily | selectattr('issues') | list | length }}</strong> dia(s) com inconsistências</p>
+        <p><strong>{{ daily | selectattr('occurrences') | list | length }}</strong> dia(s) com horários fora da referência</p>
+        <p><strong>{{ daily | length }}</strong> jornadas com marcações</p>
+      </div>{% endif %}
+    </section>
     <section class="panel">
       <div class="section-bar"><h2>Últimos registros de ponto</h2><a class="action secondary" href="{{ url_for('admin.history') }}">Ver histórico completo</a></div>
       <div class="table-scroll"><table class="users-table"><thead><tr><th>Data e hora (Recife)</th><th>Funcionário</th><th>Tipo</th><th>ID</th></tr></thead>
         <tbody>{% for point in latest %}
-          <tr><td data-label="Data e hora">{{ local_time(point.timestamp) }}</td><td data-label="Funcionário">{{ point.user.name or point.user.username }}</td><td data-label="Tipo"><span class="point-tag">{{ point.tipo }}</span></td><td data-label="ID">#{{ point.id }}</td></tr>
+          <tr><td data-label="Data e hora">{{ local_time(point.timestamp) }}</td><td data-label="Funcionário">{{ point.user.name or point.user.username }}</td><td data-label="Tipo"><span class="point-tag">{{ point.tipo }}</span>{% if point.id in synthetic %} <strong>SIMULADO</strong>{% endif %}</td><td data-label="ID">#{{ point.id }}</td></tr>
         {% else %}<tr><td colspan="4"><p class="empty-state">Nenhum ponto registrado neste escopo.</p></td></tr>{% endfor %}</tbody>
       </table></div>
     </section>

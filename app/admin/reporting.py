@@ -8,6 +8,7 @@ from flask import abort, Response, render_template, request, session
 from sqlalchemy.orm import joinedload
 
 from app.admin import bp
+from app.admin.simulation import simulated_ids
 from app.admin.auth import permission_required
 from app.attendance_reporting import summarize_punches
 from app.models import Ponto, User
@@ -93,6 +94,9 @@ def _safe_csv_cell(value):
 def reports():
     start, end, users, employee_id, points = _records()
     daily = summarize_punches(points, start, end)
+    synthetic = simulated_ids(points)
+    for row in daily:
+        row["simulated"] = bool(synthetic.intersection(row["point_ids"]))
     total_seconds = sum(r["seconds"] for r in daily)
     return render_template(
         "admin/relatorios.html", start=start.isoformat(), end=end.isoformat(),
@@ -108,7 +112,8 @@ def export_punches():
     start, end, _, _, points = _records()
     output = io.StringIO(newline="")
     writer = csv.writer(output, delimiter=";", quoting=csv.QUOTE_MINIMAL)
-    writer.writerow(["ID", "Funcionário", "Usuário", "Tipo", "Data e hora (Recife)", "Fuso horário"])
+    writer.writerow(["ID", "Funcionário", "Usuário", "Tipo", "Data e hora (Recife)", "Fuso horário", "Origem"])
+    synthetic = simulated_ids(points)
     for point in _filtered_points(points, start, end):
         when = point.timestamp.replace(tzinfo=timezone.utc).astimezone(RECIFE)
         writer.writerow([
@@ -118,6 +123,7 @@ def export_punches():
             point.tipo,
             when.strftime("%d/%m/%Y %H:%M:%S"),
             "America/Recife",
+            "SIMULADO" if point.id in synthetic else "Não identificada",
         ])
     csv_bytes = ("\ufeff" + output.getvalue()).encode("utf-8")
     response = Response(csv_bytes, mimetype="text/csv; charset=utf-8")

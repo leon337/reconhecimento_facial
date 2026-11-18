@@ -13,7 +13,7 @@
       <a href="{{ url_for('admin.list_users') }}">Funcionários</a>
     </nav></header>
   <main><div class="page-heading"><span class="eyebrow">Conferência operacional</span><h1>Relatórios de ponto</h1>
-    <p class="subtitle">Horas são estimadas somente para pares inequívocos de entrada e saída (máximo de 24 h por par). Entradas incompletas exigem revisão. Não é folha de pagamento.</p></div>
+    <p class="subtitle">Jornada de referência 08:00–17:00, horário de Recife. Apuração indicativa; sem desconto automático de almoço ou cálculo de folha. Registros incompletos exigem revisão.</p></div>
     <section class="panel">
       <form class="history-filters" method="get" action="{{ url_for('admin.reports') }}">
         <div class="field"><label for="inicio">De</label><input id="inicio" name="inicio" type="date" required value="{{ start }}"></div>
@@ -31,16 +31,16 @@
         <p><strong>{{ flagged }}</strong> dia(s) que exigem revisão</p>
       </section>
       <div class="table-scroll"><table class="users-table">
-        <thead><tr><th>Data de entrada</th><th>Funcionário</th><th>Entradas</th><th>Saídas</th><th>Pares válidos</th><th>Tempo apurado</th><th>Situação</th></tr></thead>
+        <thead><tr><th>Data</th><th>Funcionário</th><th>Horários de entrada</th><th>Horários de saída</th><th>Tempo apurado</th><th>Ocorrências indicativas</th><th>Situação</th></tr></thead>
         <tbody>{% for item in daily %}
           <tr><td data-label="Data">{{ item.day.strftime('%d/%m/%Y') }}</td>
             <td data-label="Funcionário">{{ item.user.name or item.user.username }}</td>
-            <td data-label="Entradas">{{ item.entries }}</td><td data-label="Saídas">{{ item.exits }}</td>
-            <td data-label="Pares">{{ item.pairs }}</td><td data-label="Tempo">{{ item.worked }}</td>
-            <td data-label="Situação"><strong>{{ item.status }}</strong>{% if item.issues %}<div class="report-warnings">{{ item.issues | join('; ') }}</div>{% endif %}</td>
+            <td data-label="Entradas">{{ item.entry_display | join(' · ') or '—' }}</td><td data-label="Saídas">{{ item.exit_display | join(' · ') or '—' }}</td>
+            <td data-label="Tempo">{{ item.worked }}</td><td data-label="Ocorrências">{{ item.occurrences | join('; ') or '—' }}</td>
+            <td data-label="Situação">{% if item.simulated %}<strong>SIMULADO</strong> · {% endif %}<strong>{{ item.status }}</strong>{% if item.issues %}<div class="report-warnings">{{ item.issues | join('; ') }}</div>{% endif %}</td>
           </tr>
         {% else %}<tr><td colspan="7"><p class="empty-state">Nenhum registro encontrado para o período.</p></td></tr>{% endfor %}</tbody>
       </table></div>
-      <p class="help dashboard-footnote">Período máximo: 31 dias. Turnos noturnos são atribuídos ao dia da entrada. Registros incompletos não entram no cálculo de horas.</p>
+      <p class="help dashboard-footnote">Período máximo: 31 dias. Horários após 17h não são automaticamente horas extras; confirme jornada, intervalo e regras aplicáveis. Turnos noturnos são atribuídos ao dia da entrada. Registros incompletos exigem revisão.</p>
     </section>
   </main></div></body></html>

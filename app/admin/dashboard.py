@@ -6,6 +6,8 @@ from flask import abort, render_template, request, session
 from sqlalchemy.orm import joinedload
 
 from app.admin import bp
+from app.admin.simulation import simulated_ids
+from app.attendance_reporting import summarize_punches
 from app.admin.auth import permission_required
 from app.biometric_models import BiometricProfile
 from app.models import Employee, Ponto, User
@@ -68,6 +70,12 @@ def dashboard():
         if worksite_id is not None:
             profiles = profiles.filter(User.worksite_id == worksite_id)
     latest = punches.order_by(Ponto.timestamp.desc(), Ponto.id.desc()).limit(8).all()
+    period_start = datetime.now(RECIFE).date() - timedelta(days=6)
+    begin, _ = _utc_interval(period_start)
+    _, end = _utc_interval(datetime.now(RECIFE).date())
+    recent = punches.filter(Ponto.timestamp >= begin, Ponto.timestamp < end).order_by(Ponto.timestamp).limit(10001).all()
+    truncated = len(recent) > 10000
+    daily = [] if truncated else summarize_punches(recent, period_start, datetime.now(RECIFE).date())
     return render_template(
         "admin/dashboard.html",
         employees=employee_users.count(),
@@ -75,6 +83,10 @@ def dashboard():
         punches_today=punches.filter(Ponto.timestamp >= start, Ponto.timestamp < end).count(),
         punches_total=punches.count(),
         latest=latest,
+        synthetic=simulated_ids(latest),
+        recent_simulated=bool(simulated_ids(recent)),
+        daily=daily,
+        summary_truncated=truncated,
         today=today.strftime("%d/%m/%Y"),
         local_time=_local_time,
     )
@@ -107,5 +119,5 @@ def history():
         "admin/pontos.html",
         points=points, total=total, page=page,
         has_next=page * PAGE_SIZE < total,
-        day_text=day_text, punch_type=punch_type, local_time=_local_time,
+        day_text=day_text, punch_type=punch_type, local_time=_local_time, synthetic=simulated_ids(points),
     )
