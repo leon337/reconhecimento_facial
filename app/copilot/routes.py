@@ -234,3 +234,6 @@ def session_token():
         return _no_cache(jsonify(error="Não foi possível conectar ao serviço de voz.")), 502
 
     return _no_cache(jsonify(token=token, model=body["model"]))
+
+# Consultas read-only autenticadas, isoladas do Gemini Live.
+from app.copilot import consultas as _consultas  # noqa: E402,F401

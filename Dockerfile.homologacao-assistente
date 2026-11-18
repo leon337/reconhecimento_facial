@@ -1,0 +1,8 @@
+FROM potiguar-ponto-hml:redesign-20261118
+WORKDIR /app
+COPY app/copilot/routes.py app/copilot/routes.py
+COPY app/copilot/consultas.py app/copilot/consultas.py
+COPY templates/admin/assistente_consultas.html templates/admin/assistente_consultas.html
+COPY templates/admin/dashboard.html templates/admin/dashboard.html
+COPY static/assistente-consultas.css static/assistente-consultas.css
+COPY static/assistente-consultas.js static/assistente-consultas.js
