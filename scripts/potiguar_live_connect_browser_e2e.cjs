@@ -70,10 +70,12 @@ const installFakeWebSocket=(mode)=>{
       this.onopen=null;this.onmessage=null;this.onerror=null;this.onclose=null;
       setTimeout(()=>{
         if(this.readyState!==0)return;
-        if(mode==='fail') {
+        if(mode==='fail' || mode==='fail-no-close') {
           this.readyState=3;
           this.onerror?.({type:'error',message:'SECRET_ERROR_NOT_PUBLIC'});
-          this.onclose?.({code:1006,reason:'SECRET_CLOSE_REASON_NOT_PUBLIC'});
+          if(mode==='fail')setTimeout(()=>this.onclose?.({
+            code:1006,wasClean:false,reason:'SECRET_CLOSE_REASON_NOT_PUBLIC'
+          }),45);
           return;
         }
         this.readyState=1;this.onopen?.({type:'open'});
@@ -102,6 +104,7 @@ const installFakeWebSocket=(mode)=>{
       args:['--no-sandbox','--disable-dev-shm-usage','--disable-background-networking']});
     for(const item of [
       {scenario:'failed-first',mode:'fail',model:'gemini-3.8-live'},
+      {scenario:'failed-no-close',mode:'fail-no-close',model:'gemini-3.8-live'},
       {scenario:'live-success',mode:'success',model:'gemini-3.8-live'},
       {scenario:'extended-success',mode:'success',model:'gemini-3.8-live-extended-thinking'},
     ]) {
@@ -115,10 +118,17 @@ const installFakeWebSocket=(mode)=>{
       await page.click('.config input[type=checkbox]');
       await page.waitForFunction(()=>document.querySelector('.config button')?.disabled===false,{timeout:5000});
       await page.click('.config button');
-      if(item.mode==='fail'){
+      if(item.mode==='fail' || item.mode==='fail-no-close'){
         await page.waitForFunction(()=>document.querySelector('.error')?.textContent?.includes('LIVE_WS_'),{timeout:10000});
         const first=await page.$eval('.error',e=>e.textContent);
-        assert.match(first,/LIVE_WS_/);
+        assert.match(first,/abertura=ANTES_ABERTURA/);
+        if(item.mode==='fail') {
+          assert.match(first,/LIVE_WS_CLOSE_1006/);
+          assert.match(first,/fechamento=ANORMAL/);
+        } else {
+          assert.match(first,/LIVE_WS_ERROR/);
+          assert.match(first,/fechamento=DESCONHECIDO/);
+        }
         assert.doesNotMatch(first,/SECRET|SYNTHETIC|auth_tokens/);
         assert.equal(await page.$eval('.composer textarea',e=>e.disabled),true);
         // Sem retry automático; segunda solicitação explícita recebe 429 do mock.
@@ -126,7 +136,9 @@ const installFakeWebSocket=(mode)=>{
         await page.waitForFunction(()=>document.querySelector('.error')?.textContent?.includes('LIVE_TOKEN_HTTP_429'),{timeout:8000});
         assert.equal(rejected.get(item.scenario),1);
         assert.equal(visited.get(item.scenario),2);
-        cases.push('first_ws_failure_classified_and_second_click_429_no_automatic_retry');
+        cases.push(item.mode==='fail'
+          ? 'preopen_error_late_close_1006_429_no_automatic_retry'
+          : 'preopen_error_without_close_uncertain_429_no_automatic_retry');
       }else{
         await page.waitForFunction(()=>document.querySelector('header span')?.textContent==='Conectado',{timeout:12000});
         assert.equal(await page.$eval('.composer textarea',e=>e.disabled),false);

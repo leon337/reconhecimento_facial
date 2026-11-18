@@ -21,6 +21,15 @@ function scenario({model=MODELS[0],tokenStatus=200,tokenBody,transport='success'
     return {live:{connect:async({callbacks:cb})=>{
       callbacks.push(cb);
       if(transport==='reject')throw Error('SECRET_RAW_VENDOR_ERROR_SHOULD_NOT_LEAK');
+      if(transport==='error-late-close') {
+        cb.onerror({message:'NEVER_LEAK_ONERROR_TEXT'});
+        setTimeout(()=>cb.onclose({code:1006,wasClean:false,reason:'NEVER_LEAK_CLOSE_REASON'}),30);
+        throw Error('NEVER_LEAK_SDK_REJECTION');
+      }
+      if(transport==='error-no-close') {
+        cb.onerror({message:'NEVER_LEAK_ONERROR_TEXT'});
+        throw Error('NEVER_LEAK_SDK_REJECTION');
+      }
       cb.onopen();
       if(transport==='close-1008'){
         cb.onclose({code:1008,reason:'SECRET_REASON_SHOULD_NOT_LEAK'});
@@ -146,4 +155,53 @@ test('payload nulo não provoca TypeError e não abre conexão',async()=>{
   s.live.fetchFn=async url=>url.endsWith('/csrf-token')
     ? fakeResponse(200,{csrf_token:'CSRF_TEST'}) : fakeResponse(200,null);
   await assert.rejects(connect(s),/LIVE_TOKEN_INVALID/);
+});
+
+test('onerror antes de open seguido por close tardio captura 1006 sem URL ou reason',async()=>{
+  const s=scenario({transport:'error-late-close'});
+  await assert.rejects(connect(s),error=>{
+    assert.match(error.message,/LIVE_WS_CLOSE_1006/);
+    assert.match(error.message,/abertura=ANTES_ABERTURA/);
+    assert.match(error.message,/fechamento=ANORMAL/);
+    assert.doesNotMatch(error.message,/NEVER_LEAK|auth_tokens|https:|wss:/);
+    return true;
+  });
+  assert.equal(s.requests.filter(r=>r.path.endsWith('/session-token')).length,1);
+});
+
+test('sem close, erro pré-abertura declara incerteza depois da janela curta',async()=>{
+  const s=scenario({transport:'error-no-close'});
+  await assert.rejects(connect(s),error=>{
+    assert.match(error.message,/LIVE_WS_ERROR/);
+    assert.match(error.message,/abertura=ANTES_ABERTURA/);
+    assert.match(error.message,/fechamento=DESCONHECIDO/);
+    assert.doesNotMatch(error.message,/NEVER_LEAK/);
+    return true;
+  });
+});
+
+test('onerror após conexão aguarda close e emite erro uma vez com 1008',async()=>{
+  const s=scenario();
+  await connect(s);
+  const cb=s.callbacks[0];
+  cb.onerror({message:'NEVER_LEAK_ONERROR_TEXT'});
+  setTimeout(()=>cb.onclose({code:1008,wasClean:false,reason:'NEVER_LEAK_CLOSE_REASON'}),30);
+  await new Promise(resolve=>setTimeout(resolve,100));
+  const errors=s.events.filter(item=>typeof item==='string' && item.includes('[LIVE_WS_'));
+  assert.equal(errors.length,1);
+  assert.match(errors[0],/LIVE_WS_CLOSE_1008/);
+  assert.match(errors[0],/abertura=APOS_ABERTURA/);
+  assert.doesNotMatch(errors[0],/NEVER_LEAK/);
+  assert.equal(s.live.session,null);
+});
+
+test('onerror sem close após conexão apresenta código de transporte sem falsa causa',async()=>{
+  const s=scenario();
+  await connect(s);
+  s.callbacks[0].onerror({message:'NEVER_LEAK'});
+  await new Promise(resolve=>setTimeout(resolve,270));
+  const errors=s.events.filter(item=>typeof item==='string' && item.includes('[LIVE_WS_'));
+  assert.equal(errors.length,1);
+  assert.match(errors[0],/LIVE_WS_ERROR/);
+  assert.match(errors[0],/abertura=APOS_ABERTURA/);
 });
