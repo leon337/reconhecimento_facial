@@ -46,7 +46,7 @@ export class PotiguarLive {
     if (!MODEL_IDS.includes(model)) throw new Error('Modelo não autorizado.');
     if (this.session) return;
     if (this.connectionAttempt) throw new Error('Já existe uma conexão em andamento [LIVE_CONNECT_BUSY].');
-    const attempt = { opened:false, closed:false, errored:false, ready:false, closeCode:null, errorReported:false };
+    const attempt = { opened:false, closed:false, errored:false, ready:false, closeCode:null, wasClean:null, errorReported:false, closeWaiter:null, errorTimer:null };
     this.connectionAttempt = attempt;
     try {
       await this.connectAttempt(attempt, model, csrf, options);
@@ -174,16 +174,25 @@ export class PotiguarLive {
           onerror: () => {
             if (!isCurrent()) return;
             attempt.errored = true;
-            // O evento do SDK pode conter URL/token; nunca registrar ou exibir e.message.
-            if (attempt.ready && !attempt.errorReported) {
-              attempt.errorReported = true;
-              this.handlers.onError?.(classifyLiveFailure(attempt));
+            // O evento de erro não fornece causa confiável. Aguarde onclose por
+            // tempo limitado para obter código/wasClean sem ler reason ou URL.
+            if (attempt.ready && !attempt.errorReported && !attempt.errorTimer) {
+              attempt.errorTimer = setTimeout(() => {
+                attempt.errorTimer = null;
+                if (!isCurrent() || attempt.errorReported) return;
+                attempt.errorReported = true;
+                this.handlers.onError?.(classifyLiveFailure(attempt));
+              }, 220);
             }
           },
           onclose: (event) => {
             if (!isCurrent()) return;
             attempt.closed = true;
             attempt.closeCode = safeCloseCode(event);
+            attempt.wasClean = typeof event?.wasClean === 'boolean' ? event.wasClean : null;
+            if (attempt.errorTimer) clearTimeout(attempt.errorTimer);
+            attempt.errorTimer = null;
+            attempt.closeWaiter?.();
             this.session = null;
             this.stopMic().catch(() => {});
             this.player.close().catch(() => {});
@@ -206,6 +215,16 @@ export class PotiguarLive {
       attempt.ready = true;
       this.handlers.onStatus?.('connected');
     } catch {
+      // O SDK pode rejeitar connect() no onerror antes de encaminhar onclose.
+      // Aguardar um intervalo curto apenas para o evento de diagnóstico;
+      // NÃO criar uma nova conexão e NÃO consumir novo token.
+      if (attempt.errored && !attempt.closed && isCurrent()) {
+        await new Promise(resolve => {
+          const timer = setTimeout(resolve, 220);
+          attempt.closeWaiter = () => { clearTimeout(timer); resolve(); };
+        });
+        attempt.closeWaiter = null;
+      }
       if (isCurrent()) {
         this.session = null;
         this.handlers.onStatus?.('disconnected');
@@ -344,7 +363,10 @@ export class PotiguarLive {
 
   async disconnect() {
     // Invalida callbacks atrasados de sessões anteriores sem desconectar a nova.
+    const pending = this.connectionAttempt;
     this.connectionAttempt = null;
+    if (pending?.errorTimer) clearTimeout(pending.errorTimer);
+    pending?.closeWaiter?.();
     await this.stopMic();
     const oldSession = this.session;
     this.session = null;
