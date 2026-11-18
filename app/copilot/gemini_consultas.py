@@ -11,7 +11,7 @@ from urllib.error import HTTPError, URLError
 from flask import current_app
 
 ALLOWED = frozenset({"employees_count", "employees_list", "punch_count", "punch_list", "late", "issues", "help"})
-MODEL = "gemini-2.5-flash"
+MODEL = "gemini-3.5-flash-lite"
 ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models/" + MODEL + ":generateContent"
 
 
@@ -51,7 +51,7 @@ def classify(question):
         method="POST",
     )
     try:
-        with http.urlopen(req, timeout=12) as resp:
+        with http.urlopen(req, timeout=18) as resp:
             if resp.status != 200:
                 raise GeminiUnavailable("Resposta indisponível.")
             raw = resp.read(16384)
