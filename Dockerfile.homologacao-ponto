@@ -1,0 +1,34 @@
+# Extensão da imagem já usada na homologação local.
+# Construa em ambiente confiável com a imagem-base local previamente disponível.
+FROM potiguar-copilot-hml-embedded:20261112-ready
+WORKDIR /app
+COPY app/attendance_reporting.py app/attendance_reporting.py
+COPY app/shift_policy.py app/shift_policy.py
+COPY app/admin/dashboard.py app/admin/dashboard.py
+COPY app/admin/reporting.py app/admin/reporting.py
+COPY app/admin/simulation.py app/admin/simulation.py
+COPY templates/admin/dashboard.html templates/admin/dashboard.html
+COPY templates/admin/pontos.html templates/admin/pontos.html
+COPY templates/admin/relatorios.html templates/admin/relatorios.html
+COPY templates/admin/espelho.html templates/admin/espelho.html
+COPY main.py main.py
+COPY app/rbac.py app/rbac.py
+COPY app/observability.py app/observability.py
+COPY app/punch_review_models.py app/punch_review_models.py
+COPY app/admin/occurrences.py app/admin/occurrences.py
+COPY templates/admin/ocorrencias.html templates/admin/ocorrencias.html
+COPY templates/admin/ocorrencia_detalhe.html templates/admin/ocorrencia_detalhe.html
+COPY static/admin-mobile.css static/admin-mobile.css
+COPY static/admin-dashboard.css static/admin-dashboard.css
+COPY templates/admin/login.html templates/admin/login.html
+COPY templates/admin/users_biometric.html templates/admin/users_biometric.html
+COPY templates/admin/users_list.html templates/admin/users_list.html
+COPY templates/admin/users_new.html templates/admin/users_new.html
+COPY templates/admin/copilot.html templates/admin/copilot.html
+COPY static/potiguar-design.css static/potiguar-design.css
+COPY templates/admin/copilot_onboarding_embed.html templates/admin/copilot_onboarding_embed.html
+COPY migrations/versions/20261118_10_punch_reviews.py migrations/versions/20261118_10_punch_reviews.py
+
+COPY static/punch.js static/punch.js
+COPY static/biometric_capture.js static/biometric_capture.js
+COPY templates/punch.html templates/punch.html

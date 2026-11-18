@@ -1,0 +1,23 @@
+<!doctype html><html lang="pt-BR"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ocorrências — Potiguar</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='admin-mobile.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='admin-dashboard.css') }}">
+</head><body><div class="container">
+<header class="header"><a class="brand" href="{{ url_for('admin.dashboard') }}"><span class="brand-mark">P</span><span><strong>POTIGUAR</strong><small>Gestão de ponto</small></span></a>
+<nav class="top-actions" aria-label="Navegação principal"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a><a href="{{ url_for('admin.history') }}">Histórico</a><a href="{{ url_for('admin.reports') }}">Relatórios</a><a class="primary" href="{{ url_for('admin.occurrences') }}" aria-current="page">Ocorrências</a><a href="{{ url_for('admin.list_users') }}">Funcionários</a></nav></header>
+<main><div class="page-heading"><span class="eyebrow">Conferência de jornada</span><h1>Ocorrências</h1><p class="subtitle">Revise intervalos não confirmados, marcações incompletas e variações. Propostas não alteram o ponto original.</p></div>
+<section class="panel">
+<form class="history-filters" method="get">
+<div class="field"><label for="inicio">De</label><input id="inicio" name="inicio" type="date" value="{{ start.isoformat() }}" required></div>
+<div class="field"><label for="fim">Até</label><input id="fim" name="fim" type="date" value="{{ end.isoformat() }}" required></div>
+<div class="field"><label for="funcionario">Funcionário</label><select id="funcionario" name="funcionario"><option value="">Todos</option>{% for u in users %}<option value="{{ u.id }}" {% if employee_id==u.id %}selected{% endif %}>{{ u.name or u.username }}</option>{% endfor %}</select></div><button class="action primary">Aplicar filtros</button></form>
+<p class="history-total">{{ rows|length }} jornada(s) com indicação de conferência</p>
+<div class="table-scroll"><table class="users-table"><thead><tr><th>Data</th><th>Funcionário</th><th>Marcações</th><th>Indicação</th><th>Último registro</th><th>Ação</th></tr></thead><tbody>
+{% for row in rows %}<tr><td data-label="Data">{{ row.day.strftime('%d/%m/%Y') }}</td><td data-label="Funcionário">{{ row.user.name or row.user.username }}{% if row.simulated %}<br><strong>SIMULADO</strong>{% endif %}</td>
+<td data-label="Marcações">Entrada: {{ row.entry_display | join(' · ') or '—' }}<br>Saída: {{ row.exit_display | join(' · ') or '—' }}</td>
+<td data-label="Indicação">{{ (row.issues + row.occurrences) | join('; ') }}</td>
+<td data-label="Último registro">{% if row.review %}{{ {'justificativa':'Justificativa', 'proposta_ajuste':'Ajuste proposto', 'revisado':'Revisado'}[row.review.action] }}{% else %}Sem revisão{% endif %}</td>
+<td data-label="Ação"><a class="action" href="{{ url_for('admin.occurrence_detail', user_id=row.user_id, day_text=row.day.isoformat()) }}">Abrir conferência</a></td></tr>
+{% else %}<tr><td colspan="6"><p class="empty-state">Nenhuma ocorrência encontrada neste período.</p></td></tr>{% endfor %}
+</tbody></table></div></section></main></div></body></html>

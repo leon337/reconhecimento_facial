@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Espelho individual — Potiguar</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='admin-mobile.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='admin-dashboard.css') }}">
+<style>
+@media print { .no-print { display:none!important; } .container { max-width:none!important; } .table-scroll { overflow:visible!important; } table { font-size:9pt; } }
+</style>
+</head><body><div class="container">
+<header class="header no-print"><a class="brand" href="{{ url_for('admin.dashboard') }}"><span class="brand-mark">P</span><span><strong>POTIGUAR</strong><small>Gestão de ponto</small></span></a>
+<nav class="top-actions"><a href="{{ url_for('admin.reports', inicio=start, fim=end, funcionario=employee.id) }}">Voltar ao relatório</a><button type="button" class="action primary" onclick="window.print()">Imprimir ou salvar em PDF</button></nav></header>
+<main><div class="page-heading"><span class="eyebrow">Conferência individual</span><h1>Espelho de ponto</h1>
+<p><strong>{{ employee.name or employee.username }}</strong> · {{ start.strftime('%d/%m/%Y') }} a {{ end.strftime('%d/%m/%Y') }} · horário de Recife</p>
+<p class="subtitle">Referência: {{ policy.start.strftime('%H:%M') }}–{{ policy.end.strftime('%H:%M') }}. Intervalo previsto: {{ policy.break_start.strftime('%H:%M') }}–{{ policy.break_end.strftime('%H:%M') }}. Referência de tolerância: {{ policy.tolerance_minutes }} min por marcação e {{ policy.daily_tolerance_minutes }} min por dia. Dias de trabalho: {% if policy.working_days is none %}não configurados{% else %}configurados{% endif %}.</p>
+{% if has_simulation %}<p><strong>ATENÇÃO: este espelho contém marcações SIMULADAS.</strong></p>{% endif %}
+<p>Tempo entre pares registrados: <strong>{{ worked }}</strong> · soma apenas pares válidos; não presume intervalo nem calcula folha. Dias sem marcação não são classificados como falta.</p></div>
+<section class="panel"><div class="table-scroll"><table class="users-table">
+<thead><tr><th>Data</th><th>Entradas</th><th>Saídas</th><th>Tempo entre marcações</th><th>Intervalo</th><th>Ocorrências indicativas</th><th>Situação</th></tr></thead><tbody>
+{% for day, item in days %}
+<tr><td data-label="Data">{{ day.strftime('%d/%m/%Y') }}</td>
+{% if item %}
+<td data-label="Entradas">{{ item.entry_display | join(' · ') or '—' }}</td><td data-label="Saídas">{{ item.exit_display | join(' · ') or '—' }}</td><td data-label="Tempo">{{ item.worked }}</td>
+<td data-label="Intervalo">{{ item.interval_display }}</td><td data-label="Ocorrências">{{ item.occurrences | join('; ') or '—' }}<div>{{ item.tolerance_display }}</div></td>
+<td data-label="Situação">{% if item.simulated %}<strong>SIMULADO</strong> · {% endif %}{{ item.status }}{% if item.issues %}<div>{{ item.issues | join('; ') }}</div>{% endif %}</td>
+{% else %}<td colspan="6">Sem marcações</td>{% endif %}</tr>
+{% endfor %}
+</tbody></table></div></section>
+</main></div></body></html>
