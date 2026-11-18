@@ -20,15 +20,20 @@
   const titles = ['Tipo de relação','Dados pessoais','Endereço','Vínculo','Pagamento','Acesso','Biometria','Revisão'];
   let current = 0, maxVisited = 0, version = Number(app.dataset.version);
   let generation = 0, savedGeneration = 0, saving = null, blocked = false;
+  let advancing = false;
   let timer;
 
   function alertError(message) {
+    // O erro deve ficar na etapa corrente, não após todas as oito seções.
+    panels[current]?.querySelector('.step-heading')?.insertAdjacentElement('afterend', errorPanel);
     errorPanel.textContent = message;
     errorPanel.hidden = false;
     errorPanel.scrollIntoView({behavior:'smooth',block:'nearest'});
   }
   function clearError() { errorPanel.textContent=''; errorPanel.hidden=true; }
   function busy(on) { controls.forEach(el => {if (el && !el.hidden) el.disabled = !!on;}); }
+  // Autosave não bloqueia Continuar/Voltar; a navegação aguarda o salvamento.
+  function savingBusy(on) { [complete,discardButton].forEach(el => {if (el && !el.hidden) el.disabled = !!on;}); }
   function serialize() {
     const out = {};
     form.querySelectorAll('[name]').forEach(input => {
@@ -37,6 +42,19 @@
       else out[input.name] = (input.value || '').trim();
     });
     return out;
+  }
+  const guide = window.PotiguarOnboardingController;
+  function updateConditionalVisibility() {
+    if (!guide) return;
+    const data = serialize();
+    form.querySelectorAll('.field-item [name]').forEach(control => {
+      const field = control.closest('.field-item');
+      const applicable = guide.applicable(control.name, data);
+      // Na demo o acesso não pode ser persistido: guard HTTP 422 permanece no servidor.
+      const demoAccess = app.dataset.demo === '1' && control.name === 'has_system_access';
+      field.hidden = !applicable;
+      control.disabled = !applicable || demoAccess;
+    });
   }
   async function send(url, payload) {
     let response;
@@ -66,7 +84,7 @@
     const generationAtStart = generation;
     const payload = serialize();
     status.textContent = 'Salvando rascunho...';
-    busy(true);
+    savingBusy(true);
     saving = send(app.dataset.save, {version, fields:payload})
       .then(data => {
         version = Number(data.version);
@@ -77,16 +95,21 @@
         status.textContent = 'Não foi possível salvar';
         alertError(err.message);
         throw err;
-      }).finally(()=>{saving=null;busy(false);});
+      }).finally(()=>{saving=null;savingBusy(false);});
     await saving;
     if (generation !== savedGeneration) return saveDraft();
   }
   function validateCurrent() {
     for (const input of panels[current].querySelectorAll('[required]')) {
+      if (input.disabled) continue;
       if (!input.checkValidity()) {
+        input.setAttribute('aria-invalid','true');
+        input.setAttribute('aria-describedby','form-errors');
         alertError('Preencha o campo obrigatório: ' + (input.closest('.field-item')?.querySelector('label')?.textContent || input.name));
         input.focus(); return false;
       }
+      input.removeAttribute('aria-invalid');
+      input.removeAttribute('aria-describedby');
     }
     return true;
   }
@@ -133,16 +156,22 @@
     }
     target.append(wrap);
   }
-  form.addEventListener('input',()=>{
+  form.addEventListener('input',event=>{
+    event.target?.removeAttribute?.('aria-invalid');
+    event.target?.removeAttribute?.('aria-describedby');
+    updateConditionalVisibility();
     generation++;
     clearTimeout(timer);
     timer=setTimeout(()=>{saveDraft().catch(()=>{});},1250);
     status.textContent='Alterações ainda não salvas';
   });
+  form.addEventListener('change',updateConditionalVisibility);
   form.addEventListener('submit',e=>e.preventDefault());
   next.addEventListener('click',async()=>{
-    if (!validateCurrent()) return;
+    if (advancing || !validateCurrent()) return;
+    advancing = true;
     try {await saveDraft(); maxVisited=Math.max(maxVisited,current+1);showStep(current+1);} catch(_){}
+    finally {advancing = false;}
   });
   back.addEventListener('click',()=>showStep(current-1));
   steps.forEach((button,i)=>button.addEventListener('click',()=>showStep(i)));
@@ -198,7 +227,6 @@
   ]);
   let pendingProposal=null;
   let manualFieldActions=null;
-  const guide = window.PotiguarOnboardingController;
   const guidedFieldLabel = document.getElementById('guided-field');
   let guided=false, activeField=null, forcedField=null, guideBusy=false, guidedApplying=false;
   let reviewAnnounced=false, advanceTimer=null;
@@ -591,5 +619,6 @@
     openCopilot.hidden=true;
     window.parent.postMessage({type:'potiguar:shell:onboarding-ready',step:current},location.origin);
   }
+  updateConditionalVisibility();
   showStep(0);
 })();

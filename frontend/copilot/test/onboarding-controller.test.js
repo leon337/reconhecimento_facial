@@ -62,3 +62,16 @@ test('bloqueia sugestões financeiras, biométricas e fora da etapa',()=>{
   assert.deepEqual(sanitizeOnboardingSuggestions({step:4,suggestions:[{field:'pix_key',value:'123'}]},4),[]);
   assert.deepEqual(sanitizeOnboardingSuggestions({step:3,suggestions:[{field:'job_role',value:'Analista'}]},2),[]);
 });
+
+test('condicionais nao expoem campos de outros pagamentos, vinculos ou acessos',()=>{
+  const base={relation_type:'CLT comum',address_type:'Urbano',payment_method:'PIX',
+    has_system_access:false,third_party_holder:false,biometric_timing:'Depois'};
+  for(const field of ['bank','salary_bank','foreign_street','rural_road','access_login','intermittent_date','non_employee_type'])
+    assert.equal(guide.applicable(field,base),false,field);
+  assert.equal(guide.applicable('pix_key',base),true);
+  assert.equal(guide.applicable('intermittent_date',{...base,relation_type:'CLT intermitente'}),true);
+  assert.equal(guide.applicable('non_employee_type',{...base,relation_type:'Sem vínculo empregatício'}),true);
+  assert.equal(guide.applicable('bank',{...base,payment_method:'Conta bancária'}),true);
+  assert.equal(guide.applicable('salary_bank',{...base,payment_method:'Conta-salário'}),true);
+  assert.equal(guide.applicable('access_login',{...base,has_system_access:true}),true);
+});

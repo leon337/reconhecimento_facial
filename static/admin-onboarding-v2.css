@@ -34,3 +34,9 @@
 .guided-manual-actions button{border:1px solid #9ac2aa;background:#fff;color:#14533a;border-radius:8px;padding:9px 11px;font-size:12px;font-weight:700;cursor:pointer}
 .guided-manual-actions .guided-manual-save{background:#176143;color:#fff;border-color:#176143}
 .guided-manual-actions button:disabled{opacity:.55;cursor:wait}
+
+/* UX V2: erro junto à etapa e controles legíveis na gaveta responsiva. */
+.field-item [aria-invalid="true"]{border-color:#b53934!important;box-shadow:0 0 0 1px #b53934}
+.copilot-drawer-header .action{white-space:nowrap;flex-shrink:0}
+.copilot-drawer-header strong{min-width:0;overflow-wrap:anywhere}
+.checkbox-label:has(input:disabled){opacity:.7;cursor:not-allowed}
