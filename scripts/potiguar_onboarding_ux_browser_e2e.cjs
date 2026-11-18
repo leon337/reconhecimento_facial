@@ -4,8 +4,8 @@ const fs=require('node:fs'), path=require('node:path'), http=require('node:http'
 const assert=require('node:assert/strict');
 const puppeteer=require(process.env.POTIGUAR_PUPPETEER_MODULE || 'puppeteer');
 const ROOT=path.resolve(__dirname,'..');
-const FIXTURE=process.env.POTIGUAR_E2E_HTML || '/tmp/potiguar-browser-e2e-20261113/index.html';
-if(!fs.existsSync(FIXTURE)) throw Error('Gere HTML Flask com scripts/potiguar_onboarding_e2e_fixture.py ou defina POTIGUAR_E2E_HTML');
+const FIXTURE=process.env.POTIGUAR_E2E_HTML || '/tmp/potiguar-onboarding-ux-fixture.html';
+if(!fs.existsSync(FIXTURE)) throw Error('Gere a fixture sintética: python3 scripts/potiguar_onboarding_ux_fixture.py');
 const pageHtml=fs.readFileSync(FIXTURE);
 let saves=0,completeCalls=0;const savedPayloads=[];
 const response=(res,status,body)=>{res.writeHead(status,{'Content-Type':'application/json'});res.end(JSON.stringify(body));};
