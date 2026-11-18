@@ -11,6 +11,8 @@
   const statusElement = document.getElementById("status");
   const elapsedElement = document.getElementById("elapsed-time");
   const typeSelect = document.getElementById("tipo");
+  const cameraShell = document.getElementById("camera-shell");
+  const cameraStateText = document.getElementById("camera-state-text");
 
   if (
     !app ||
@@ -69,12 +71,24 @@
     typeSelect.disabled = value;
   };
 
+  const setCameraState = (active) => {
+    app.dataset.cameraState = active ? "active" : "idle";
+    if (cameraShell) cameraShell.classList.toggle("hidden", !active);
+    if (cameraStateText) {
+      cameraStateText.textContent = active
+        ? "Câmera ativa"
+        : "Captura segura e em tempo real";
+    }
+  };
+
   const stopCamera = () => {
     if (stream) {
       stream.getTracks().forEach((track) => track.stop());
       stream = null;
     }
     video.srcObject = null;
+    video.classList.add("hidden");
+    setCameraState(false);
   };
 
   const secureCameraAvailable = () =>
@@ -106,6 +120,7 @@
       video.srcObject = stream;
       await video.play();
       video.classList.remove("hidden");
+      setCameraState(true);
       startCameraButton.classList.add("hidden");
       startVerificationButton.classList.remove("hidden");
       startVerificationButton.disabled = false;

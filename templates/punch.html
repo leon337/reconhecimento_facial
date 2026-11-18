@@ -2,77 +2,104 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bater Ponto</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="{{ url_for('static', filename='potiguar-design.css') }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0d2337">
+  <title>Bater ponto • Potiguar</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='punch-redesign.css') }}">
 </head>
-<body class="min-h-screen bg-gray-100 p-4">
+<body class="punch-page">
+  <header class="punch-topbar">
+    <div class="punch-topbar-inner">
+      <span class="punch-brand-symbol" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5 20 6v6.2c0 5-3.2 8.1-8 9.3-4.8-1.2-8-4.3-8-9.3V6l8-3.5Z"/><path d="m8.2 12.2 2.5 2.4 5-5"/></svg>
+      </span>
+      <div class="punch-topbar-text">
+        <span class="punch-brand">POTIGUAR</span>
+        <span class="punch-brand-subtitle">Registro digital de jornada</span>
+      </div>
+      <span class="punch-environment">Homologação</span>
+    </div>
+  </header>
+
   <main
     id="punch-app"
     data-submit-url="{{ url_for('punch.punch_submit') }}"
     data-challenge-url="{{ url_for('punch.punch_challenge') }}"
     data-csrf-token="{{ csrf_token() }}"
-    class="mx-auto max-w-xl rounded bg-white p-5 shadow"
+    data-camera-state="idle"
+    class="punch-card"
   >
-    <h1 class="mb-2 text-2xl font-bold">Bater Ponto</h1>
-    <p class="mb-4 text-sm text-gray-600">
-      O sistema identifica automaticamente o funcionário por leituras faciais ao vivo. Nenhuma foto da galeria é aceita.
-    </p>
+    <div class="punch-intro">
+      <div class="punch-emblem" aria-hidden="true">
+        <svg viewBox="0 0 72 72" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M7 23V12c0-3 2-5 5-5h11M49 7h11c3 0 5 2 5 5v11M65 49v11c0 3-2 5-5 5H49M23 65H12c-3 0-5-2-5-5V49"/><circle cx="36" cy="28" r="9"/><path d="M19 53c2-9 8-14 17-14s15 5 17 14"/></svg>
+      </div>
+      <p class="punch-eyebrow">MARCAÇÃO FACIAL AO VIVO</p>
+      <h1>Bater ponto</h1>
+      <p class="punch-description">O sistema identifica o funcionário por leitura facial ao vivo. Nenhuma foto da galeria é aceita.</p>
+      <div class="punch-trust" aria-label="Captura por câmera segura">
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 8 4v6c0 5-3 8-8 10-5-2-8-5-8-10V6l8-4Z"/><path d="m8.5 12 2.4 2.4 4.7-5"/></svg>
+        <span id="camera-state-text">Captura segura e em tempo real</span>
+      </div>
+    </div>
 
-    <section class="space-y-3">
-      <video
-        id="video"
-        autoplay
-        playsinline
-        muted
-        class="hidden w-full rounded bg-black"
-        aria-label="Câmera para reconhecimento facial"
-      ></video>
-
-      <div id="challenge-panel" class="hidden rounded border border-blue-200 bg-blue-50 p-3 text-center">
-        <p id="challenge-text" class="font-semibold text-blue-900"></p>
-        <p id="challenge-countdown" class="mt-1 text-sm text-blue-700"></p>
+    <section class="punch-capture" aria-label="Captura e identificação facial">
+      <div id="camera-shell" class="punch-camera-shell hidden">
+        <video id="video" autoplay playsinline muted class="punch-video hidden" aria-label="Imagem da câmera para reconhecimento facial"></video>
+        <div class="punch-face-guide" aria-hidden="true">
+          <i></i><i></i><i></i><i></i>
+        </div>
+        <span class="punch-live-label"><span class="punch-live-dot"></span> Câmera ativa</span>
       </div>
 
-      <button
-        id="start-camera"
-        type="button"
-        class="w-full rounded bg-green-600 px-4 py-3 font-semibold text-white hover:bg-green-700"
-      >
-        Abrir câmera segura
+      <div id="challenge-panel" class="punch-challenge hidden" aria-live="polite">
+        <span class="punch-challenge-eyebrow">VERIFICAÇÃO DE PRESENÇA</span>
+        <p id="challenge-text" class="punch-challenge-title"></p>
+        <p id="challenge-countdown" class="punch-challenge-countdown"></p>
+      </div>
+
+      <button id="start-camera" type="button" class="punch-action">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h-4L8 7H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2-3Z"/><circle cx="12" cy="13" r="3.2"/></svg>
+        <span>Abrir câmera segura</span>
       </button>
 
-      <button
-        id="start-verification"
-        type="button"
-        disabled
-        class="hidden w-full rounded bg-indigo-600 px-4 py-3 font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        Identificar e registrar ponto
+      <button id="start-verification" type="button" disabled class="punch-action hidden">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3m13-5h3a2 2 0 0 1 2 2v3m0 8v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/><circle cx="12" cy="9" r="3"/><path d="M6.8 18a5.2 5.2 0 0 1 10.4 0"/></svg>
+        <span>Identificar e registrar ponto</span>
       </button>
     </section>
 
-    <div class="mt-5 flex items-center gap-2">
-      <label for="tipo" class="font-semibold">Tipo</label>
-      <select id="tipo" class="rounded border p-2">
-        <option value="ENTRADA">Entrada</option>
-        <option value="SAIDA">Saída</option>
-      </select>
-    </div>
-
-    <div class="mt-4 rounded bg-gray-50 p-3 text-sm">
-      <div class="flex justify-between">
-        <span>Meta operacional</span>
-        <strong>&lt; 10 segundos</strong>
+    <section class="punch-fields" aria-label="Dados da marcação">
+      <label for="tipo" class="punch-field-label">Tipo de marcação</label>
+      <div class="punch-select-wrap">
+        <select id="tipo" name="tipo">
+          <option value="ENTRADA">Entrada</option>
+          <option value="SAIDA">Saída</option>
+        </select>
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
       </div>
-      <div class="mt-1 flex justify-between">
-        <span>Tempo atual</span>
-        <strong id="elapsed-time">0,0s</strong>
-      </div>
-    </div>
+    </section>
 
-    <p id="status" role="status" aria-live="polite" class="mt-4 min-h-6 text-sm text-gray-700"></p>
+    <section class="punch-performance" aria-label="Indicadores de tempo">
+      <div class="punch-metric">
+        <div class="punch-metric-label">
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5.2"/><circle cx="12" cy="12" r="1.3"/></svg>
+          <span>Meta operacional</span>
+        </div>
+        <strong class="punch-metric-value">&lt; 10 segundos</strong>
+      </div>
+      <div class="punch-metric">
+        <div class="punch-metric-label">
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 13V8m-3-6h6m-3 0v3m6 3 1.5-1.5"/></svg>
+          <span>Tempo atual</span>
+        </div>
+        <strong id="elapsed-time" class="punch-metric-value" aria-live="off">0,0s</strong>
+      </div>
+    </section>
+
+    <p id="status" role="status" aria-live="polite" aria-atomic="true" class="punch-status">
+      Clique em Abrir câmera segura para começar.
+    </p>
+    <p class="punch-privacy">Sua marcação exige câmera ao vivo e validação de presença.</p>
   </main>
 
   <script src="{{ url_for('static', filename='punch.js') }}" defer></script>
