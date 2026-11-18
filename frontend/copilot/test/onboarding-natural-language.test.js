@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {resolveNaturalSelect,canonicalizeOnboardingValue,fold} from '../src/onboarding-natural-language.js';
+import {resolveNaturalSelect,resolveOnboardingAnswer,canonicalizeOnboardingValue,fold} from '../src/onboarding-natural-language.js';
 import {sanitizeOnboardingSuggestions} from '../src/onboarding-suggestions.js';
 
 const REL=['CLT comum','CLT intermitente','Sem vínculo empregatício'];
@@ -52,4 +52,15 @@ test('model tool alias é normalizado sem expandir whitelist',()=>{
     step:0,suggestions:[{field:'cpf',value:'12345678901'}]
   },0),[]);
   assert.equal(canonicalizeOnboardingValue('relation_type','não é intermitente'),null);
+});
+
+test('texto livre seguro é aplicado somente como resposta inequívoca do campo ativo',()=>{
+ assert.equal(resolveOnboardingAnswer('full_name','Teste Funcionário de Teste',[]),'Teste Funcionário de Teste');
+ assert.equal(resolveOnboardingAnswer('full_name','Meu nome é Teste de QA',[]),'Teste de QA');
+ assert.equal(resolveOnboardingAnswer('full_name','Qual meu nome?',[]),null);
+ assert.equal(resolveOnboardingAnswer('full_name','foo@example.com',[]),null);
+ assert.equal(resolveOnboardingAnswer('cpf','12345678900',[]),null);
+ assert.equal(resolveOnboardingAnswer('payment_method','PIX',[]),null);
+ assert.equal(resolveOnboardingAnswer('relation_type','CLT comum',['CLT comum','CLT intermitente']),'CLT comum');
+ assert.equal(resolveOnboardingAnswer('relation_type','O que é CLT comum?',['CLT comum','CLT intermitente']),null);
 });

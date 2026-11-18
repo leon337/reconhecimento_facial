@@ -2,6 +2,7 @@
 import { ref, nextTick, onMounted, onUnmounted } from 'vue';
 import { PotiguarLive } from './live.js';
 import { isProtectedInput } from './protected-input.js';
+import { resolveOnboardingAnswer } from './onboarding-natural-language.js';
 const props=defineProps({csrf:{type:String,required:true}});
 const meta=ref({enabled:false,configured:false,can_create_with_ai:false});
 const model=ref('gemini-3.8-live'),consent=ref(false),connected=ref(false),busy=ref(false),micOn=ref(false);
@@ -12,6 +13,7 @@ const logEnd=ref(null);
 let assistantIndex=-1,voiceIndex=-1;
 const pendingActions=new Map();
 let deferredGuide=null;
+let voiceTranscript='';
 function flushGuide(){
   if(pendingActions.size||!deferredGuide||!connected.value)return;
   const pending=deferredGuide;deferredGuide=null;
@@ -42,8 +44,30 @@ function add(role,value){messages.value.push({role,text:value});if(messages.valu
 const live=new PotiguarLive({
   onStatus(s){connected.value=s==='connected';if(!connected.value){micOn.value=false;clearPending();}},
   onAssistantText(s){voiceIndex=-1;if(assistantIndex<0){add('assistant',s);assistantIndex=messages.value.length-1;}else messages.value[assistantIndex].text+=s;},
-  onUserSpeech(s){assistantIndex=-1;if(voiceIndex<0){add('user',s);voiceIndex=messages.value.length-1;}else messages.value[voiceIndex].text+=s;},
-  onTurnComplete(){assistantIndex=-1;voiceIndex=-1;},
+  onUserSpeech(s){
+    assistantIndex=-1;
+    if(voiceIndex<0){add('user',s);voiceIndex=messages.value.length-1;}else messages.value[voiceIndex].text+=s;
+    // A API pode entregar trechos parciais ou texto cumulativo da mesma fala.
+    if(typeof s==='string' && s.trim()){
+      const part=s.trim();
+      voiceTranscript=part.startsWith(voiceTranscript)?part:(voiceTranscript+' '+part).trim().slice(0,400);
+    }
+  },
+  onTurnComplete(){
+    assistantIndex=-1;voiceIndex=-1;
+    const spoken=voiceTranscript;voiceTranscript='';
+    const active=question.value;
+    if(!connected.value || !active?.safe || !spoken || isProtectedInput(spoken))return;
+    const selected=resolveOnboardingAnswer(active.field,spoken,active.options);
+    if(!selected)return;
+    // Também em voz, somente o controlador valida e grava o campo atual.
+    executeOnParent('potiguar:onboarding:proposal',{
+      step:active.step,suggestions:[{field:active.field,value:selected}],
+    }).then(result=>{
+      if(result.status!=='saved' && question.value?.field===active.field)
+        error.value='Não foi possível salvar a resposta falada. Confira o formulário.';
+    }).catch(()=>{if(question.value?.field===active.field)error.value='Falha ao aplicar a resposta falada.';});
+  },
   onOnboardingSuggestions(step,suggestions){return executeOnParent('potiguar:onboarding:proposal',{step,suggestions});},
   onOnboardingNavigation(navigation){return executeOnParent('potiguar:onboarding:navigate',navigation);},
   onOnboardingAction(operation){return executeOnParent('potiguar:onboarding:execute',operation);},
@@ -68,8 +92,10 @@ function receive(event){
   if(data.type==='potiguar:onboarding:question'&&Number.isInteger(data.step)&&data.step>=0&&data.step<8
       &&typeof data.field==='string'&&typeof data.label==='string'){
     currentStep.value=data.step;live.setOnboardingStep(data.step);
+    voiceTranscript='';
     live.setOnboardingField(data.safe?data.field:null);
-    question.value={step:data.step,field:data.field,label:data.label,safe:!!data.safe,required:!!data.required};
+    question.value={step:data.step,field:data.field,label:data.label,safe:!!data.safe,required:!!data.required,
+      options:Array.isArray(data.options)?data.options.filter(value=>typeof value==='string'):[]};
     reviewMode.value=false;assistantIndex=-1;voiceIndex=-1;
     if(!data.safe){
       if(micOn.value){live.stopMic().catch(()=>{});micOn.value=false;}
@@ -144,6 +170,18 @@ function send(){
   if(!question.value?.safe){error.value='Para este campo, use o formulário protegido. Não envie o valor ao Gemini.';return;}
   if(isProtectedInput(value)){
     error.value='Possível dado protegido identificado. Preencha diretamente no formulário, sem enviá-lo ao Gemini.';return;
+  }
+  // Seletores seguros com vocabulário fechado são resolvidos localmente.
+  // O formulário valida e persiste a opção; nenhuma seleção depende de tool call do modelo.
+  const selected=resolveOnboardingAnswer(question.value.field,value,question.value.options);
+  if(selected){
+    add('user',value);text.value='';assistantIndex=-1;voiceIndex=-1;
+    executeOnParent('potiguar:onboarding:proposal',{
+      step:question.value.step,suggestions:[{field:question.value.field,value:selected}],
+    }).then(result=>{
+      if(result.status!=='saved')error.value='Não foi possível salvar a opção. Confira o formulário.';
+    }).catch(()=>{error.value='Falha ao preencher o campo. Tente novamente.';});
+    return;
   }
   try{
     live.sendText(`Resposta para o campo ${question.value.field}, etapa ${currentStep.value+1}: ${value}. Se for válido, invoque suggest_onboarding_fields somente para ${question.value.field}; não repita dados protegidos.`);
